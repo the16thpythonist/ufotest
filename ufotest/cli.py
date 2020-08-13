@@ -2,15 +2,23 @@
 import sys
 import click
 
+from ufotest.install import print_hello
 
-@click.command()
-def main(args=None):
+
+@click.group()
+def cli():
+    pass
+
+
+@click.command('install')
+def install(args=None):
     """Console script for ufotest."""
-    click.echo("Replace this message by putting your code into "
-               "ufotest.cli.main")
-    click.echo("See click documentation at https://click.palletsprojects.com/")
+    print_hello()
     return 0
 
 
+cli.add_command(install)
+
+
 if __name__ == "__main__":
-    sys.exit(main())  # pragma: no cover
+    sys.exit(cli())  # pragma: no cover
