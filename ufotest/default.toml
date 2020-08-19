@@ -1,5 +1,44 @@
 title = "UfoTest Config"
 
 [install]
+    # Can be one of: "ubuntu", "suse"
     os = "ubuntu"
-    package_install = "sudo apt-get install"
+    package_install = "sudo apt-get -y install"
+
+    fastwriter_git = "http://fuzzy.fzk.de/gogs/UFO-libuca/fastwriter.git"
+    pcitools_git = "http://fuzzy.fzk.de/gogs/jonas.teufel/pcitool.git"
+    libufodecode_git = "https://github.com/ufo-kit/libufodecode.git"
+    libuca_git = "https://github.com/ufo-kit/libuca.git"
+    ucaufo_git = "https://github.com/ufo-kit/uca-ufo.git"
+
+    [install.ubuntu]
+        packages = [
+            # For this CLI tool to work properly
+            "git",
+            # To install the dependencies
+            "swig",
+            "cmake",
+            "uuid-dev",
+            "xfsprogs",
+            "xfslibs-dev",
+            "python2",
+            "python2-dev",
+            "doxygen",
+            "uthash-dev",
+            "libxml2",
+            "libxml2-dev",
+            # To install libuca
+            "libglib2.0",
+            "libgtk+2.0-dev",
+            "gobject-introspection"
+        ]
+
+    [install.suse]
+        packages = [
+            "git"
+        ]
+
+[camera]
+
+    camera_width = 2048
+    camera_height = 2048
