@@ -78,6 +78,7 @@ def config():
     return 0
 
 
+@click.command('frame', short_help='Acquire and display a frame from the camera')
 def frame():
     """
     Capture a frame from the camera and display it to the user
