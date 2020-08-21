@@ -2,6 +2,7 @@
 A module, which contains the code related to the installation process of the UFO dependencies
 """
 import os
+import re
 import click
 import subprocess
 from typing import Optional
@@ -111,7 +112,11 @@ def install_uca_ufo(path: str, verbose=True):
         path,
         git_url,
         verbose,
-        {'CMAKE_INSTALL_PREFIX': '/usr'}
+        {
+            'CMAKE_INSTALL_PREFIX': '/usr',
+            'CMOSIS_SENSOR_WIDTH': CONFIG['camera']['width'],
+            'CMOSIS_SENSOR_HEIGHT': CONFIG['camera']['height']
+        }
     )
 
 
@@ -127,7 +132,8 @@ def git_clone(path: str, git_url: str, verbose: bool):
     """
     # Here we are first extracting the name of the git repository, because that will also be the name of the folder
     # into which it was cloned into later on and this that will be important to actually enter this folder
-    repository_name = git_url.split('/')[-1].replace('.git', '')
+    repository_name = re.findall(r'/(\w*)\.git', git_url)[0]
+    print("HELLO!", repository_name)
     repository_path = os.path.join(path, repository_name)
     if verbose:
         click.secho('~ Cloning git repository "{}"'.format(git_url))
@@ -138,6 +144,8 @@ def git_clone(path: str, git_url: str, verbose: bool):
     if not exit_code:
         click.secho('Cloned repository "{}" ({})'.format(repository_name, repository_path), fg='green')
 
+    return repository_name, repository_path
+
 
 def install_generic_cmake(path: str, git_url: str, verbose: bool, cmake_args: dict):
     """
@@ -147,26 +155,18 @@ def install_generic_cmake(path: str, git_url: str, verbose: bool, cmake_args: di
     creates a build folder and attempts to run a cmake installation process within this folder.
     The cmake_args can be used to pass additional options to the cmake build process.
     """
-    name = git_url.split('/')[-1].replace('.git', '')
-    folder_path = os.path.join(path, name)
-    click.secho('-- Git URL: {}'.format(git_url))
-
-    output = None if verbose else subprocess.DEVNULL
-
-    clone_command = 'git clone {}'.format(git_url)
-    completed_process = subprocess.run(clone_command, cwd=path, shell=True, stdout=output, stderr=output)
-    if completed_process.returncode == 0:
-        click.secho('Cloned "{}" repository'.format(name), fg='green')
+    # Cloning the repository
+    name, folder_path = git_clone(path, git_url, verbose)
 
     arguments = ' '.join(['-D{}={}'.format(key, value) for key, value in cmake_args.items()])
     build_command = 'mkdir build; cd build; cmake {} ..'.format(arguments)
-    completed_process = subprocess.run(build_command, cwd=folder_path, shell=True, stdout=output, stderr=output)
-    if completed_process.returncode == 0:
+    exit_code = execute_command(build_command, verbose, cwd=folder_path)
+    if not exit_code:
         click.secho('Built "{}" sources'.format(name), fg='green')
 
     install_command = 'cd build; sudo make install'
-    completed_process = subprocess.run(install_command, cwd=folder_path, shell=True, stdout=output, stderr=output)
-    if completed_process.returncode == 0:
+    exit_code = execute_command(install_command, verbose, cwd=folder_path)
+    if not exit_code:
         click.secho('Installed "{}" successfully!'.format(name), bold=True, fg='green')
 
     return folder_path
