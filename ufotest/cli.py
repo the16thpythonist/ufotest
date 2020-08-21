@@ -17,13 +17,18 @@ def cli():
     pass
 
 
-@click.command('install')
+@click.command('install', short_help='Install the project and its dependencies')
 @click.argument('path', type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True))
-@click.option('--verbose', '-v', is_flag=True)
-@click.option('--no-dependencies', '-d', is_flag=True)
-@click.option('--no-libuca', '-l', is_flag=True)
+@click.option('--verbose', '-v', is_flag=True, help='Show additional console output')
+@click.option('--no-dependencies', '-d', is_flag=True, help='Skip installation of required repositories')
+@click.option('--no-libuca', '-l', is_flag=True, help='Skip installation of libuca')
 def install(path, verbose, no_dependencies, no_libuca):
-    """Installing the project"""
+    """
+    Installing the Project into PATH
+
+    PATH will be the system path, which will then contain subfolders with all the required repositories and
+    dependencies
+    """
     path = os.path.realpath(path)
     if not no_dependencies:
         click.secho('\n=====| Installing the Dependencies |=====', bold=True)
@@ -60,17 +65,32 @@ def install(path, verbose, no_dependencies, no_libuca):
     return 0
 
 
-@click.command('config')
+@click.command('config', short_help='Edit the config for ufotest')
 def config():
-    """Edit the config for the ufotest CLI"""
+    """
+    Edit the configuration file for this project
+    """
     config_path = get_config_path()
     click.edit(filename=config_path)
 
     return 0
 
 
+def frame():
+    """
+    Capture a frame from the camera and display it to the user
+    """
+    # Setup all the important environment variables and stuff
+
+    # Call the necessary pci commands
+
+    # Display the file
+    # How to do this?
+
+
 cli.add_command(config)
 cli.add_command(install)
+cli.add_command(frame)
 
 
 if __name__ == "__main__":
