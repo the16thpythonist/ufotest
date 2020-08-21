@@ -155,8 +155,9 @@ For this installation there are two important details:
 .. code-block:: console
 
     cd $UFOTEST_PATH
-    git clone --depth --branch <tag> https://github.com/ufo-kit/libufodecode.git
+    git clone https://github.com/ufo-kit/libufodecode.git
     cd libufodecode
+    git checkout 508435541810172d1e6d3d684e1e081096233d97
     mkdir build; cd build
     cmake -DCMAKE_INSTALL_PREFIX=/usr -DIPECAMERA_WIDTH=2048 ..
     sudo make install
@@ -175,7 +176,8 @@ For this installation there are two important details:
     cmake -DCMAKE_INSTALL_PREFIX=/usr ..
     sudo make install
 
-Additionally to the base library, the plugin `uca-ufo` for the ufo camera specifically has to be installed as well:
+Additionally to the base library, the plugin `uca-ufo` for the ufo camera specifically has to be installed as well. It
+is important to pass the sensor width *and* height to the build process
 
 .. code-block:: console
 
@@ -183,6 +185,6 @@ Additionally to the base library, the plugin `uca-ufo` for the ufo camera specif
     git clone https://github.com/ufo-kit/uca-ufo.git
     cd "uca-ufo"
     mkdir build; cd build
-    cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+    cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMOSIS_SENSOR_WIDTH=2048 -DCMOSIS_SENSOR_HEIGHT=2048 ..
     sudo make install
 

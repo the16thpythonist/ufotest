@@ -21,7 +21,7 @@ title = "UfoTest Config"
     #   the front of the urls it is possible to pass additional options to the cloning process.
     fastwriter_git = "http://fuzzy.fzk.de/gogs/UFO-libuca/fastwriter.git"
     pcitools_git = "http://fuzzy.fzk.de/gogs/jonas.teufel/pcitool.git"
-    libufodecode_git = "--depth 1 --branch <tag> https://github.com/ufo-kit/libufodecode.git"
+    libufodecode_git = "https://github.com/ufo-kit/libufodecode.git; cd libufodecode; git checkout 508435541810172d1e6d3d684e1e081096233d97; cd -"
     # The following "Libuca" repositories are optional dependencies, which can be excluded from the installation process
     # by command line options. They are only required if the camera is to be used with the uca-ufo plugin.
     libuca_git = "https://github.com/ufo-kit/libuca.git"
