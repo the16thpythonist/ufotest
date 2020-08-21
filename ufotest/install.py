@@ -136,7 +136,7 @@ def git_clone(path: str, git_url: str, verbose: bool):
     clone_command = 'git clone {}'.format(git_url)
     exit_code = execute_command(clone_command, verbose, cwd=path)
     if not exit_code:
-        click.secho('Cloned repository "{}" ({})'.format(repository_name, repository_path))
+        click.secho('Cloned repository "{}" ({})'.format(repository_name, repository_path), fg='green')
 
 
 def install_generic_cmake(path: str, git_url: str, verbose: bool, cmake_args: dict):

@@ -7,6 +7,7 @@ Welcome to ufotest's documentation!
 
    readme
    installation
+   current
    usage
    modules
    contributing
