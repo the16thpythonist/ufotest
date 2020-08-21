@@ -14,13 +14,20 @@ ufotest
         :alt: Documentation Status
 
 
-
-
 CLI for setting up ufo camera test station
-
 
 * Free software: MIT license
 * Documentation: https://ufotest.readthedocs.io.
+
+Installation
+------------
+
+The easiest way to install this package is by using PIP. This will automatically install all the requirements and
+also register the CLI commands to be usable.
+
+.. code-block:: bash
+
+    $ pip3 install ufotest
 
 
 Features
