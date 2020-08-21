@@ -1,4 +1,6 @@
-"""Console script for ufotest."""
+"""
+Module containing all the actual console scripts of the project.
+"""
 import sys
 import os
 import click

@@ -1,6 +1,10 @@
+"""
+A module, which contains the code related to the installation process of the UFO dependencies
+"""
 import os
 import click
 import subprocess
+
 from ufotest.config import CONFIG
 
 
