@@ -4,6 +4,7 @@ A module, which contains the code related to the installation process of the UFO
 import os
 import click
 import subprocess
+from typing import Optional
 
 from ufotest.config import CONFIG
 
@@ -108,18 +109,28 @@ def install_uca_ufo(path: str, verbose=True):
     )
 
 
+def execute_command(command: str, verbose: bool, cwd: Optional[str] = None):
+    output = None if verbose else subprocess.DEVNULL
+    completed_process = subprocess.run(command, cwd=cwd, shell=True, stdout=output, stderr=output)
+    return completed_process.returncode
+
+
 def git_clone(path: str, git_url: str, verbose: bool):
+    """
+    Clones the repository from "git_url" into the given folder "path"
+    """
     # Here we are first extracting the name of the git repository, because that will also be the name of the folder
     # into which it was cloned into later on and this that will be important to actually enter this folder
     repository_name = git_url.split('/')[-1].replace('.git', '')
     repository_path = os.path.join(path, repository_name)
+    if verbose:
+        click.secho('~ Cloning git repository "{}"'.format(git_url))
 
     # Executing the clone command
-    output = None if verbose else subprocess.DEVNULL
     clone_command = 'git clone {}'.format(git_url)
-    completed_process = subprocess.run(clone_command, cwd=path, shell=True, stdout=output, stderr=output)
-    if completed_process.returncode == 0:
-        click.secho('Cloned repository "{}"'.format(repository_name), fg='green')
+    exit_code = execute_command(clone_command, verbose, cwd=path)
+    if not exit_code:
+        click.secho('Cloned repository "{}" ({})'.format(repository_name, repository_path))
 
 
 def install_generic_cmake(path: str, git_url: str, verbose: bool, cmake_args: dict):
