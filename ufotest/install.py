@@ -108,14 +108,35 @@ def install_uca_ufo(path: str, verbose=True):
     )
 
 
+def git_clone(path: str, git_url: str, verbose: bool):
+    # Here we are first extracting the name of the git repository, because that will also be the name of the folder
+    # into which it was cloned into later on and this that will be important to actually enter this folder
+    repository_name = git_url.split('/')[-1].replace('.git', '')
+    repository_path = os.path.join(path, repository_name)
+
+    # Executing the clone command
+    output = None if verbose else subprocess.DEVNULL
+    clone_command = 'git clone {}'.format(git_url)
+    completed_process = subprocess.run(clone_command, cwd=path, shell=True, stdout=output, stderr=output)
+    if completed_process.returncode == 0:
+        click.secho('Cloned repository "{}"'.format(repository_name), fg='green')
+
+
 def install_generic_cmake(path: str, git_url: str, verbose: bool, cmake_args: dict):
+    """
+    Installs the cmake project from the "git_url" into the given folder "path".
+
+    This function first clones the repository which is given by the git url, then it enters this folder locally,
+    creates a build folder and attempts to run a cmake installation process within this folder.
+    The cmake_args can be used to pass additional options to the cmake build process.
+    """
     name = git_url.split('/')[-1].replace('.git', '')
     folder_path = os.path.join(path, name)
     click.secho('-- Git URL: {}'.format(git_url))
 
     output = None if verbose else subprocess.DEVNULL
 
-    clone_command = 'git clone "{}"'.format(git_url)
+    clone_command = 'git clone {}'.format(git_url)
     completed_process = subprocess.run(clone_command, cwd=path, shell=True, stdout=output, stderr=output)
     if completed_process.returncode == 0:
         click.secho('Cloned "{}" repository'.format(name), fg='green')
