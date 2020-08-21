@@ -79,6 +79,7 @@ for all the tested plaforms.
 **Ubuntu**:
 
 .. code-block:: console
+
     sudo apt-get update
     sudo apt-get upgrade
     sudo apt-get -y install git swig cmake uuid-dev xfsprogs xfslibs-dev python2 python2-dev doxygen uthash-dev libxml2 libxml2-dev libglib2.0 libgtk+2.0-dev gobject-introspection
@@ -101,6 +102,7 @@ Next create a folder, into which all of the dependencies are being installed:
 `fastwriter` is a dependency for the ufo camera and can be installed with CMAKE.
 
 .. code-block:: console
+
     cd $UFOTEST_PATH
     git clone http://fuzzy.fzk.de/gogs/UFO-libuca/fastwriter.git
     cd fastwriter
@@ -114,6 +116,7 @@ Next create a folder, into which all of the dependencies are being installed:
 `pcitool` is a dependency for the ufo camera and can be installed with CMAKE.
 
 .. code-block:: console
+
     cd $UFOTEST_PATH
     git clone http://fuzzy.fzk.de/gogs/jonas.teufel/pcitool.git
     cd pcitool
@@ -124,10 +127,17 @@ Next create a folder, into which all of the dependencies are being installed:
 Additional to the base `pcitool` project, the necessary *driver* also has to be installed
 
 .. code-block:: console
+
     cd $UFOTEST_PATH/pcitool/driver
     mkdir build; cd build
     cmake -DCMAKE_INSTALL_PREFIX=/usr ..
     sudo make install
+
+To then actually activate the driver you'll also need to run the following command:
+
+.. code-block:: console
+
+    sudo depmod -a
 
 5. Install libufodecode
 """""""""""""""""""""""
@@ -143,6 +153,7 @@ For this installation there are two important details:
   properly later on!
 
 .. code-block:: console
+
     cd $UFOTEST_PATH
     git clone --depth --branch <tag> https://github.com/ufo-kit/libufodecode.git
     cd libufodecode
@@ -156,6 +167,7 @@ For this installation there are two important details:
 `libuca` is a dependency for the ufo camera and can be installed with CMAKE.
 
 .. code-block:: console
+
     cd $UFOTEST_PATH
     git clone https://github.com/ufo-kit/libuca.git
     cd libuca
@@ -166,6 +178,7 @@ For this installation there are two important details:
 Additionally to the base library, the plugin `uca-ufo` for the ufo camera specifically has to be installed as well:
 
 .. code-block:: console
+
     cd $UFOTEST_PATH
     git clone https://github.com/ufo-kit/uca-ufo.git
     cd "uca-ufo"

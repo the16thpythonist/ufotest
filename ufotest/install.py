@@ -77,6 +77,12 @@ def install_pcitools(path:str, verbose=True):
     if completed_process.returncode == 0:
         click.secho('Installed "pcilib driver" successfully!', bold=True, fg='green')
 
+    # Activating the driver after it has been installed...
+    activate_driver_command = 'sudo depmod -a'
+    exit_code = execute_command(activate_driver_command, verbose)
+    if not exit_code:
+        click.secho('Activated driver!', bold=True, fg='green')
+
 
 def install_libufodecode(path:str, verbose=True):
     git_url = CONFIG['install']['libufodecode_git']
