@@ -80,9 +80,9 @@ for all the tested plaforms.
 
 .. code-block:: console
 
-    sudo apt-get update
-    sudo apt-get upgrade
-    sudo apt-get -y install git swig cmake uuid-dev xfsprogs xfslibs-dev python2 python2-dev doxygen uthash-dev libxml2 libxml2-dev libglib2.0 libgtk+2.0-dev gobject-introspection
+    $ sudo apt-get update
+    $ sudo apt-get upgrade
+    $ sudo apt-get -y install git swig cmake uuid-dev xfsprogs xfslibs-dev python2 python2-dev doxygen uthash-dev libxml2 libxml2-dev libglib2.0 libgtk+2.0-dev gobject-introspection
 
 2. Creating the install folder
 """"""""""""""""""""""""""""""
@@ -91,10 +91,10 @@ Next create a folder, into which all of the dependencies are being installed:
 
 .. code-block:: console
 
-    mkdir ufotest
-    export UFOTEST_PATH=/home/user/ufotest
-    cd $UFOTEST_PATH
-    ls
+    $ mkdir ufotest
+    $ export UFOTEST_PATH=/home/user/ufotest
+    $ cd $UFOTEST_PATH
+    $ ls
 
 3. Install fastwriter
 """""""""""""""""""""
@@ -103,12 +103,12 @@ Next create a folder, into which all of the dependencies are being installed:
 
 .. code-block:: console
 
-    cd $UFOTEST_PATH
-    git clone http://fuzzy.fzk.de/gogs/UFO-libuca/fastwriter.git
-    cd fastwriter
-    mkdir build; cd build
-    cmake -DCMAKE_INSTALL_PREFIX=/usr ..
-    sudo make install
+    $ cd $UFOTEST_PATH
+    $ git clone http://fuzzy.fzk.de/gogs/UFO-libuca/fastwriter.git
+    $ cd fastwriter
+    $ mkdir build; cd build
+    $ make -DCMAKE_INSTALL_PREFIX=/usr ..
+    $ sudo make install
 
 4. Install pictool
 """"""""""""""""""
@@ -117,27 +117,27 @@ Next create a folder, into which all of the dependencies are being installed:
 
 .. code-block:: console
 
-    cd $UFOTEST_PATH
-    git clone http://fuzzy.fzk.de/gogs/jonas.teufel/pcitool.git
-    cd pcitool
-    mkdir build; cd build
-    cmake -DCMAKE_INSTALL_PREFIX=/usr ..
-    sudo make install
+    $ cd $UFOTEST_PATH
+    $ git clone http://fuzzy.fzk.de/gogs/jonas.teufel/pcitool.git
+    $ cd pcitool
+    $ mkdir build; cd build
+    $ cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+    $ sudo make install
 
 Additional to the base `pcitool` project, the necessary *driver* also has to be installed
 
 .. code-block:: console
 
-    cd $UFOTEST_PATH/pcitool/driver
-    mkdir build; cd build
-    cmake -DCMAKE_INSTALL_PREFIX=/usr ..
-    sudo make install
+    $ cd $UFOTEST_PATH/pcitool/driver
+    $ mkdir build; cd build
+    $ cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+    $ sudo make install
 
 To then actually activate the driver you'll also need to run the following command:
 
 .. code-block:: console
 
-    sudo depmod -a
+    $ sudo depmod -a
 
 5. Install libufodecode
 """""""""""""""""""""""
@@ -154,13 +154,13 @@ For this installation there are two important details:
 
 .. code-block:: console
 
-    cd $UFOTEST_PATH
-    git clone https://github.com/ufo-kit/libufodecode.git
-    cd libufodecode
-    git checkout 508435541810172d1e6d3d684e1e081096233d97
-    mkdir build; cd build
-    cmake -DCMAKE_INSTALL_PREFIX=/usr -DIPECAMERA_WIDTH=2048 ..
-    sudo make install
+    $ cd $UFOTEST_PATH
+    $ git clone https://github.com/ufo-kit/libufodecode.git
+    $ cd libufodecode
+    $ git checkout 508435541810172d1e6d3d684e1e081096233d97
+    $ mkdir build; cd build
+    $ cmake -DCMAKE_INSTALL_PREFIX=/usr -DIPECAMERA_WIDTH=2048 ..
+    $ sudo make install
 
 6. Install libuca
 """""""""""""""""
@@ -169,22 +169,35 @@ For this installation there are two important details:
 
 .. code-block:: console
 
-    cd $UFOTEST_PATH
-    git clone https://github.com/ufo-kit/libuca.git
-    cd libuca
-    mkdir build; cd build
-    cmake -DCMAKE_INSTALL_PREFIX=/usr ..
-    sudo make install
+    $ cd $UFOTEST_PATH
+    $ git clone https://github.com/ufo-kit/libuca.git
+    $ cd libuca
+    $ mkdir build; cd build
+    $ cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+    $ sudo make install
 
 Additionally to the base library, the plugin `uca-ufo` for the ufo camera specifically has to be installed as well. It
 is important to pass the sensor width *and* height to the build process
 
 .. code-block:: console
 
-    cd $UFOTEST_PATH
-    git clone https://github.com/ufo-kit/uca-ufo.git
-    cd "uca-ufo"
-    mkdir build; cd build
-    cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMOSIS_SENSOR_WIDTH=2048 -DCMOSIS_SENSOR_HEIGHT=2048 ..
-    sudo make install
+    $ cd $UFOTEST_PATH
+    $ git clone https://github.com/ufo-kit/uca-ufo.git
+    $ cd "uca-ufo"
+    $ mkdir build; cd build
+    $ cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMOSIS_SENSOR_WIDTH=2048 -DCMOSIS_SENSOR_HEIGHT=2048 ..
+    $ sudo make install
 
+7. Install ipecamera
+""""""""""""""""""""
+
+`ipecamera` is a dependency for the ufo camera and can be installed with CMAKE.
+
+.. code-block:: console
+
+    $ cd $UFOTEST_PATH
+    $ git clone https://github.com/ufo-kit/ipecamera.git
+    $ cd "ipecamera"
+    $ mkdir build; cd build
+    $ cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+    $ sudo make install
