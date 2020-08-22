@@ -11,15 +11,17 @@ from ufotest.config import CONFIG
 
 
 def install_package(package_name: str, verbose=True):
+    """
+    Installs a system package with the given "package_name"
+    """
     package_install_command = CONFIG['install']['package_install']
 
     click.secho('Installing package "{}"...'.format(package_name))
 
     command = '{} {}'.format(package_install_command, package_name)
-    output = None if verbose else subprocess.DEVNULL
-    completed_process = subprocess.run(command, shell=True, stdout=output, stderr=output)
+    exit_code = execute_command(command, verbose)
 
-    if completed_process.returncode == 0:
+    if not exit_code:
         click.secho('Successfully installed "{}"'.format(package_name), fg='green')
         return True
     else:
@@ -28,6 +30,9 @@ def install_package(package_name: str, verbose=True):
 
 
 def install_dependencies(verbose=True):
+    """
+    Installs all the system packages, which are listed in the config file.
+    """
     operating_system = CONFIG['install']['os']
     packages = CONFIG['install'][operating_system]['packages']
 
@@ -46,6 +51,9 @@ def install_dependencies(verbose=True):
 
 
 def install_fastwriter(path: str, verbose=True):
+    """
+    Installs the fastwriter repository into the given "path"
+    """
     git_url = CONFIG['install']['fastwriter_git']
     install_generic_cmake(
         path,
@@ -56,6 +64,9 @@ def install_fastwriter(path: str, verbose=True):
 
 
 def install_pcitools(path:str, verbose=True):
+    """
+    Installs the pcitool repository into the given "path"
+    """
     git_url = CONFIG['install']['pcitools_git']
     folder_path = install_generic_cmake(
         path,
@@ -69,13 +80,13 @@ def install_pcitools(path:str, verbose=True):
     output = None if verbose else subprocess.DEVNULL
 
     build_command = 'mkdir build; cd build; cmake -DCMAKE_INSTALL_PREFIX=/usr ..'
-    completed_process = subprocess.run(build_command, cwd=driver_path, shell=True, stdout=output, stderr=output)
-    if completed_process.returncode == 0:
+    exit_code = execute_command(build_command, verbose, cwd=driver_path)
+    if not exit_code:
         click.secho('Built "pcilib driver" sources', fg='green')
 
     install_command = 'cd build; sudo make install'
-    completed_process = subprocess.run(install_command, cwd=driver_path, shell=True, stdout=output, stderr=output)
-    if completed_process.returncode == 0:
+    exit_code = execute_command(install_command, verbose, cwd=driver_path)
+    if not exit_code:
         click.secho('Installed "pcilib driver" successfully!', bold=True, fg='green')
 
     # Activating the driver after it has been installed...
@@ -86,6 +97,9 @@ def install_pcitools(path:str, verbose=True):
 
 
 def install_libufodecode(path:str, verbose=True):
+    """
+    Installs the libufodecode repository into the given "path"
+    """
     git_url = CONFIG['install']['libufodecode_git']
     camera_width = CONFIG['camera']['camera_width']
     install_generic_cmake(
@@ -97,6 +111,9 @@ def install_libufodecode(path:str, verbose=True):
 
 
 def install_libuca(path: str, verbose=True):
+    """
+    Installs the libuca repository into the given "path"
+    """
     git_url = CONFIG['install']['libuca_git']
     install_generic_cmake(
         path,
@@ -107,6 +124,9 @@ def install_libuca(path: str, verbose=True):
 
 
 def install_uca_ufo(path: str, verbose=True):
+    """
+    Installs the uca-ufo repository into the given "path"
+    """
     git_url = CONFIG['install']['ucaufo_git']
     install_generic_cmake(
         path,
@@ -114,13 +134,20 @@ def install_uca_ufo(path: str, verbose=True):
         verbose,
         {
             'CMAKE_INSTALL_PREFIX': '/usr',
-            'CMOSIS_SENSOR_WIDTH': CONFIG['camera']['width'],
-            'CMOSIS_SENSOR_HEIGHT': CONFIG['camera']['height']
+            'CMOSIS_SENSOR_WIDTH': CONFIG['camera']['camera_width'],
+            'CMOSIS_SENSOR_HEIGHT': CONFIG['camera']['camera_height']
         }
     )
 
 
 def execute_command(command: str, verbose: bool, cwd: Optional[str] = None):
+    """
+    Executes the given system "command"
+
+    The "verbose" flag controls whether or not the output of the command is written to stdout or not. With the "cwd"
+    string a path can be passed, which is supposed to be used as the current working directory from which the command
+    is to be executed.
+    """
     output = None if verbose else subprocess.DEVNULL
     completed_process = subprocess.run(command, cwd=cwd, shell=True, stdout=output, stderr=output)
     return completed_process.returncode
@@ -132,8 +159,7 @@ def git_clone(path: str, git_url: str, verbose: bool):
     """
     # Here we are first extracting the name of the git repository, because that will also be the name of the folder
     # into which it was cloned into later on and this that will be important to actually enter this folder
-    repository_name = re.findall(r'/(\w*)\.git', git_url)[0]
-    print("HELLO!", repository_name)
+    repository_name = re.findall(r'/(\b*)\.git', git_url)[0]
     repository_path = os.path.join(path, repository_name)
     if verbose:
         click.secho('~ Cloning git repository "{}"'.format(git_url))
