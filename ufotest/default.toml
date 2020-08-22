@@ -36,6 +36,7 @@ title = "UfoTest Config"
     [install.ubuntu]
         packages = [
             # For this CLI tool to work properly
+            "curl",
             "git",
             # To install the required repositories
             "swig",
@@ -69,3 +70,15 @@ title = "UfoTest Config"
     # After changing the sensor to one with another dimension it is thus required to reinstall the project!
     camera_width = 2048
     camera_height = 2048
+
+# Within this section it is possible to define environmental variables which are needed for the operation of the camera
+# Every key value pair written in this section will be translated to an environmental variable before the execution of
+# any camera related command
+[environment]
+    # This is needed for the uca-ufo plugin to find the required pcilib plugin
+    PCILIB_PLUGIN_DIR="/usr/lib64/pcilib"
+    # This is to set the specific model of the used fpga board/camera
+    # alternatively: "ipedma"
+    PCILIB_MODEL="ipecamera"
+    # Having any other system language than US english can seriously mess up vivado, so it is changed temporarily
+    #LC_ALL="?"

@@ -6,6 +6,7 @@ import os
 import click
 
 from ufotest.config import CONFIG, get_config_path
+from ufotest.util import execute_command, setup_environment
 from ufotest.install import (install_dependencies,
                              install_fastwriter,
                              install_pcitools,
@@ -108,6 +109,10 @@ def frame():
 
     # Display the file
     # How to do this?
+
+    # TESTING
+    setup_environment()
+    execute_command('echo $PCILIB_MODEL', True)
 
 
 cli.add_command(config)
