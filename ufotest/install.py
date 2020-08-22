@@ -17,7 +17,7 @@ def git_clone(path: str, git_url: str, verbose: bool):
     """
     # Here we are first extracting the name of the git repository, because that will also be the name of the folder
     # into which it was cloned into later on and this that will be important to actually enter this folder
-    repository_name = re.findall(r'/(\b*)\.git', git_url)[0]
+    repository_name = re.findall(r'/([^/]*)\.git', git_url)[0]
     repository_path = os.path.join(path, repository_name)
     if verbose:
         click.secho('~ Cloning git repository "{}"'.format(git_url))
@@ -182,6 +182,21 @@ def install_uca_ufo(path: str, verbose=True):
             'CMAKE_INSTALL_PREFIX': '/usr',
             'CMOSIS_SENSOR_WIDTH': CONFIG['camera']['camera_width'],
             'CMOSIS_SENSOR_HEIGHT': CONFIG['camera']['camera_height']
+        }
+    )
+
+
+def install_ipecamera(path: str, verbose=True):
+    """
+    Installs the ipecamera repository into the given "path"
+    """
+    git_url = CONFIG['install']['ipecamera_git']
+    install_generic_cmake(
+        path,
+        git_url,
+        verbose,
+        {
+            'CMAKE_INSTALL_PREFIX': '/usr',
         }
     )
 

@@ -12,7 +12,8 @@ from ufotest.install import (install_dependencies,
                              install_pcitools,
                              install_libufodecode,
                              install_libuca,
-                             install_uca_ufo)
+                             install_uca_ufo,
+                             install_ipecamera)
 
 
 @click.group()
@@ -35,9 +36,10 @@ def install(path, verbose, no_dependencies, no_libuca, no_vivado):
     """
     path = os.path.realpath(path)
 
-    click.secho('   +-------------------------+', bold=True, fg='green')
-    click.secho('   |  STARTING INSTALLATION  |', bold=True, fg='green')
-    click.secho('   +-------------------------+', bold=True, fg='green')
+    click.secho('\n')
+    click.secho(' +-------------------------+', bold=True, fg='green')
+    click.secho(' |  STARTING INSTALLATION  |', bold=True, fg='green')
+    click.secho(' +-------------------------+', bold=True, fg='green')
 
     click.secho('\nReading configuration...')
     click.secho('- Configured OS: {}'.format(CONFIG['install']['os']))
@@ -70,7 +72,7 @@ def install(path, verbose, no_dependencies, no_libuca, no_vivado):
         install_uca_ufo(path, verbose=verbose)
 
         click.secho('\n=====| Installing ipecamera plugin |=====', bold=True)
-        # tbd
+        install_ipecamera(path, verbose)
     else:
         click.secho('\n=====| Skipping Libuca |=====', bold=True)
 
