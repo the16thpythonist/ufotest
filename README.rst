@@ -49,7 +49,9 @@ Features
 Credits
 -------
 
-This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
+The following software was used in the creation of the project:
+- Cookiecutter_: A CLI tool for project templating
+- `audreyr/cookiecutter-pypackage`_: A basic template for python package projects
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
