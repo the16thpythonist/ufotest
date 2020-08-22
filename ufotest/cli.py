@@ -24,7 +24,8 @@ def cli():
 @click.option('--verbose', '-v', is_flag=True, help='Show additional console output')
 @click.option('--no-dependencies', '-d', is_flag=True, help='Skip installation of required repositories')
 @click.option('--no-libuca', '-l', is_flag=True, help='Skip installation of libuca')
-def install(path, verbose, no_dependencies, no_libuca):
+@click.option('--no-vivado', is_flag=True, help='Skip installation of vivado')
+def install(path, verbose, no_dependencies, no_libuca, no_vivado):
     """
     Installing the Project into PATH
 
@@ -32,11 +33,21 @@ def install(path, verbose, no_dependencies, no_libuca):
     dependencies
     """
     path = os.path.realpath(path)
+
+    click.secho('   +-------------------------+', bold=True, fg='green')
+    click.secho('   |  STARTING INSTALLATION  |', bold=True, fg='green')
+    click.secho('   +-------------------------+', bold=True, fg='green')
+
+    click.secho('\nReading configuration...')
+    click.secho('- Configured OS: {}'.format(CONFIG['install']['os']))
+    click.secho('- Configured package install: {}'.format(CONFIG['install']['package_install']))
+    click.secho('- Camera dimensions: {} x {}'.format(
+        CONFIG['camera']['camera_width'],
+        CONFIG['camera']['camera_height']
+    ))
+
     if not no_dependencies:
-        click.secho('\n=====| Installing the Dependencies |=====', bold=True)
-        click.secho('Reading configuration...')
-        click.secho('- Configured OS: {}'.format(CONFIG['install']['os']))
-        click.secho('- Configured package install: {}'.format(CONFIG['install']['package_install']))
+        click.secho('\n=====| Installing System Packages |=====', bold=True)
         install_dependencies(verbose=verbose)
 
         click.secho('\n=====| Installing fastwriter |=====', bold=True)
@@ -57,11 +68,19 @@ def install(path, verbose, no_dependencies, no_libuca):
         click.secho('\n=====| Installing uca-ufo |=====', bold=True)
         install_uca_ufo(path, verbose=verbose)
 
-        click.secho('\n=====| Installing pcilib plugin |=====', bold=True)
+        click.secho('\n=====| Installing ipecamera plugin |=====', bold=True)
         # tbd
-
     else:
         click.secho('\n=====| Skipping Libuca |=====', bold=True)
+
+    if not no_vivado:
+        click.secho('\n=====| Installing Vivado |=====', bold=True)
+        # tbd
+
+        click.secho('\n=====| Installing Vivado Programmer drivers |=====', bold=True)
+        # tbd
+    else:
+        click.secho('\n=====| Skipping Vivado |=====', bold=True)
 
     # The exit code
     return 0
