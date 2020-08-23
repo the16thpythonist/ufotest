@@ -107,7 +107,8 @@ def config():
 @click.option('--verbose', '-v', help='print additional console messages')
 @click.option('--output', '-o', type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True),
               help='Specify the output file path for the frame', default='/tmp/frame.raw')
-def frame(verbose, output):
+@click.option('--display', '-d', is_flag=True, help='display the frame in seperate window')
+def frame(verbose, output, display):
     """
     Capture a frame from the camera and display it to the user
     """
@@ -118,8 +119,9 @@ def frame(verbose, output):
     frame_data = get_frame(path=output, verbose=verbose)
 
     # Display the file using matplot lib
-    plt.imshow(frame_data)
-    plt.show()
+    if display:
+        plt.imshow(frame_data)
+        plt.show()
 
 
 cli.add_command(config)
