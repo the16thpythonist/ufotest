@@ -3,7 +3,9 @@ Module containing all the actual console scripts of the project.
 """
 import sys
 import os
+
 import click
+import matplotlib.pyplot as plt
 
 from ufotest.config import CONFIG, get_config_path
 from ufotest.util import execute_command, setup_environment
@@ -14,6 +16,7 @@ from ufotest.install import (install_dependencies,
                              install_libuca,
                              install_uca_ufo,
                              install_ipecamera)
+from ufotest.capture import get_frame
 
 
 @click.group()
@@ -101,20 +104,22 @@ def config():
 
 
 @click.command('frame', short_help='Acquire and display a frame from the camera')
-def frame():
+@click.option('--verbose', '-v', help='print additional console messages')
+@click.option('--output', '-o', type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True),
+              help='Specify the output file path for the frame', default='/tmp/frame.raw')
+def frame(verbose, output):
     """
     Capture a frame from the camera and display it to the user
     """
     # Setup all the important environment variables and stuff
+    setup_environment()
 
     # Call the necessary pci commands
+    frame_data = get_frame(path=output, verbose=verbose)
 
-    # Display the file
-    # How to do this?
-
-    # TESTING
-    setup_environment()
-    execute_command('echo $PCILIB_MODEL', True)
+    # Display the file using matplot lib
+    plt.imshow(frame_data)
+    plt.show()
 
 
 cli.add_command(config)

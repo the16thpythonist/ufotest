@@ -2,10 +2,29 @@
 A module containing various utility functions for usage in other modules.
 """
 import os
+import click
 import subprocess
 from typing import Optional
 
 from ufotest.config import CONFIG
+
+
+def pci_write(addr: str, value: str):
+    pci_command = 'pci -w {} {}'.format(addr, value)
+    exit_code = execute_command(pci_command, False)
+    if exit_code:
+        click.secho('Command "{}" failed!'.format(pci_command), fg='red')
+
+
+def pci_read(addr: str, size):
+    pci_command = 'pci -r {} -s {}'.format(addr, str(size))
+    value = get_command_output(pci_command)
+    return value
+
+
+def get_command_output(command: str, cwd: Optional[str] = None):
+    completed_process = subprocess.run(command, cwd=cwd, shell=True)
+    return completed_process.stdout
 
 
 def execute_command(command: str, verbose: bool, cwd: Optional[str] = None):
