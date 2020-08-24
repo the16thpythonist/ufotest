@@ -66,6 +66,7 @@ title = "UfoTest Config"
             "curl",
             "git",
             "gcc",
+            "gcc-c++",
             # To install the required repositories
             "swig",
             "cmake",

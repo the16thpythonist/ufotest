@@ -52,6 +52,8 @@ def install_generic_cmake(path: str, git_url: str, verbose: bool, cmake_args: di
     exit_code = execute_command(install_command, verbose, cwd=folder_path)
     if not exit_code:
         click.secho('Installed "{}" successfully!'.format(name), bold=True, fg='green')
+    else:
+        click.secho('Error installing "{}"!'.format(name), bold=True, fg='red')
 
     return folder_path
 

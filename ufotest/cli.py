@@ -81,10 +81,10 @@ def install(path, verbose, no_dependencies, no_libuca, no_vivado):
 
     if not no_vivado:
         click.secho('\n=====| Installing Vivado |=====', bold=True)
-        # tbd
+        click.secho('not yet implemented')
 
         click.secho('\n=====| Installing Vivado Programmer drivers |=====', bold=True)
-        # tbd
+        click.secho('not yet implemented')
     else:
         click.secho('\n=====| Skipping Vivado |=====', bold=True)
 
@@ -104,8 +104,8 @@ def config():
 
 
 @click.command('frame', short_help='Acquire and display a frame from the camera')
-@click.option('--verbose', '-v', help='print additional console messages')
-@click.option('--output', '-o', type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True),
+@click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
+@click.option('--output', '-o', type=click.Path(exists=False, file_okay=False, dir_okay=True, writable=True),
               help='Specify the output file path for the frame', default='/tmp/frame.raw')
 @click.option('--display', '-d', is_flag=True, help='display the frame in seperate window')
 def frame(verbose, output, display):

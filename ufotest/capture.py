@@ -13,9 +13,13 @@ from ufotest.config import CONFIG
 
 def get_frame(path: str = '/tmp/frame.raw', verbose: bool = False):
     exit_code = save_frame(path, verbose)
-    # read the data of the frame and return it
-    with open(path, mode='rb+') as file:
-        return file.read()
+
+    if not exit_code:
+        # read the data of the frame and return it
+        with open(path, mode='rb+') as file:
+            return file.read()
+    else:
+        return b''
 
 
 def save_frame(path: str, verbose: bool, tmp_path='/tmp'):
