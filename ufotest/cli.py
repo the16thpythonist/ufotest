@@ -3,12 +3,13 @@ Module containing all the actual console scripts of the project.
 """
 import sys
 import os
+from pathlib import Path
 
 import click
 import matplotlib.pyplot as plt
 
 from ufotest.config import CONFIG, get_config_path
-from ufotest.util import execute_command, setup_environment
+from ufotest.util import execute_command, setup_environment, init_config
 from ufotest.install import (install_dependencies,
                              install_fastwriter,
                              install_pcitools,
@@ -92,6 +93,17 @@ def install(path, verbose, no_dependencies, no_libuca, no_vivado):
     return 0
 
 
+@click.command('init', short_help='initializes the config files for ufotest')
+def init():
+    """
+    Initializes the config files for ufotest
+    """
+    init_config()
+    click.secho('Ufotest is initialized!', bold=True, fg='green')
+
+    return 0
+
+
 @click.command('config', short_help='Edit the config for ufotest')
 def config():
     """
@@ -123,8 +135,11 @@ def frame(verbose, output, display):
         plt.imshow(frame_data)
         plt.show()
 
+    return 0
+
 
 cli.add_command(config)
+cli.add_command(init)
 cli.add_command(install)
 cli.add_command(frame)
 

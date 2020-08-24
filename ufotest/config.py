@@ -9,7 +9,7 @@ from pathlib import Path
 # The path of the this very python package and the path to the default TOML config file, which will be copied during
 # the installation of this project
 _PATH = Path(__file__).parent.absolute()
-_DEFAULT_CONFIG_PATH = os.path.join(_PATH, 'default.toml')
+CONFIG_TEMPLATE_PATH = os.path.join(_PATH, 'default.toml')
 
 # This will be the string path to the HOME folder of the user which is currently executing the script
 HOME_PATH = str(Path.home())
@@ -50,11 +50,9 @@ def load_config():
     # were it is supposed to exist we need to create a new one...
     config_path = get_config_path()
     if not os.path.exists(config_path):
-        # Copy the default config file, which comes shipped with this package to the destination where it is
-        # supposed to be
-        shutil.copy(_DEFAULT_CONFIG_PATH, config_path)
-
-    return toml.load(config_path)
+        return {}
+    else:
+        return toml.load(config_path)
 
 
 CONFIG = load_config()

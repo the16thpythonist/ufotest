@@ -2,7 +2,7 @@
 ufotest
 =======
 
-.. image:: ./logo.png
+.. image:: ../logo.png
 
 .. image:: https://img.shields.io/pypi/v/ufotest.svg
         :target: https://pypi.python.org/pypi/ufotest
@@ -26,10 +26,12 @@ Installation
 
 The easiest way to install this package is by using PIP. This will automatically install all the requirements and
 also register the CLI commands to be usable.
+(Note that the "sudo" is important to make the commands register correctly within the operating system)
 
 .. code-block:: console
 
-    $ pip3 install ufotest
+    $ sudo pip3 install ufotest
+    $ ufotest init
 
 Usage
 -----

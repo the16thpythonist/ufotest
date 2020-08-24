@@ -13,14 +13,14 @@ class CustomInstallCommand(install):
         # Checking if the ".ufotest" folder exists within the HOME folder of the user and if
         # it does not exist it will be added
 
-        home_path = str(Path.home())
-        path = os.path.join(home_path, '.ufotest')
-        print('Checking for the existence of the path "{}"...'.format(path))
-        if os.path.exists(path):
-            print('-> Path exists, skipping')
-        else:
-            os.makedirs(path)
-            print('-> Created folder "{}"'.format(path))
+        # home_path = str(Path.home())
+        # path = os.path.join(home_path, '.ufotest')
+        # print('Checking for the existence of the path "{}"...'.format(path))
+        # if os.path.exists(path):
+        #     print('-> Path exists, skipping')
+        # else:
+        #     os.makedirs(path)
+        #     print('-> Created folder "{}"'.format(path))
 
         install.run(self)
 
@@ -73,6 +73,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/the16thpythonist/ufotest',
-    version='0.2.0',
+    version='0.3.0',
     zip_safe=False,
 )
