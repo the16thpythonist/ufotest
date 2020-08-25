@@ -57,8 +57,8 @@ Additional options
 
 The `install` command offers some additional options which can be used to control the install behaviour.
 
-- *--verbose*: Show additional console output for all the sub commands, which are being executed (This includes for
+- *verbose*: Show additional console output for all the sub commands, which are being executed (This includes for
   example the build process of all the custom libraries)
-- *--no-dependencies*: Skips the installation of the required custom libraries in case thay are eventually already
+- *no-dependencies*: Skips the installation of the required custom libraries in case thay are eventually already
   installed
-- *--no-libuca*: Skips the installation of the libuca related libraries.
+- *no-libuca*: Skips the installation of the libuca related libraries.

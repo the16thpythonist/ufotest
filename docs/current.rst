@@ -9,11 +9,9 @@ Computer
 
 A dedicated machine is used for just this purpose. This machine has the following credentials:
 
-user: **ufo**
-password: **........**
+user: **ufo** - password: **........**
 
-user **root**
-password: **........**
+user **root** - password: **........**
 
 On the ufo account all the necessary dependencies are already installed the camera is usable.
 
@@ -25,7 +23,7 @@ allow remote access to the machine using the following command:
 
 .. code-block:: console
 
-    ssh -Y -p 2424 ufo@daq-lab.ipe.kit.edu
+    $ ssh -Y -p 2424 ufo@daq-lab.ipe.kit.edu
 
 Hardware
 """"""""

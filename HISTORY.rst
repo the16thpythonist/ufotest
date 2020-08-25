@@ -24,3 +24,20 @@ History
 - fixed readme
 - Added "init" command, which will setup the installation folder and the config file
 
+0.3.1 (2020-08-25)
+------------------
+
+- Small adjustments to the documentation
+- Added "status.sh" and "reset.sh" scripts from michele to the main code folder.
+
+
+TODO
+----
+
+- Add a method which checks for init and displays an error message of installation folder has not been initialized
+- Add the installation of vivado.
+    - Can we add the installer to the repository? If not download using curl
+- Execute "setup_camera" and "teardown_camera" scripts before and after acquisition of a frame.
+    - I could write a "Camera" context manager object...?
+- Make a real help text for the init command
+- Add the "init" command to the documentation.

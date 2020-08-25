@@ -10,7 +10,6 @@ Welcome to ufotest's documentation!
    current
    usage
    modules
-   contributing
    authors
    history
 

@@ -10,4 +10,4 @@ Development Lead
 Contributors
 ------------
 
-None yet. Why not be the first?
+* Michele Caselle <michele.caselle@kit.edu>: Bash scripts, which control the camera behaviour

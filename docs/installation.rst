@@ -12,7 +12,7 @@ To install ufotest, run this command in your terminal:
 
 .. code-block:: console
 
-    $ pip install ufotest
+    $ sudo pip install ufotest
 
 This is the preferred method to install ufotest, as it will always install the most recent stable release.
 
@@ -44,7 +44,7 @@ Once you have a copy of the source, you can install it with:
 
 .. code-block:: console
 
-    $ python setup.py install
+    $ sudo python3 setup.py install
 
 
 .. _Github repo: https://github.com/the16thpythonist/ufotest
