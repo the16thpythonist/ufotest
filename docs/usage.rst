@@ -5,6 +5,27 @@ Usage
 The ufotest project provides a command line interface to install and test the UFO camera, which was developed at the
 Institute of Data Processing (IPE) of the Karlsruhe Institute of Technology (KIT).
 
+Initializing the project
+------------------------
+
+The ufotest program needs to be installed into a folder. This folder has to be initialized first using the `init`
+command. Executing this command will create a new folder on the machine, which will store all of the static assets
+needed for ufotest. The default installation path is "$HOME/.ufotest":
+
+.. code-block:: console
+
+    $ ufotest init
+
+You can change the installation path by setting a different path to the environmental variable `UFOTEST_PATH`. Note
+however, that this variable also has to be set whenever any other command is being executed later on. So it would make
+sense to add an according line to the local .bashrc file.
+
+.. code-block:: console
+
+    $ export UFOTEST_PATH=$HOME/custom/path
+    $ echo "export UFOTEST_PATH=$HOME/custom/path" >> ~/.bashrc
+    $ ufotest init
+
 Configuring the project
 -----------------------
 
@@ -12,6 +33,9 @@ The `ufotest` project relies on a series of parameters, which may change over ti
 specific users. Since there are too many parameters to implement them purely as command line options for the various
 scripts, the project relies on a global configuration file. This configuration file will automatically be generated
 from a default template whenever the `ufotest` package is being installed.
+
+Custom installation folder
+""""""""""""""""""""""""""
 
 The config file will be installed into the following path "$HOME/.ufotest/config.toml". But an easier way to edit this
 file is by using the built in `config` command:
