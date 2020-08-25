@@ -30,6 +30,11 @@ History
 - Small adjustments to the documentation
 - Added "status.sh" and "reset.sh" scripts from michele to the main code folder.
 
+0.3.2 (2020-08-?)
+------------------
+
+- Added installation packages for OpenSUSE to the documentation
+
 
 TODO
 ----

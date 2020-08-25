@@ -16,6 +16,9 @@ needed for ufotest. The default installation path is "$HOME/.ufotest":
 
     $ ufotest init
 
+Custom installation folder
+""""""""""""""""""""""""""
+
 You can change the installation path by setting a different path to the environmental variable `UFOTEST_PATH`. Note
 however, that this variable also has to be set whenever any other command is being executed later on. So it would make
 sense to add an according line to the local .bashrc file.
@@ -33,9 +36,6 @@ The `ufotest` project relies on a series of parameters, which may change over ti
 specific users. Since there are too many parameters to implement them purely as command line options for the various
 scripts, the project relies on a global configuration file. This configuration file will automatically be generated
 from a default template whenever the `ufotest` package is being installed.
-
-Custom installation folder
-""""""""""""""""""""""""""
 
 The config file will be installed into the following path "$HOME/.ufotest/config.toml". But an easier way to edit this
 file is by using the built in `config` command:

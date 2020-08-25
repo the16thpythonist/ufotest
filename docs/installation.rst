@@ -82,7 +82,15 @@ for all the tested plaforms.
 
     $ sudo apt-get update
     $ sudo apt-get upgrade
-    $ sudo apt-get -y install git swig cmake uuid-dev xfsprogs xfslibs-dev python2 python2-dev doxygen uthash-dev libxml2 libxml2-dev libglib2.0 libgtk+2.0-dev gobject-introspection
+    $ sudo apt-get -y install git curl gcc swig cmake uuid-dev xfsprogs xfslibs-dev python2 python2-dev doxygen uthash-dev libxml2 libxml2-dev libglib2.0 libgtk+2.0-dev gobject-introspection
+
+**OpenSUSE**:
+
+.. code-block:: console
+
+    $ sudo zypper in -y git curl gcc gcc-c++ swig cmake uuid-devel xfsprogs-devel python2 python2-devel doxygen uthash-devel libxml2 libxml2-devel glib2-devel gtk2-devel gobject-introspection-devel
+
+
 
 2. Creating the install folder
 """"""""""""""""""""""""""""""
