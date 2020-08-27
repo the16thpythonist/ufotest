@@ -149,12 +149,15 @@ def install_libufodecode(path:str, verbose=True):
     Installs the libufodecode repository into the given "path"
     """
     git_url = CONFIG['install']['libufodecode_git']
-    camera_width = CONFIG['camera']['camera_width']
     install_generic_cmake(
         path,
         git_url,
         verbose,
-        {'CMAKE_INSTALL_PREFIX': '/usr', 'IPECAMERA_WIDTH': camera_width}
+        {
+            'CMAKE_INSTALL_PREFIX': '/usr',
+            'IPECAMERA_WIDTH': CONFIG['camera']['camera_width'],
+            'IPECAMERA_HEIGHT': CONFIG['camera']['camera_height']
+        }
     )
 
 

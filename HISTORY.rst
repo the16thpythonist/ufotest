@@ -30,10 +30,13 @@ History
 - Small adjustments to the documentation
 - Added "status.sh" and "reset.sh" scripts from michele to the main code folder.
 
-0.3.2 (2020-08-?)
+0.3.2 (2020-08-27)
 ------------------
 
 - Added installation packages for OpenSUSE to the documentation
+- Copied the power up and power down scripts from the IPE
+- Copied the vivado start script from the IPE
+
 
 
 TODO
@@ -46,3 +49,7 @@ TODO
     - I could write a "Camera" context manager object...?
 - Make a real help text for the init command
 - Add the "init" command to the documentation.
+- Setup Sphinx autodoc for this project
+- give "config" an option which enables the specification of the editor to be used.
+- Make "init" add the necessary stuff to the bashrc file. use jinja2?
+- Figure out how to flash a bit file to the controller programmatically

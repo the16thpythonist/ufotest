@@ -49,7 +49,7 @@ def setup_environment():
         os.environ[key] = value
 
 
-def init_config():
+def install():
     # First we check if the installation folder already exists.
     # "get_path" returns the path to where the config file is supposed to be installed to.
     folder_path = get_path()
@@ -67,6 +67,13 @@ def init_config():
     if not os.path.exists(config_path):
         shutil.copyfile(CONFIG_TEMPLATE_PATH, config_path)
         click.secho('Copied config template to installation folder', fg='green')
+
+
+def check_install():
+    folder_path = get_path()
+
+    if not os.path.exists(folder_path):
+        click.secho('lol')
 
 
 
