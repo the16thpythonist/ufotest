@@ -8,8 +8,8 @@ from pathlib import Path
 
 # The path of the this very python package and the path to the default TOML config file, which will be copied during
 # the installation of this project
-_PATH = Path(__file__).parent.absolute()
-CONFIG_TEMPLATE_PATH = os.path.join(_PATH, 'default.toml')
+PATH = Path(__file__).parent.absolute()
+CONFIG_TEMPLATE_PATH = os.path.join(PATH, 'default.toml')
 
 # This will be the string path to the HOME folder of the user which is currently executing the script
 HOME_PATH = str(Path.home())

@@ -1,14 +1,42 @@
 """
-A module containing the code related to actually capturing images from the camera.
+A module containing the functionality related to interacting with the camera
 """
-import os
 import time
-import shutil
 
+import shutil
 import click
 
-from ufotest.util import pci_read, pci_write, execute_command
 from ufotest.config import CONFIG
+from ufotest.util import execute_command, get_command_output, execute_script
+
+
+def pci_write(addr: str, value: str):
+    pci_command = 'pci -w {} {}'.format(addr, value)
+    exit_code = execute_command(pci_command, False)
+    if exit_code:
+        click.secho('Command "{}" failed!'.format(pci_command), fg='red')
+
+
+def pci_read(addr: str, size):
+    pci_command = 'pci -r {} -s {}'.format(addr, str(size))
+    value = get_command_output(pci_command)
+    return value
+
+
+def set_up_camera(verbose: bool = False):
+    # Execute all the scripts from michele to before execution
+    execute_script('reset')
+
+    if verbose:
+        click.secho('Camera set up finished\n')
+
+
+def tear_down_camera(verbose: bool = False):
+    # Execute all the scripts from michele related to after execution
+    pass
+
+    if verbose:
+        click.secho('camera tear down finished\n')
 
 
 def get_frame(path: str = '/tmp/frame.raw', verbose: bool = False):

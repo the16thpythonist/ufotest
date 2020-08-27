@@ -9,17 +9,27 @@ from typing import Optional
 from ufotest.config import *
 
 
-def pci_write(addr: str, value: str):
-    pci_command = 'pci -w {} {}'.format(addr, value)
-    exit_code = execute_command(pci_command, False)
-    if exit_code:
-        click.secho('Command "{}" failed!'.format(pci_command), fg='red')
+SCRIPT_AUTHORS = {
+    'michele':              'Michele Caselle <michele.caselle@kit.edu>',
+    'jonas':                'Jonas Teufel <jonseb1998@gmail.com',
+    'timo':                 'Timo Dritschler <timo.dritschler@kit.edu>'
+}
 
 
-def pci_read(addr: str, size):
-    pci_command = 'pci -r {} -s {}'.format(addr, str(size))
-    value = get_command_output(pci_command)
-    return value
+SCRIPTS = {
+    'reset': {
+        'path':             os.path.join(PATH, 'Reset_all.sh'),
+        'description':      'Resets the camera parameters to the default state',
+        'author':           SCRIPT_AUTHORS['michele']
+    },
+    'status': {
+        'path':             os.path.join(PATH, 'status.sh'),
+        'description':      'Reads out the status parameters of the camera',
+        'author':           SCRIPT_AUTHORS['michele']
+    },
+
+}
+
 
 
 def get_command_output(command: str, cwd: Optional[str] = None):
@@ -89,4 +99,16 @@ def check_install():
     return valid_install
 
 
+def execute_script(name: str, prefix: str = '', verbose: bool = False):
+    if name not in SCRIPTS.keys():
+        click.secho('There is no script with the name "{}" registered!'.format(name), fg='red')
+        return
 
+    script = SCRIPTS[name]
+    script_command = prefix + script['path']
+
+    exit_code = execute_command(script_command, verbose=verbose)
+    if not exit_code:
+        click.secho('Script "{}" executed successfully!'.format(name), fg='green')
+    else:
+        click.secho('Script "{}" encountered an error!'.format(name), fg='red')
