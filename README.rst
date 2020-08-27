@@ -3,6 +3,7 @@ ufotest
 =======
 
 .. image:: ../logo.png
+        :alt: Logo
 
 .. image:: https://img.shields.io/pypi/v/ufotest.svg
         :target: https://pypi.python.org/pypi/ufotest

@@ -36,8 +36,7 @@ History
 - Added installation packages for OpenSUSE to the documentation
 - Copied the power up and power down scripts from the IPE
 - Copied the vivado start script from the IPE
-- Now checking for a valid ufotest installation before every command, thus preventing running into an obvious
-exception.
+- Now checking for a valid ufotest installation before every command, thus preventing running into an obvious exception.
 - Added jinja2 to the requirements
 - Added module "camera.py" instead of "capture.py" to contain all the camera related functionality
 - Modified config file
@@ -59,7 +58,7 @@ TODO
     - Add init command
     - (Add frame command)
     - Add script command
-    - Add option to define scripts in the config section...
+    - Add option to define scripts in the config section
 - Setup Sphinx autodoc for this project
 - Make "init" add the necessary stuff to the bashrc file. use jinja2?
 - Figure out how to flash a bit file to the controller programmatically
