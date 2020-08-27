@@ -49,7 +49,7 @@ def setup_environment():
         os.environ[key] = value
 
 
-def install():
+def init_install():
     # First we check if the installation folder already exists.
     # "get_path" returns the path to where the config file is supposed to be installed to.
     folder_path = get_path()
@@ -71,10 +71,22 @@ def install():
 
 def check_install():
     folder_path = get_path()
+    config_path = get_config_path()
+
+    valid_install = True
 
     if not os.path.exists(folder_path):
-        click.secho('lol')
+        click.secho('ufotest is missing an installation folder!', bold=True, fg='red')
+        valid_install = False
 
+    if not os.path.exists(config_path):
+        click.secho('ufotest is missing the configuration file at "{}"!'.format(config_path), bold=True, fg='red')
+        valid_install = False
+
+    if not valid_install:
+        click.secho('A new ufotest installation can be created by typing "ufotest init" into the console...')
+
+    return valid_install
 
 
 

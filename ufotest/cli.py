@@ -9,7 +9,7 @@ import click
 import matplotlib.pyplot as plt
 
 from ufotest.config import CONFIG, get_config_path
-from ufotest.util import execute_command, setup_environment, init_config
+from ufotest.util import execute_command, setup_environment, init_install, check_install
 from ufotest.install import (install_dependencies,
                              install_fastwriter,
                              install_pcitools,
@@ -38,6 +38,9 @@ def install(path, verbose, no_dependencies, no_libuca, no_vivado):
     PATH will be the system path, which will then contain subfolders with all the required repositories and
     dependencies
     """
+    if not check_install():
+        return 1
+
     path = os.path.realpath(path)
 
     click.secho('\n')
@@ -98,7 +101,7 @@ def init():
     """
     Initializes the config files for ufotest
     """
-    init_config()
+    init_install()
     click.secho('Ufotest is initialized!', bold=True, fg='green')
 
     return 0
@@ -109,6 +112,9 @@ def config():
     """
     Edit the configuration file for this project
     """
+    if not check_install():
+        return 1
+
     config_path = get_config_path()
     click.edit(filename=config_path)
 
@@ -124,6 +130,9 @@ def frame(verbose, output, display):
     """
     Capture a frame from the camera and display it to the user
     """
+    if not check_install():
+        return 1
+
     # Setup all the important environment variables and stuff
     setup_environment()
 

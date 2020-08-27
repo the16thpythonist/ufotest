@@ -36,13 +36,14 @@ History
 - Added installation packages for OpenSUSE to the documentation
 - Copied the power up and power down scripts from the IPE
 - Copied the vivado start script from the IPE
+- Now checking for a valid ufotest installation before every command, thus preventing running into an obvious
+exception.
 
 
 
 TODO
 ----
 
-- Add a method which checks for init and displays an error message of installation folder has not been initialized
 - Add the installation of vivado.
     - Can we add the installer to the repository? If not download using curl
 - Execute "setup_camera" and "teardown_camera" scripts before and after acquisition of a frame.
