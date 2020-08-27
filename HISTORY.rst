@@ -46,6 +46,11 @@ History
     - Execute them in "frame" command
 - Added an option to "config" which allows to specify the editor
 
+0.4.1 (2020-08-27)
+------------------
+
+- Fixed the MANIFEST.in file, which did not include the bash scripts in the distribution package
+
 
 TODO
 ----
