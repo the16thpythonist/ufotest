@@ -9,7 +9,7 @@ import click
 import matplotlib.pyplot as plt
 
 from ufotest.config import CONFIG, get_config_path
-from ufotest.util import execute_command, setup_environment, init_install, check_install
+from ufotest.util import execute_command, setup_environment, init_install, check_install, execute_script
 from ufotest.install import (install_dependencies,
                              install_fastwriter,
                              install_pcitools,
@@ -17,7 +17,7 @@ from ufotest.install import (install_dependencies,
                              install_libuca,
                              install_uca_ufo,
                              install_ipecamera)
-from ufotest.capture import get_frame
+from ufotest.camera import get_frame, set_up_camera, tear_down_camera
 
 
 @click.group()
@@ -108,7 +108,8 @@ def init():
 
 
 @click.command('config', short_help='Edit the config for ufotest')
-def config():
+@click.option('--editor', '-e', type=click.STRING, help='Specify the editor command to be used to open the config file')
+def config(editor):
     """
     Edit the configuration file for this project
     """
@@ -116,7 +117,7 @@ def config():
         return 1
 
     config_path = get_config_path()
-    click.edit(filename=config_path)
+    click.edit(filename=config_path, editor=editor)
 
     return 0
 
@@ -135,6 +136,8 @@ def frame(verbose, output, display):
 
     # Setup all the important environment variables and stuff
     setup_environment()
+    # Setting up the camera
+    set_up_camera(verbose=verbose)
 
     # Call the necessary pci commands
     frame_data = get_frame(path=output, verbose=verbose)
@@ -144,14 +147,32 @@ def frame(verbose, output, display):
         plt.imshow(frame_data)
         plt.show()
 
+    tear_down_camera(verbose=verbose)
     return 0
 
 
-cli.add_command(config)
-cli.add_command(init)
-cli.add_command(install)
-cli.add_command(frame)
+@click.command('script', short_help="Execute one of the known (bash) scripts")
+@click.argument('name', type=click.STRING)
+@click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
+def script(name, verbose):
+    """
+    Executes a registered script with the given NAME
+    """
+    if not check_install():
+        return 1
 
+    exit_code = execute_script(name, verbose=verbose)
+    if not exit_code:
+        click.secho('Script "{}" succeeded'.format(name), bold=True, fg='green')
+    else:
+        click.secho('Script "{}" failed'.format(name), bold=True, fg='red')
+
+
+cli.add_command(init)
+cli.add_command(config)
+cli.add_command(install)
+cli.add_command(script)
+cli.add_command(frame)
 
 if __name__ == "__main__":
     sys.exit(cli())  # pragma: no cover

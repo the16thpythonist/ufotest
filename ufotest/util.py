@@ -27,9 +27,21 @@ SCRIPTS = {
         'description':      'Reads out the status parameters of the camera',
         'author':           SCRIPT_AUTHORS['michele']
     },
-
+    'power_up': {
+        'path':             os.path.join(PATH, 'PWDown.sh'),
+        'description':      'Enables the internal power supply of the camera sensor',
+        'author':           SCRIPT_AUTHORS['michele']
+    },
+    'power_down': {
+        'path':             os.path.join(PATH, 'PWDown.sh'),
+        'description':      'Disables the internal power supply of the camera sensor',
+        'author':           SCRIPT_AUTHORS['michele']
+    }
 }
 
+# Dynamically registering the scripts from the config file also.
+if 'scripts' in CONFIG.keys():
+    SCRIPTS.update(CONFIG['scripts'])
 
 
 def get_command_output(command: str, cwd: Optional[str] = None):
@@ -112,3 +124,5 @@ def execute_script(name: str, prefix: str = '', verbose: bool = False):
         click.secho('Script "{}" executed successfully!'.format(name), fg='green')
     else:
         click.secho('Script "{}" encountered an error!'.format(name), fg='red')
+
+    return exit_code

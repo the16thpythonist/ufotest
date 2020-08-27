@@ -91,8 +91,8 @@ title = "UfoTest Config"
     # decoding of the raw frame data for example. It is important that these parameters are also correctly set for
     # the "install" command, since these dimensions have to be hard-built into some of the required repositories.
     # After changing the sensor to one with another dimension it is thus required to reinstall the project!
-    camera_width = 2048
-    camera_height = 2048
+    camera_width = 5120
+    camera_height = 3840
 
 # Within this section it is possible to define environmental variables which are needed for the operation of the camera
 # Every key value pair written in this section will be translated to an environmental variable before the execution of
@@ -109,3 +109,15 @@ title = "UfoTest Config"
     LANG="en_US.utf8"
     LC_ALL="en_US.utf8"
     XTERM_LOCALE="en_US.utf8"
+
+# This section can be used to register additional scripts, which can then be executed using the CLI. To add a new
+# script, simply add a new subsection to this with the name by which the script is supposed to be called and enter
+# the strings for the path, the author and the description.
+# NOTE: a script file must have the executable flag set!
+[scripts]
+    # This is an example of how a script can be added. This adds a script with the name "example", which could be
+    # invoked like this: "ufotest script 'example'"
+    [scripts.example]
+        path="/usr/bin/python3"
+        description="starts a python shell"
+        author="Python Foundation"

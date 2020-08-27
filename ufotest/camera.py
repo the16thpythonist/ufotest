@@ -1,6 +1,7 @@
 """
 A module containing the functionality related to interacting with the camera
 """
+import os
 import time
 
 import shutil
@@ -24,19 +25,23 @@ def pci_read(addr: str, size):
 
 
 def set_up_camera(verbose: bool = False):
-    # Execute all the scripts from michele to before execution
-    execute_script('reset')
+    # Enable the sensor power supply
+    execute_script('power_up', verbose=verbose)
+    # Reset all the parameters for the camera
+    execute_script('reset', verbose=verbose)
+    # Display the status just to be save
+    execute_script('status', verbose=verbose)
 
-    if verbose:
-        click.secho('Camera set up finished\n')
+    click.secho('Camera set up finished\n', bold=True)
 
 
 def tear_down_camera(verbose: bool = False):
-    # Execute all the scripts from michele related to after execution
-    pass
+    # Disable the sensor power supply
+    execute_script('power_down', verbose=verbose)
+    # Display the status just to be save
+    execute_script('status', verbose=verbose)
 
-    if verbose:
-        click.secho('camera tear down finished\n')
+    click.secho('camera tear down finished\n', bold=True)
 
 
 def get_frame(path: str = '/tmp/frame.raw', verbose: bool = False):

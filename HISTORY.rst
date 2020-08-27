@@ -30,7 +30,7 @@ History
 - Small adjustments to the documentation
 - Added "status.sh" and "reset.sh" scripts from michele to the main code folder.
 
-0.3.2 (2020-08-27)
+0.4.0 (2020-08-27)
 ------------------
 
 - Added installation packages for OpenSUSE to the documentation
@@ -38,7 +38,14 @@ History
 - Copied the vivado start script from the IPE
 - Now checking for a valid ufotest installation before every command, thus preventing running into an obvious
 exception.
-
+- Added jinja2 to the requirements
+- Added module "camera.py" instead of "capture.py" to contain all the camera related functionality
+- Modified config file
+    - Added "scripts" section, which allows the user to register custom commands.
+- Added the "script" command: Executes (bash) scripts, which were registered in the project
+- Added functions which setup and teardown the camera state
+    - Execute them in "frame" command
+- Added an option to "config" which allows to specify the editor
 
 
 TODO
@@ -46,11 +53,14 @@ TODO
 
 - Add the installation of vivado.
     - Can we add the installer to the repository? If not download using curl
-- Execute "setup_camera" and "teardown_camera" scripts before and after acquisition of a frame.
-    - I could write a "Camera" context manager object...?
+- I could write a "Camera" context manager object...?
 - Make a real help text for the init command
-- Add the "init" command to the documentation.
+- Update documentation
+    - Add init command
+    - (Add frame command)
+    - Add script command
+    - Add option to define scripts in the config section...
 - Setup Sphinx autodoc for this project
-- give "config" an option which enables the specification of the editor to be used.
 - Make "init" add the necessary stuff to the bashrc file. use jinja2?
 - Figure out how to flash a bit file to the controller programmatically
+
