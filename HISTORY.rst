@@ -67,16 +67,18 @@ History
 ------------------
 
 - Moved the code to import a number N of raw images from a file to it's own function in camera.py
-- Added two commands:
+- Added commands:
     - setup: Will enable the camera to work
     - teardown: Will disable the camera to work. Be careful not to use this while the FPGA still has problems with
       power down
+    - list-scripts: Displays a list of all scripts
 - Registered scripts
     - reset_tp: Resets the fpag and enables the test pattern
     - reset_dma: Resets the DMA settings of the fpga
 - Moved the scripts into their own folder
 - Removed the installation of vivado. This is the responsibility of the user. Installation path can be given in the
   config file
+- Added the necessary scripts for the flashing of the fpga
 
 TODO
 ----

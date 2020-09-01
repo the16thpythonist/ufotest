@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 matplotlib.use('TkAgg')
 
 from ufotest.config import CONFIG, get_config_path
+from ufotest.scripts import SCRIPTS
 from ufotest.util import execute_command, setup_environment, init_install, check_install, execute_script
 from ufotest.install import (install_dependencies,
                              install_fastwriter,
@@ -175,6 +176,22 @@ def script(name, verbose):
         click.secho('Script "{}" failed'.format(name), bold=True, fg='red')
 
 
+@click.command('list-scripts', short_help='List all available scripts')
+def list_scripts():
+    if not check_install():
+        return 1
+
+    click.secho('The following scripts are available:\n', fg='green', bold=True)
+
+    for script_id, script_data in SCRIPTS.items():
+        click.secho(script_id, bold=True)
+        click.secho('   Path: {}\n   Description: {}\n   Author: {}\n'.format(
+            script_data['path'],
+            script_data['description'],
+            script_data['author']
+        ))
+
+
 @click.command('setup', short_help="Enable the camera")
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 def setup(verbose):
@@ -194,6 +211,7 @@ cli.add_command(script)
 cli.add_command(frame)
 cli.add_command(setup)
 cli.add_command(teardown)
+cli.add_command(list_scripts)
 
 
 if __name__ == "__main__":

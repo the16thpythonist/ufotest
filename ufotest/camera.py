@@ -34,6 +34,8 @@ def import_raw(path: str, n: int, sensor_width: int, sensor_height: int):
 def set_up_camera(verbose: bool = False):
     # enable the drivers and stuff
     execute_script('pcie_init', verbose=verbose, prefix='sudo ')
+    # Reset the dma engine of the fpga
+    execute_command('reset_dma', verbose=verbose)
     # Reset all the parameters for the camera
     execute_script('reset_fpga', verbose=verbose)
     # Enable the sensor power supply
