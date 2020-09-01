@@ -1,8 +1,7 @@
 #!/bin/bash
-
 # by Michele caselle for 20MPixel - camera
 echo "-----------------------------"
-echo "----  S T A T U S -----------"
+echo "----  S T A T U S ---------"
 echo "-----------------------------"
 
 BAR=`pci -i | grep "BAR 0" | awk '{print $6}' | cut -c -6` # it was -4 for cut, uros
@@ -37,7 +36,7 @@ sleep 0.01
 # else
 #     echo "48 MHz"
 #     clk_mhz=48
-#     clk_ratio=$(echo "scale = 2; 48/40" | bc)
+#     clk_ratio=$(echo "scale = 2; 48/40" | bc)   
 # fi
 
 value=`pci -r 9030 | awk '{print $2}' | cut -c 6-6`
@@ -48,9 +47,9 @@ if [ "$value" == "0"  ]; then
 else
     echo "48 MHz"
     clk_mhz=48
-    clk_ratio=$(echo "scale = 2; 48/40" | bc)
+    clk_ratio=$(echo "scale = 2; 48/40" | bc)   
 fi
-####### for 48 MHz use 48/40, for 40 MHz use 40/40 for clk_ratio
+####### for 48 MHz use 48/40, for 40 MHz use 40/40 for clk_ratio 
 ######  offset can differ per device
 ######  datasheet values
 # clk_ratio=$(echo "scale = 2; 40/40" | bc)
@@ -80,10 +79,10 @@ sensor_tmp=$(echo "scale = 2; ($sensor_tmp-$offset_zero_celsius)*$tmp_slope_sens
 
 # echo "Sensor temperature,according to the datasheet: $sensor_tmp C"
 echo "Sensor temperature, clock $clk_mhz MHz: $sensor_tmp C"
-echo "FPGA temperature: $fpga_tmp C"
-if [ "$monitor_val" != "000" ]; then
-    echo "ERROR FPGA MONITOR: $monitor_val"
-    # exit
-else
-    echo "MONITOR OK"
-fi
+#echo "FPGA temperature: $fpga_tmp C"
+#if [ "$monitor_val" != "000" ]; then
+#    echo "ERROR FPGA MONITOR: $monitor_val"
+#    # exit
+#else
+#    echo "MONITOR OK"
+#fi
