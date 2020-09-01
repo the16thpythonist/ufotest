@@ -36,12 +36,16 @@ def set_up_camera(verbose: bool = False):
     # execute_script('pcie_init', verbose=verbose, prefix='sudo ')
     # Reset the dma engine of the fpga
     execute_script('reset_dma', verbose=verbose)
+    time.sleep(1)
     # Reset all the parameters for the camera
     execute_script('reset_fpga', verbose=verbose)
+    time.sleep(1)
     # Enable the sensor power supply
     execute_script('power_up', verbose=verbose)
+    time.sleep(1)
     # ?
     execute_script('reset_tp', verbose=verbose)
+    time.sleep(1)
     # Display the status just to be save
     execute_script('status', verbose=verbose)
 
