@@ -141,6 +141,10 @@ def frame(verbose, output, display):
     # Setup all the important environment variables and stuff
     setup_environment()
 
+    execute_command('rm /tmp/frame*', verbose)
+    if verbose:
+        click.secho('Removed the previous frame buffer', fg='green')
+
     # Call the necessary pci commands
     save_frame(output, verbose=verbose)
 

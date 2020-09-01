@@ -81,19 +81,23 @@ History
 - Added the necessary scripts for the flashing of the fpga
 - changed "execute_script" so that changes folder to the script folder first
 
+0.5.1 (2020-09-01)
+------------------
+
+- Enabled Sphinx autodoc
+- The "frame" command now removes the prior frame buffer file before saving the new one
+- Updated the "usage" section of the documentation
+
+
 TODO
 ----
 
-- Add the installation of vivado.
-    - Can we add the installer to the repository? If not download using curl
 - I could write a "Camera" context manager object...?
-- Make a real help text for the init command
 - Update documentation
     - Add init command
     - (Add frame command)
     - Add script command
     - Add option to define scripts in the config section
-- Setup Sphinx autodoc for this project
 - Make "init" add the necessary stuff to the bashrc file. use jinja2?
 - Figure out how to flash a bit file to the controller programmatically
 

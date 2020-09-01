@@ -86,3 +86,54 @@ The `install` command offers some additional options which can be used to contro
 - *no-dependencies*: Skips the installation of the required custom libraries in case thay are eventually already
   installed
 - *no-libuca*: Skips the installation of the libuca related libraries.
+
+
+Executing Michele's scripts
+---------------------------
+
+Interaction with the camera is realized in the form of a few bash scripts. These scripts are also contained within the
+`ufotest` project and can be executed using the `script` command.
+
+Use the '--verbose/-v' option to show the echoed output of the script:
+
+.. code-block:: console
+
+    # Example for the status script
+    $ ufotest script --verbose status
+
+All available scripts can be listed using the `list-scripts` command.
+
+.. code-block:: console
+
+    $ ufotest list-scripts
+
+This command will output a list of all registered scripts containing their identifier, by which they can be
+invoked, the path of the actual file, a description and information about the author of the script.
+
+
+Working with the camera
+-----------------------
+
+As of right now, the project also provides some basic functionality to interact with the camera.
+
+Initializing the camera
+"""""""""""""""""""""""
+
+Before doing anything else, the camera has to be initialized. This can be done using the `setup` command. This command
+executes the various reset scripts which are required to put the camera into it's default state (Use the
+'--verbose' option to see the output of the individual scripts.)
+
+.. code-block:: console
+
+    $ ufotest setup --verbose
+
+Acquiring a frame
+"""""""""""""""""
+
+After executing the `setup` command a new frame can be acquired, by executing the `frame` command.
+This command will acquire a single frame from the camera and save it at the specified path. To actually open a new
+window, which will display the image data use the '--display' option:
+
+.. code-block:: console
+
+    $ ufotest frame --output="/path/to/frame.raw" --verbose --display
