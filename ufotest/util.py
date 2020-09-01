@@ -28,7 +28,7 @@ SCRIPTS = {
         'author':           SCRIPT_AUTHORS['michele']
     },
     'power_up': {
-        'path':             os.path.join(PATH, 'PWDown.sh'),
+        'path':             os.path.join(PATH, 'PWUp.sh'),
         'description':      'Enables the internal power supply of the camera sensor',
         'author':           SCRIPT_AUTHORS['michele']
     },
