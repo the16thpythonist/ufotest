@@ -136,8 +136,6 @@ def frame(verbose, output, display):
 
     # Setup all the important environment variables and stuff
     setup_environment()
-    # Setting up the camera
-    set_up_camera(verbose=verbose)
 
     # Call the necessary pci commands
     frame_data = get_frame(path=output, verbose=verbose)
@@ -147,7 +145,6 @@ def frame(verbose, output, display):
         plt.imshow(frame_data)
         plt.show()
 
-    tear_down_camera(verbose=verbose)
     return 0
 
 

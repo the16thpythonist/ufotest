@@ -36,6 +36,16 @@ SCRIPTS = {
         'path':             os.path.join(PATH, 'PWDown.sh'),
         'description':      'Disables the internal power supply of the camera sensor',
         'author':           SCRIPT_AUTHORS['michele']
+    },
+    'pcie_init': {
+        'path':             os.path.join(PATH, 'pcie_init.sh'),
+        'description':      'Identifies the fpga and initiates the driver for the connection',
+        'author':           SCRIPT_AUTHORS['michele']
+    },
+    'reset_fpga': {
+        'path':             os.path.join(PATH, 'reset_fpga.sh'),
+        'description':      'Resets the fpga',
+        'author':           SCRIPT_AUTHORS['michele']
     }
 }
 

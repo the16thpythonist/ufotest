@@ -52,6 +52,16 @@ History
 - Fixed the MANIFEST.in file, which did not include the bash scripts in the distribution package
 
 
+0.4.2 (2020-09-01)
+------------------
+
+- Removed the setup and teardown process from the "frame" command, because as of right now, the power up
+and down should not be called too often, because there are problems with the FPGA regarding that.
+- registered 2 new scripts
+    - pcie_init
+    - reset_fpga
+
+
 TODO
 ----
 
