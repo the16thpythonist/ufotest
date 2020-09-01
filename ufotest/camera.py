@@ -32,10 +32,13 @@ def import_raw(path: str, n: int, sensor_width: int, sensor_height: int):
 
 
 def set_up_camera(verbose: bool = False):
-    # Enable the sensor power supply
-    execute_script('power_up', verbose=verbose)
+    # enable the drivers and stuff
+    execute_script('pcie_init', verbose=verbose)
     # Reset all the parameters for the camera
     execute_script('reset_fpga', verbose=verbose)
+    # Enable the sensor power supply
+    execute_script('power_up', verbose=verbose)
+    # ?
     execute_script('reset', verbose=verbose)
     # Display the status just to be save
     execute_script('status', verbose=verbose)
