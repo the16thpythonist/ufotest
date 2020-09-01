@@ -71,6 +71,8 @@ History
     - setup: Will enable the camera to work
     - teardown: Will disable the camera to work. Be careful not to use this while the FPGA still has problems with
       power down
+- Registered script "reset_tp" which resets the camera with a test pattern
+
 
 TODO
 ----
