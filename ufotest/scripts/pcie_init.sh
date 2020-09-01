@@ -38,3 +38,4 @@ setpci -s $dev 4.w=0x07
 export LD_LIBRARY_PATH=/usr/lib
 export PCILIB_MODEL=ipedma
 
+./dma.sh
