@@ -181,7 +181,7 @@ def setup(verbose):
     set_up_camera(verbose=verbose)
 
 
-@click.command('setup', short_help="Setup the camera to work")
+@click.command('teardown', short_help="Setup the camera to work")
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 def teardown(verbose):
     tear_down_camera(verbose)
