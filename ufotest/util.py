@@ -22,6 +22,11 @@ SCRIPTS = {
         'description':      'Resets the camera parameters to the default state',
         'author':           SCRIPT_AUTHORS['michele']
     },
+    'reset_tp': {
+        'path':             os.path.join(PATH, 'Reset_all_TP.sh'),
+        'description':      'Resets the camera parameters to the default state and activates the test pattern',
+        'author':           SCRIPT_AUTHORS['michele']
+    },
     'status': {
         'path':             os.path.join(PATH, 'status.sh'),
         'description':      'Reads out the status parameters of the camera',

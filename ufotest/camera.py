@@ -39,7 +39,7 @@ def set_up_camera(verbose: bool = False):
     # Enable the sensor power supply
     execute_script('power_up', verbose=verbose)
     # ?
-    execute_script('reset', verbose=verbose)
+    execute_script('reset_tp', verbose=verbose)
     # Display the status just to be save
     execute_script('status', verbose=verbose)
 
