@@ -42,6 +42,8 @@ title = "UfoTest Config"
             "curl",
             "git",
             "gcc",
+            "python3-tk",
+            "tk-dev",
             # To install the required repositories
             "swig",
             "cmake",
@@ -67,6 +69,8 @@ title = "UfoTest Config"
             "git",
             "gcc",
             "gcc-c++",
+            "python3-tk",
+            "tk-devel",
             # To install the required repositories
             "swig",
             "cmake",

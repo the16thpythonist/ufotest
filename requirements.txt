@@ -2,3 +2,4 @@ Click>=7.0
 toml>=0.10.0
 matplotlib>=3.3.0
 jinja2>=2.11.2
+rawpy>=0.15.0

@@ -62,7 +62,7 @@ def save_frame(path: str, verbose: bool, tmp_path='/tmp'):
         click.secho('Sending frame request')
     pci_write('0x9040', '0x80000201')
     pci_write('0x9040', '0x80000209')
-    time.sleep(0.2)
+    # time.sleep(0.1)
     pci_read('9070', '4')
     pci_write('0x9040', '0x80000201')
     time.sleep(0.01)

@@ -6,8 +6,11 @@ import os
 from pathlib import Path
 
 import click
+import rawpy
+import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
+matplotlib.use('TkAgg')
 
 from ufotest.config import CONFIG, get_config_path
 from ufotest.util import execute_command, setup_environment, init_install, check_install, execute_script
@@ -143,8 +146,10 @@ def frame(verbose, output, display):
 
     # Display the file using matplot lib
     if display:
-        image = np.empty((CONFIG['camera']['camera_width'], CONFIG['camera']['camera_height']), np.uint16)
-        image.data[:] = frame_data
+        width = CONFIG['camera']['camera_width']
+        height = CONFIG['camera']['camera_height']
+        image = np.fromfile(output, dtype=np.uint16, count=width * height * 2)
+        image = image.reshape((height, width))
         plt.imshow(image)
         plt.show()
 
