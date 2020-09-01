@@ -125,7 +125,7 @@ def config(editor):
 
 @click.command('frame', short_help='Acquire and display a frame from the camera')
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
-@click.option('--output', '-o', type=click.File('wb+'),
+@click.option('--output', '-o', type=click.STRING,
               help='Specify the output file path for the frame', default='/tmp/frame.raw')
 @click.option('--display', '-d', is_flag=True, help='display the frame in seperate window')
 def frame(verbose, output, display):
