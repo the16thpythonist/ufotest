@@ -79,6 +79,7 @@ History
 - Removed the installation of vivado. This is the responsibility of the user. Installation path can be given in the
   config file
 - Added the necessary scripts for the flashing of the fpga
+- changed "execute_script" so that changes folder to the script folder first
 
 TODO
 ----

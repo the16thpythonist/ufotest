@@ -78,14 +78,16 @@ def check_install():
 
 
 def execute_script(name: str, prefix: str = '', verbose: bool = False):
+
     if name not in SCRIPTS.keys():
         click.secho('There is no script with the name "{}" registered!'.format(name), fg='red')
         return
 
     script = SCRIPTS[name]
+    script_folder = os.path.dirname(script['path'])
     script_command = prefix + script['path']
 
-    exit_code = execute_command(script_command, verbose=verbose)
+    exit_code = execute_command(script_command, verbose=verbose, cwd=script_folder)
     if not exit_code:
         click.secho('Script "{}" executed successfully!'.format(name), fg='green')
     else:
