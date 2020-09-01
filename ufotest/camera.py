@@ -6,6 +6,7 @@ import time
 
 import shutil
 import click
+import numpy as np
 
 from ufotest.config import CONFIG
 from ufotest.util import execute_command, get_command_output, execute_script
@@ -22,6 +23,12 @@ def pci_read(addr: str, size):
     pci_command = 'pci -r {} -s {}'.format(addr, str(size))
     value = get_command_output(pci_command)
     return value
+
+
+def import_raw(path: str, n: int, sensor_width: int, sensor_height: int):
+    image = np.fromfile(path, dtype=np.uint16, count=2 * sensor_width * sensor_height * n)
+    image = image.reshape((n, sensor_height, sensor_width))
+    return image
 
 
 def set_up_camera(verbose: bool = False):

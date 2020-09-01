@@ -63,6 +63,14 @@ History
   able to overwrite like this
 - Fixed the image display using matplotlib
 
+0.5.0 (2020-09-01)
+------------------
+
+- Moved the code to import a number N of raw images from a file to it's own function in camera.py
+- Added two commands:
+    - setup: Will enable the camera to work
+    - teardown: Will disable the camera to work. Be careful not to use this while the FPGA still has problems with
+      power down
 
 TODO
 ----

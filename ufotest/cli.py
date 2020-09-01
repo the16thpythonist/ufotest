@@ -6,7 +6,6 @@ import os
 from pathlib import Path
 
 import click
-import rawpy
 import matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
@@ -21,7 +20,7 @@ from ufotest.install import (install_dependencies,
                              install_libuca,
                              install_uca_ufo,
                              install_ipecamera)
-from ufotest.camera import get_frame, set_up_camera, tear_down_camera
+from ufotest.camera import save_frame, import_raw, set_up_camera, tear_down_camera
 
 
 @click.group()
@@ -142,15 +141,18 @@ def frame(verbose, output, display):
     setup_environment()
 
     # Call the necessary pci commands
-    frame_data = get_frame(path=output, verbose=verbose)
+    save_frame(output, verbose=verbose)
 
     # Display the file using matplot lib
     if display:
-        width = CONFIG['camera']['camera_width']
-        height = CONFIG['camera']['camera_height']
-        image = np.fromfile(output, dtype=np.uint16, count=width * height * 2)
-        image = image.reshape((height, width))
-        plt.imshow(image)
+        images = import_raw(
+            path=output,
+            n=1,
+            sensor_height=CONFIG['camera']['camera_height'],
+            sensor_width=CONFIG['camera']['camera_width']
+        )
+
+        plt.imshow(images[0])
         plt.show()
 
     return 0
@@ -173,11 +175,26 @@ def script(name, verbose):
         click.secho('Script "{}" failed'.format(name), bold=True, fg='red')
 
 
+@click.command('setup', short_help="Setup the camera to work")
+@click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
+def setup(verbose):
+    set_up_camera(verbose=verbose)
+
+
+@click.command('setup', short_help="Setup the camera to work")
+@click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
+def teardown(verbose):
+    tear_down_camera(verbose)
+
+
 cli.add_command(init)
 cli.add_command(config)
 cli.add_command(install)
 cli.add_command(script)
 cli.add_command(frame)
+cli.add_command(setup)
+cli.add_command(teardown)
+
 
 if __name__ == "__main__":
     sys.exit(cli())  # pragma: no cover
