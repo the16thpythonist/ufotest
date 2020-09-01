@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 
 import click
+import numpy as np
 import matplotlib.pyplot as plt
 
 from ufotest.config import CONFIG, get_config_path
@@ -124,7 +125,7 @@ def config(editor):
 
 @click.command('frame', short_help='Acquire and display a frame from the camera')
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
-@click.option('--output', '-o', type=click.Path(file_okay=False, dir_okay=True, writable=True),
+@click.option('--output', '-o', type=click.File('wb+'),
               help='Specify the output file path for the frame', default='/tmp/frame.raw')
 @click.option('--display', '-d', is_flag=True, help='display the frame in seperate window')
 def frame(verbose, output, display):
@@ -142,7 +143,9 @@ def frame(verbose, output, display):
 
     # Display the file using matplot lib
     if display:
-        plt.imshow(frame_data)
+        image = np.empty((CONFIG['camera']['camera_width'], CONFIG['camera']['camera_height']), np.uint16)
+        image.data[:] = frame_data
+        plt.imshow(image)
         plt.show()
 
     return 0
