@@ -30,8 +30,7 @@ title = "UfoTest Config"
     ucaufo_git = "https://github.com/ufo-kit/uca-ufo.git"
     ipecamera_git = "https://fuzzy.fzk.de/gogs/jonas.teufel/ipecamera.git"
 
-    # TODO: Insert the real download url here. Assuming we get a ZIP file
-    vivado_url = "https://google.com"
+    vivado_path = '/opt/Xilinx/Vivado/2018.3'
 
     # The following subsections contain the distribution specific installation parameters. That is mostly the package
     # names for the required system packages, which may be slightly different naming conventions between different

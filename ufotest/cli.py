@@ -33,7 +33,7 @@ def cli():
 @click.option('--verbose', '-v', is_flag=True, help='Show additional console output')
 @click.option('--no-dependencies', '-d', is_flag=True, help='Skip installation of required repositories')
 @click.option('--no-libuca', '-l', is_flag=True, help='Skip installation of libuca')
-@click.option('--no-vivado', is_flag=True, help='Skip installation of vivado')
+# @click.option('--no-vivado', is_flag=True, help='Skip installation of vivado')
 def install(path, verbose, no_dependencies, no_libuca, no_vivado):
     """
     Installing the Project into PATH
@@ -86,14 +86,14 @@ def install(path, verbose, no_dependencies, no_libuca, no_vivado):
     else:
         click.secho('\n=====| Skipping Libuca |=====', bold=True)
 
-    if not no_vivado:
-        click.secho('\n=====| Installing Vivado |=====', bold=True)
-        click.secho('not yet implemented')
-
-        click.secho('\n=====| Installing Vivado Programmer drivers |=====', bold=True)
-        click.secho('not yet implemented')
-    else:
-        click.secho('\n=====| Skipping Vivado |=====', bold=True)
+    # if not no_vivado:
+    #     click.secho('\n=====| Installing Vivado |=====', bold=True)
+    #     click.secho('not yet implemented')
+    #
+    #     click.secho('\n=====| Installing Vivado Programmer drivers |=====', bold=True)
+    #     click.secho('not yet implemented')
+    # else:
+    #     click.secho('\n=====| Skipping Vivado |=====', bold=True)
 
     # The exit code
     return 0
@@ -175,13 +175,13 @@ def script(name, verbose):
         click.secho('Script "{}" failed'.format(name), bold=True, fg='red')
 
 
-@click.command('setup', short_help="Setup the camera to work")
+@click.command('setup', short_help="Enable the camera")
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 def setup(verbose):
     set_up_camera(verbose=verbose)
 
 
-@click.command('teardown', short_help="Setup the camera to work")
+@click.command('teardown', short_help="Disable the camera. DO NOT USE")
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 def teardown(verbose):
     tear_down_camera(verbose)

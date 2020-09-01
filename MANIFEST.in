@@ -5,7 +5,7 @@ include LICENSE
 include README.rst
 
 include ufotest/default.toml
-recursive-include ufotest *.sh
+recursive-include ufotest/scripts *.sh
 
 recursive-include tests *
 recursive-exclude * __pycache__

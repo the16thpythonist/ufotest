@@ -71,8 +71,12 @@ History
     - setup: Will enable the camera to work
     - teardown: Will disable the camera to work. Be careful not to use this while the FPGA still has problems with
       power down
-- Registered script "reset_tp" which resets the camera with a test pattern
-
+- Registered scripts
+    - reset_tp: Resets the fpag and enables the test pattern
+    - reset_dma: Resets the DMA settings of the fpga
+- Moved the scripts into their own folder
+- Removed the installation of vivado. This is the responsibility of the user. Installation path can be given in the
+  config file
 
 TODO
 ----

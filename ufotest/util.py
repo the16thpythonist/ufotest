@@ -7,56 +7,7 @@ import subprocess
 from typing import Optional
 
 from ufotest.config import *
-
-
-SCRIPT_AUTHORS = {
-    'michele':              'Michele Caselle <michele.caselle@kit.edu>',
-    'jonas':                'Jonas Teufel <jonseb1998@gmail.com',
-    'timo':                 'Timo Dritschler <timo.dritschler@kit.edu>'
-}
-
-
-SCRIPTS = {
-    'reset': {
-        'path':             os.path.join(PATH, 'Reset_all.sh'),
-        'description':      'Resets the camera parameters to the default state',
-        'author':           SCRIPT_AUTHORS['michele']
-    },
-    'reset_tp': {
-        'path':             os.path.join(PATH, 'Reset_all_TP.sh'),
-        'description':      'Resets the camera parameters to the default state and activates the test pattern',
-        'author':           SCRIPT_AUTHORS['michele']
-    },
-    'status': {
-        'path':             os.path.join(PATH, 'status.sh'),
-        'description':      'Reads out the status parameters of the camera',
-        'author':           SCRIPT_AUTHORS['michele']
-    },
-    'power_up': {
-        'path':             os.path.join(PATH, 'PWUp.sh'),
-        'description':      'Enables the internal power supply of the camera sensor',
-        'author':           SCRIPT_AUTHORS['michele']
-    },
-    'power_down': {
-        'path':             os.path.join(PATH, 'PWDown.sh'),
-        'description':      'Disables the internal power supply of the camera sensor',
-        'author':           SCRIPT_AUTHORS['michele']
-    },
-    'pcie_init': {
-        'path':             os.path.join(PATH, 'pcie_init.sh'),
-        'description':      'Identifies the fpga and initiates the driver for the connection',
-        'author':           SCRIPT_AUTHORS['michele']
-    },
-    'reset_fpga': {
-        'path':             os.path.join(PATH, 'reset_fpga.sh'),
-        'description':      'Resets the fpga',
-        'author':           SCRIPT_AUTHORS['michele']
-    }
-}
-
-# Dynamically registering the scripts from the config file also.
-if 'scripts' in CONFIG.keys():
-    SCRIPTS.update(CONFIG['scripts'])
+from ufotest.scripts import SCRIPTS
 
 
 def get_command_output(command: str, cwd: Optional[str] = None):
