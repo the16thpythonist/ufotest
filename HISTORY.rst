@@ -113,4 +113,6 @@ TODO
     - Add option to define scripts in the config section
 - Make "init" add the necessary stuff to the bashrc file. use jinja2?
 - Figure out how to flash a bit file to the controller programmatically
-
+- EEPROM Programmierung
+- tcl Sprache
+- fpga_conf einbinden als flash
