@@ -35,8 +35,8 @@ def cli(version):
             click.secho(version, bold=True)
         return 0
 
-    click.secho('Please execute a command!', fg='red')
-    return 1
+    #click.secho('Please execute a command!', fg='red')
+    #return 1
 
 
 @click.command('install', short_help='Install the project and its dependencies')
