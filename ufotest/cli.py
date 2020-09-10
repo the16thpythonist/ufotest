@@ -28,7 +28,7 @@ from ufotest.camera import save_frame, import_raw, set_up_camera, tear_down_came
 @click.option('--version', '-v', is_flag=True, help='Print the version of the program')
 def cli(version):
     if version:
-        version_path = os.path.join(os.path.dirname(PATH), 'VERSION')
+        version_path = os.path.join(PATH, 'VERSION')
         with open(version_path) as version_file:
             version = version_file.read()
             click.secho('UFOTEST VERSION')
