@@ -25,6 +25,7 @@ title = "UfoTest Config"
     ipecamera_git = "https://fuzzy.fzk.de/gogs/jonas.teufel/ipecamera.git"
 
     vivado_path = '/opt/Xilinx/Vivado/2018.3'
+    vivado_settings = '/opt/Xillinx/Vivado/2018.3/settings64.sh'
     vivado_command = 'vivado'
 
     # The following subsections contain the distribution specific installation parameters. That is mostly the package

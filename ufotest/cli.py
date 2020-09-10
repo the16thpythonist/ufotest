@@ -259,6 +259,11 @@ def flash(verbose, file: str):
     elif verbose:
         click.secho('Vivado installation found!', fg='green')
 
+    # -- STARTING VIVADO SETTINGS
+    vivado_command = CONFIG['install']['vivado_settings']
+    exit_code = execute_command(vivado_command, verbose, cwd=os.getcwd())
+    click.secho('Setup vivado environment', fg='green')
+
     # -- FLASHING THE BIT FILE
     flash_command = "{command} -nolog -nojournal -mode batch -source fpga_conf_bitprog.tcl -tclargs {file}".format(
         command=CONFIG['install']['vivado_command'],
