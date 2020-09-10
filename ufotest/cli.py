@@ -265,7 +265,7 @@ def flash(verbose, file: str):
     click.secho('Setup vivado environment', fg='green')
 
     # -- FLASHING THE BIT FILE
-    flash_command = "{command} -nolog -nojournal -mode batch -source fpga_conf_bitprog.tcl -tclargs {file}".format(
+    flash_command = "ls; {command} -nolog -nojournal -mode batch -source fpga_conf_bitprog.tcl -tclargs {file}".format(
         command=CONFIG['install']['vivado_command'],
         file=file_path
     )
