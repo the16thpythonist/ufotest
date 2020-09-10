@@ -4,6 +4,7 @@ A module containing various utility functions for usage in other modules.
 import os
 import click
 import subprocess
+import importlib.util
 from typing import Optional
 
 from ufotest.config import *
@@ -18,6 +19,14 @@ def get_version():
         version = version_file.read()
 
     return version
+
+
+def dynamic_import(module_name: str, file_path: str):
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    return module
 
 
 def get_command_output(command: str, cwd: Optional[str] = None):
