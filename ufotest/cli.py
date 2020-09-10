@@ -12,8 +12,15 @@ import matplotlib.pyplot as plt
 matplotlib.use('TkAgg')
 
 from ufotest.config import PATH, CONFIG, get_config_path
-from ufotest.scripts import SCRIPTS
-from ufotest.util import execute_command, setup_environment, init_install, check_install, execute_script
+from ufotest.scripts import SCRIPTS, SCRIPTS_PATH
+from ufotest.util import (execute_command,
+                          setup_environment,
+                          init_install,
+                          check_install,
+                          execute_script,
+                          get_version,
+                          check_vivado,
+                          check_path)
 from ufotest.install import (install_dependencies,
                              install_fastwriter,
                              install_pcitools,
@@ -28,15 +35,10 @@ from ufotest.camera import save_frame, import_raw, set_up_camera, tear_down_came
 @click.option('--version', '-v', is_flag=True, help='Print the version of the program')
 def cli(version):
     if version:
-        version_path = os.path.join(PATH, 'VERSION')
-        with open(version_path) as version_file:
-            version = version_file.read()
-            click.secho('UFOTEST VERSION')
-            click.secho(version, bold=True)
+        version = get_version()
+        click.secho('UFOTEST VERSION')
+        click.secho(version, bold=True)
         return 0
-
-    #click.secho('Please execute a command!', fg='red')
-    #return 1
 
 
 @click.command('install', short_help='Install the project and its dependencies')
@@ -66,8 +68,8 @@ def install(path, verbose, no_dependencies, no_libuca, no_vivado):
     click.secho('- Configured OS: {}'.format(CONFIG['install']['os']))
     click.secho('- Configured package install: {}'.format(CONFIG['install']['package_install']))
     click.secho('- Camera dimensions: {} x {}'.format(
-        CONFIG['camera']['camera_width'],
-        CONFIG['camera']['camera_height']
+        CONFIG['camera']['sensor_width'],
+        CONFIG['camera']['sensor_height']
     ))
 
     if not no_dependencies:
@@ -163,8 +165,8 @@ def frame(verbose, output, display):
         images = import_raw(
             path=output,
             n=1,
-            sensor_height=CONFIG['camera']['camera_height'],
-            sensor_width=CONFIG['camera']['camera_width']
+            sensor_height=CONFIG['camera']['sensor_height'],
+            sensor_width=CONFIG['camera']['sensor_width']
         )
 
         plt.imshow(images[0])
@@ -209,15 +211,68 @@ def list_scripts():
 @click.command('setup', short_help="Enable the camera")
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 def setup(verbose):
+    if not check_install():
+        return 1
+
     set_up_camera(verbose=verbose)
 
 
 @click.command('teardown', short_help="Disable the camera. DO NOT USE")
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 def teardown(verbose):
+    if not check_install():
+        return 1
+
     tear_down_camera(verbose)
 
 
+@click.command('flash', short_help='Flash a new .BIT file to the FPGA memory')
+@click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
+@click.argument('file', type=click.STRING)
+def flash(verbose, file: str):
+    if not check_install():
+        return 1
+
+    click.secho('FLASHING THE FPGA MEMORY', bold=True)
+
+    # -- CHECKING IF THE GIVEN FILE EVEN EXISTS
+    file_path = os.path.abspath(file)
+    file_exists = check_path(file_path, is_dir=False)
+    if not file_exists:
+        click.secho('The given path does not exist!', fg='red')
+        return 1
+
+    # -- CHECKING IF THE FILE EVEN IS A BIT FILE
+    file_extension = file_path.split('.')[-1].lower()
+    is_bit_file = file_extension == 'bit'
+    if not is_bit_file:
+        click.secho('The given file is not a .BIT file', fg='red')
+        return 1
+    elif verbose:
+        click.secho('Flashing bit file "{}"'.format(file))
+
+    # -- CHECKING IF VIVADO IS INSTALLED
+    vivado_installed = check_vivado()
+    if not vivado_installed:
+        click.secho('Vivado is not installed, please install Vivado to be able to flash the fpga!', fg='red')
+        return 1
+    elif verbose:
+        click.secho('Vivado installation found!', fg='green')
+
+    # -- FLASHING THE BIT FILE
+    flash_command = "{command} -nolog -nojournal -mode batch -source fpga_conf_bitprog.tcl -tclargs {file}".format(
+        command=CONFIG['install']['vivado_command'],
+        file=file_path
+    )
+    exit_code = execute_command(flash_command, verbose, cwd=SCRIPTS_PATH)
+    if not exit_code:
+        click.secho('SUCCESSFULLY FLASHED FPGA WITH "{}"'.format(file_path))
+        return 0
+    else:
+        return 1
+
+
+# Registering the commands within the click group
 cli.add_command(init)
 cli.add_command(config)
 cli.add_command(install)
@@ -226,6 +281,7 @@ cli.add_command(frame)
 cli.add_command(setup)
 cli.add_command(teardown)
 cli.add_command(list_scripts)
+cli.add_command(flash)
 
 
 if __name__ == "__main__":

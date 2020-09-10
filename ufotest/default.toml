@@ -7,12 +7,6 @@ title = "UfoTest Config"
     # Can be one of: "ubuntu", "suse"
     os = "ubuntu"
 
-    # This string is the linux command to be used to install the necessary official system packages. So usually this
-    # would be the base "install" command for the package manager of the used linux distribution. For ubuntu this
-    # is "apt-get", for susu it is "sudo zypper in -y".
-    # Although this string can also be used to inject some additional commands to be executed before the installation.
-    package_install = "sudo apt-get -y install"
-
     # The following strings contain the git URL's for the necessary repositories, which have to be installed for the
     # ufo camera to work properly.
     # NOTES:
@@ -31,11 +25,13 @@ title = "UfoTest Config"
     ipecamera_git = "https://fuzzy.fzk.de/gogs/jonas.teufel/ipecamera.git"
 
     vivado_path = '/opt/Xilinx/Vivado/2018.3'
+    vivado_command = 'vivado'
 
     # The following subsections contain the distribution specific installation parameters. That is mostly the package
     # names for the required system packages, which may be slightly different naming conventions between different
     # distributions.
     [install.ubuntu]
+        package_install = 'sudo apt-get -y install'
         packages = [
             # For this CLI tool to work properly
             "curl",
@@ -62,6 +58,7 @@ title = "UfoTest Config"
         ]
 
     [install.suse]
+        package_install = 'sudo zypper install -y'
         packages = [
             # For this CLI tool to work properly
             "curl",
@@ -94,8 +91,8 @@ title = "UfoTest Config"
     # decoding of the raw frame data for example. It is important that these parameters are also correctly set for
     # the "install" command, since these dimensions have to be hard-built into some of the required repositories.
     # After changing the sensor to one with another dimension it is thus required to reinstall the project!
-    camera_width = 5120
-    camera_height = 3840
+    sensor_width = 5120
+    sensor_height = 3840
 
 # Within this section it is possible to define environmental variables which are needed for the operation of the camera
 # Every key value pair written in this section will be translated to an environmental variable before the execution of

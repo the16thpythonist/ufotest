@@ -62,7 +62,8 @@ def install_package(package_name: str, verbose=True):
     """
     Installs a system package with the given "package_name"
     """
-    package_install_command = CONFIG['install']['package_install']
+    operating_system = CONFIG['install']['os']
+    package_install_command = CONFIG['install'][operating_system]['package_install']
 
     click.secho('Installing package "{}"...'.format(package_name))
 
@@ -155,8 +156,8 @@ def install_libufodecode(path:str, verbose=True):
         verbose,
         {
             'CMAKE_INSTALL_PREFIX': '/usr',
-            'IPECAMERA_WIDTH': CONFIG['camera']['camera_width'],
-            'IPECAMERA_HEIGHT': CONFIG['camera']['camera_height']
+            'IPECAMERA_WIDTH': CONFIG['camera']['sensor_width'],
+            'IPECAMERA_HEIGHT': CONFIG['camera']['sensor_height']
         }
     )
 
@@ -185,8 +186,8 @@ def install_uca_ufo(path: str, verbose=True):
         verbose,
         {
             'CMAKE_INSTALL_PREFIX': '/usr',
-            'CMOSIS_SENSOR_WIDTH': CONFIG['camera']['camera_width'],
-            'CMOSIS_SENSOR_HEIGHT': CONFIG['camera']['camera_height']
+            'CMOSIS_SENSOR_WIDTH': CONFIG['camera']['sensor_width'],
+            'CMOSIS_SENSOR_HEIGHT': CONFIG['camera']['sensor_height']
         }
     )
 

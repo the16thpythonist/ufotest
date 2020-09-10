@@ -101,9 +101,19 @@ History
 - Fixed the inclusion of the VERSION file into the code package
 
 
+0.6.0 (2020-09-10)
+------------------
+
+- Changed the config names "camera_height" and "camera_width" to "sensor_height" and "sensor_width"
+- moved the "package_install" section within the config to the individual sections for the OS's. So now this does not
+  have to be changed by the user, but instead is specific for the chosen operating system.
+- Added the new "flash" command which can be used to flash a new .BIT file to the fpga
+    - It uses the "vivado" command from an existing vivado installation to flash the bit file.
+
 TODO
 ----
 
+- Auto detect the operating system?
 - Put the version stuff into its own function...
 - I could write a "Camera" context manager object...?
 - Update documentation

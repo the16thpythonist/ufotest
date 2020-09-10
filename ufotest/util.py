@@ -10,6 +10,16 @@ from ufotest.config import *
 from ufotest.scripts import SCRIPTS
 
 
+VERSION_PATH = os.path.join(PATH, 'VERSION')
+
+
+def get_version():
+    with open(VERSION_PATH) as version_file:
+        version = version_file.read()
+
+    return version
+
+
 def get_command_output(command: str, cwd: Optional[str] = None):
     completed_process = subprocess.run(command, cwd=cwd, shell=True)
     return completed_process.stdout
@@ -75,6 +85,23 @@ def check_install():
         click.secho('A new ufotest installation can be created by typing "ufotest init" into the console...')
 
     return valid_install
+
+
+def check_path(path: str, is_dir: bool = False):
+    exists = os.path.exists(path)
+    correct_type = os.path.isdir(path) if is_dir else os.path.isfile(path)
+
+    return exists and correct_type
+
+
+def check_vivado():
+    vivado_path = CONFIG['install']['vivado_path']
+    vivado_settings_path = os.path.join(vivado_path, 'settings64.sh')
+
+    vivado_folder_exists = check_path(vivado_path, is_dir=True)
+    vivado_settings_exists = check_path(vivado_settings_path, is_dir=False)
+
+    return vivado_folder_exists and vivado_settings_exists
 
 
 def execute_script(name: str, prefix: str = '', verbose: bool = False):
