@@ -44,7 +44,7 @@ def cli(version):
 @click.option('--verbose', '-v', is_flag=True, help='Show additional console output')
 @click.option('--no-dependencies', '-d', is_flag=True, help='Skip installation of required repositories')
 @click.option('--no-libuca', '-l', is_flag=True, help='Skip installation of libuca')
-# @click.option('--no-vivado', is_flag=True, help='Skip installation of vivado')
+@click.option('--no-vivado', is_flag=True, help='Skip installation of vivado')
 def install(path, verbose, no_dependencies, no_libuca, no_vivado):
     """
     Installing the Project into PATH
