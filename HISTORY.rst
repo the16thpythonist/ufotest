@@ -88,10 +88,18 @@ History
 - The "frame" command now removes the prior frame buffer file before saving the new one
 - Updated the "usage" section of the documentation
 
+0.5.2 (2020-09-10)
+------------------
+
+- Added the file "VERSION" which will be used to set the current version of the project. This file will also be read
+  used for the setup.py. The reasoning to create this is that it can also be used for a --version option for the CLI
+- Added the option "--version" to the cli group
+
 
 TODO
 ----
 
+- Put the version stuff into its own function...
 - I could write a "Camera" context manager object...?
 - Update documentation
     - Add init command

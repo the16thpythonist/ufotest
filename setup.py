@@ -34,6 +34,9 @@ with open('HISTORY.rst') as history_file:
 with open('requirements.txt') as requirements_file:
     requirements = requirements_file.read()
 
+with open('VERSION') as version_file:
+    version = version_file.read().strip(' \n')
+
 setup_requirements = ['pytest-runner', ]
 
 test_requirements = ['pytest>=3', ]
@@ -73,6 +76,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/the16thpythonist/ufotest',
-    version='0.5.1',
+    version=version,
     zip_safe=False,
 )

@@ -102,6 +102,7 @@ def save_frame(path: str, verbose: bool, tmp_path='/tmp'):
         path=data_path,
         verbose='-v' if verbose else ''
     )
+    print(decode_command)
     exit_code = execute_command(decode_command, verbose)
     # Saving the frame to the correct position
     if not exit_code:

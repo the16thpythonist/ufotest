@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 matplotlib.use('TkAgg')
 
-from ufotest.config import CONFIG, get_config_path
+from ufotest.config import PATH, CONFIG, get_config_path
 from ufotest.scripts import SCRIPTS
 from ufotest.util import execute_command, setup_environment, init_install, check_install, execute_script
 from ufotest.install import (install_dependencies,
@@ -24,9 +24,19 @@ from ufotest.install import (install_dependencies,
 from ufotest.camera import save_frame, import_raw, set_up_camera, tear_down_camera
 
 
-@click.group()
-def cli():
-    pass
+@click.group(invoke_without_command=True)
+@click.option('--version', '-v', is_flag=True, help='Print the version of the program')
+def cli(version):
+    if version:
+        version_path = os.path.join(os.path.dirname(PATH), 'VERSION')
+        with open(version_path) as version_file:
+            version = version_file.read()
+            click.secho('UFOTEST VERSION')
+            click.secho(version, bold=True)
+        return 0
+
+    click.secho('Please execute a command!', fg='red')
+    return 1
 
 
 @click.command('install', short_help='Install the project and its dependencies')
