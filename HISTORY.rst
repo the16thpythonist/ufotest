@@ -109,20 +109,16 @@ History
   have to be changed by the user, but instead is specific for the chosen operating system.
 - Added the new "flash" command which can be used to flash a new .BIT file to the fpga
     - It uses the "vivado" command from an existing vivado installation to flash the bit file.
+- extended the "usage" section of the documentation with the new flash command
 
 TODO
 ----
 
+- Write a test function, which will take a frame and check it for some properties
+    - In general I should think about how I want to deal with the tests in a broader conceptional context
+      Maybe write some base classes etc?
 - Auto detect the operating system?
-- Put the version stuff into its own function...
 - I could write a "Camera" context manager object...?
-- Update documentation
-    - Add init command
-    - (Add frame command)
-    - Add script command
-    - Add option to define scripts in the config section
 - Make "init" add the necessary stuff to the bashrc file. use jinja2?
-- Figure out how to flash a bit file to the controller programmatically
 - EEPROM Programmierung
 - tcl Sprache
-- fpga_conf einbinden als flash

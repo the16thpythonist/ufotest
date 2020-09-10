@@ -230,6 +230,11 @@ def teardown(verbose):
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 @click.argument('file', type=click.STRING)
 def flash(verbose, file: str):
+    """
+    Flashes a given ".bit" FILE to the internal memory of the fpga
+
+    FILE will be the string path of the file to be used for the flashing process
+    """
     if not check_install():
         return 1
 
@@ -261,17 +266,17 @@ def flash(verbose, file: str):
 
     # -- STARTING VIVADO SETTINGS
     vivado_command = CONFIG['install']['vivado_settings']
-    exit_code = execute_command(vivado_command, verbose, cwd=os.getcwd())
+    execute_command(vivado_command, verbose, cwd=os.getcwd())
     click.secho('Setup vivado environment', fg='green')
 
     # -- FLASHING THE BIT FILE
-    flash_command = "ls; {command} -nolog -nojournal -mode batch -source fpga_conf_bitprog.tcl -tclargs {file}".format(
+    flash_command = "{command} -nolog -nojournal -mode batch -source fpga_conf_bitprog.tcl -tclargs {file}".format(
         command=CONFIG['install']['vivado_command'],
         file=file_path
     )
     exit_code = execute_command(flash_command, verbose, cwd=SCRIPTS_PATH)
     if not exit_code:
-        click.secho('SUCCESSFULLY FLASHED FPGA WITH "{}"'.format(file_path))
+        click.secho('SUCCESSFULLY FLASHED FPGA WITH "{}"'.format(file_path), fg='green', bold=True)
         return 0
     else:
         return 1

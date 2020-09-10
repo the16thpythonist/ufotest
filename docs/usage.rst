@@ -5,6 +5,30 @@ Usage
 The ufotest project provides a command line interface to install and test the UFO camera, which was developed at the
 Institute of Data Processing (IPE) of the Karlsruhe Institute of Technology (KIT).
 
+Overview
+--------
+
+The following is a small overview of the available commands:
+
+- **init**: Initializes the necessary installation folder and a default configuration file, which is needed to use this
+  command line interface
+- **config**: Opens the config file for the ufotest project with the preferred editor
+- **install**: Installs the necessary dependencies, which are required to operate the UFO camera
+- **script**: Execute one of the bash scripts for the camera by name
+- **setup**: Executes all the reset scripts, which are required to make the camera operational
+- **frame**: Acquires a single frame from the camera and optionally displays it to the user
+- **flash**: Flashes a new fpga configuration to the Hiflex board
+
+Check CLI version
+"""""""""""""""""
+
+To check the version of `ufotest`, which is currently installed on your machine, run the "--version" option like this:
+
+.. code-block:: console
+
+    $ ufotest --version
+
+
 Initializing the project
 ------------------------
 
@@ -137,3 +161,36 @@ window, which will display the image data use the '--display' option:
 .. code-block:: console
 
     $ ufotest frame --output="/path/to/frame.raw" --verbose --display
+
+
+Flashing a new FPGA configuration
+---------------------------------
+
+The FPGA board which interfaces the camera is a kind of programmable hardware, which means that it can also be
+reprogrammed. These fpga "programs" come in the form of ".bit" files. The `flash` command uses these bit files to
+reconfigure the fpga.
+
+Prerequisites
+"""""""""""""
+
+It is important to note, that the fpga cannot just be programmed over the PCIe interface, with which it is usually
+connected with the PC. To program the board an additional *programmer* (from Xilinx) is required. This programmer
+connects with the fpga board using a JTAG connector and with the PC per USB cable.
+
+Only if the following two conditions are met, the `flash` command will actually work:
+1. The programmer must be turned on and correctly connected to the PC as well as the board.
+2. The appropriate drivers for the programmer must be installed on the PC.
+
+Flashing the board
+""""""""""""""""""
+
+If an appropriate ".bit" file exists, it can be used to program the fpga board like this:
+
+.. code-block:: console
+
+    $ ufotest flash --verbose /path/to/file.bit
+
+.. note::
+
+    It is important that the file actually has the file extension ".bit"
+
