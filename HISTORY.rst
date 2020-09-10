@@ -95,6 +95,11 @@ History
   used for the setup.py. The reasoning to create this is that it can also be used for a --version option for the CLI
 - Added the option "--version" to the cli group
 
+0.5.3 (2020-09-10)
+------------------
+
+- Fixed the inclusion of the VERSION file into the code package
+
 
 TODO
 ----
