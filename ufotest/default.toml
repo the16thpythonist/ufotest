@@ -122,3 +122,18 @@ title = "UfoTest Config"
         path="/usr/bin/python3"
         description="starts a python shell"
         author="Python Foundation"
+
+
+# This section can be used to modify the behaviour of the camera test routines.
+[tests]
+    # The ufotest CLI comes with some predefined tests already part of the package. But tests can also be dynamically
+    # added by the user by placing the python modules into this path. Given these modules contain valid test code
+    # (for the necessary instructions regarding the writing of tests please consult the documentation), the test
+    # runner will dynamically import them from this folder and they will be made available to the CLI.
+    folder = '~/.ufotest/tests'
+
+    # The concept of test suites is to define subsets of tests by their names. These suites can then be directly called
+    # from the CLI test command to execute a bunch of tests.
+    # This subsection can be used to create new custom test suites, by simply defining a list of test names.
+    [tests.suites]
+        basic = ['power_up']

@@ -111,6 +111,17 @@ History
     - It uses the "vivado" command from an existing vivado installation to flash the bit file.
 - extended the "usage" section of the documentation with the new flash command
 
+
+0.7.0 (2020-09-??)
+------------------
+
+- Added the new "test" command, which will execute a camera test procedure
+    - Added the "tests" subfolder within the package, which will hold files that define these kind of test routines.
+    - Added the TestRunner class which will be used to execute all these tests
+    - Added the AbstractTest class, which will act as the base class for defining new camera tests
+- Added the "tests" section in the config file.
+
+
 TODO
 ----
 

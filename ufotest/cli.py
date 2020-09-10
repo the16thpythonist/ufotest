@@ -282,6 +282,20 @@ def flash(verbose, file: str):
         return 1
 
 
+@click.command('test', short_help="run a camera test")
+@click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
+@click.option('--email', '-e', type=click.STRING, help='An email address to send the final report of the test to')
+@click.argument('test_id', type=click.STRING)
+def test(verbose, email, test_id):
+    """
+    Run the test "TEST_ID"
+
+    TEST_ID is a string, which identifies a certain test procedure. To view all these possible identifiers consult the
+    config file.
+    """
+    print("SCAN THE TEST FOLDERS AND ENUMERATE ALL THE TESTS")
+
+
 # Registering the commands within the click group
 cli.add_command(init)
 cli.add_command(config)
@@ -292,6 +306,7 @@ cli.add_command(setup)
 cli.add_command(teardown)
 cli.add_command(list_scripts)
 cli.add_command(flash)
+cli.add_command(test)
 
 
 if __name__ == "__main__":
