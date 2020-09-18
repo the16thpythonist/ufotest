@@ -1,7 +1,7 @@
 import inspect
 
 from ufotest._testing import UfotestTestCase
-from ufotest.testing import TestRunner, AbstractTest
+from ufotest.testing import TestRunner, AbstractTest, TestReport
 
 
 class TestTestRunner(UfotestTestCase):
@@ -37,3 +37,16 @@ class TestTestRunner(UfotestTestCase):
         for test in test_runner.tests.values():
             self.assertTrue(inspect.isclass(test))
             self.assertTrue(issubclass(test, AbstractTest))
+
+    def test_run_mock_test(self):
+        """
+        Tests if the "mock" test is being run correctly
+        """
+        test_runner = TestRunner(config=self.config)
+        test_runner.load()
+
+        test_results = test_runner.run_test('mock')
+        self.assertIsInstance(test_results, TestReport)
+        self.assertEqual(1, test_results.test_count)
+        self.assertEqual(1, test_results.passing_count)
+        self.assertEqual(0, test_results.error_count)
