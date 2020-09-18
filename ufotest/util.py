@@ -75,6 +75,12 @@ def init_install():
         shutil.copyfile(CONFIG_TEMPLATE_PATH, config_path)
         click.secho('Copied config template to installation folder', fg='green')
 
+    # Also we need to create the tests folder inside of this folder
+    test_folder_path = os.path.join(folder_path, 'tests')
+    os.mkdir(test_folder_path)
+    os.chmod(folder_path, 0o777)
+    click.secho('Created the "tests" folder within the ufotest installation', fg='green')
+
 
 def check_install():
     folder_path = get_path()
