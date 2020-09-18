@@ -9,7 +9,7 @@ include ufotest/VERSION
 include ufotest/default.toml
 recursive-include ufotest/scripts *.tcl
 recursive-include ufotest/scripts *.sh
-recursive-include ufotest/tests *.py
+recursive-include ufotest/tests *
 
 recursive-include tests *
 recursive-exclude * __pycache__

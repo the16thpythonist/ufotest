@@ -136,7 +136,9 @@ History
 0.7.1 (2020-09-18)
 ------------------
 
-- non
+- Fixes
+    - Fixed a broken dict index in install command
+
 
 
 TODO
