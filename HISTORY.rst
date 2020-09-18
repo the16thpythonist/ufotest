@@ -129,12 +129,14 @@ History
 - Tests
     - Fixed the errors within "test_ufotest"
     - Added "test_testing" which contains test cases for testing the TestRunner class
+- Added a "--force" flag to the "init" command, which will delte the entire installation tree first and then reinstalls
+  it
 
 
 0.7.1 (2020-09-18)
 ------------------
 
--
+- non
 
 
 TODO
