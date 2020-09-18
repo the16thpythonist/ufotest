@@ -2,19 +2,30 @@ import os
 import inspect
 import time
 import datetime
+import logging
 from abc import ABC, abstractmethod
 from typing import Tuple, Dict, List, Type
 
-from ufotest.config import PATH, CONFIG
-from ufotest.util import check_path, dynamic_import
+from ufotest.config import PATH, Config
+from ufotest.util import check_path, dynamic_import, create_folder
 
 
 class TestRunner(object):
 
-    def __init__(self, config: dict = CONFIG):
+    # STATIC LOGGER CONFIG
+
+    def __init__(self, config: Config = Config()):
         self.config = config
         self.modules = {}
         self.tests = {}
+
+        self.archive_folder_path = self.config.get_archive_folder()
+        self.start_time = datetime.datetime.now()
+        self.folder_path = os.path.join(self.archive_folder_path, self.start_time.strftime('%d_%m_%Y__%H_%M_%S'))
+        create_folder(self.folder_path)
+
+        # Initializing the logging
+        self.logger = logging.Logger('TestRunner')
 
         # "test_folders" was originally a class attribute and the static and dynamic folder paths where global
         # variables for this folder, but then during testing I realized that CONFIG might not be loaded at that point
@@ -128,6 +139,8 @@ class AbstractTest(ABC):
 
     def __init__(self, test_runner: TestRunner):
         self.test_runner = test_runner
+        self.logger = self.test_runner.logger
+        self.config = self.test_runner.config
 
     def execute(self) -> AbstractTestResult:
         start_datetime = datetime.datetime.now()

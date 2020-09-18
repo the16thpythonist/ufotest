@@ -115,9 +115,9 @@ def init(force):
         installation_path = get_path()
         if check_path(installation_path, is_dir=True):
             shutil.rmtree(get_path())
-            click.secho('Deleted old installation folder!', fg='green')
+            click.secho('Deleted old installation folder!\n', fg='green')
         else:
-            click.secho('Installation folder did not exist', fg='green')
+            click.secho('Installation folder did not exist\n', fg='green')
 
     init_install()
     click.secho('Ufotest is initialized!', bold=True, fg='green')

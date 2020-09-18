@@ -131,6 +131,9 @@ class Config(metaclass=Singleton):
         sensor_model = self.data['camera']['model']
         return self.data['camera'][sensor_model]['sensor_height']
 
+    def get_archive_folder(self):
+        return self.data['tests']['archive']
+
     # UTILITY METHODS
     # ---------------
 

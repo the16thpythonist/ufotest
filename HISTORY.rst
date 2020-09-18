@@ -133,17 +133,23 @@ History
   it
 
 
-0.7.1 (2020-09-18)
+0.8.0 (2020-09-18)
 ------------------
 
 - Fixes
     - Fixed a broken dict index in install command
+- Added the "archive" folder to be created with the "init" command. This folder will contain the results of
+  the execution of a test runner.
+- Added the "Config" singletong class, which should be used for config access in the future...
 
 
 
 TODO
 ----
 
+- Write explanation for every item in the initial page of the documentation.
+- Document camera properties "Notes"
+- Change all usages from config to singleton class
 - Write a test function, which will take a frame and check it for some properties
     - In general I should think about how I want to deal with the tests in a broader conceptional context
       Maybe write some base classes etc?

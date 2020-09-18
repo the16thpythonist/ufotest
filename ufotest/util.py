@@ -56,6 +56,12 @@ def setup_environment():
         os.environ[key] = value
 
 
+def create_folder(folder_path: str):
+    if os.path.exists(folder_path):
+        os.mkdir(folder_path)
+        os.chmod(folder_path, 0o777)
+
+
 def init_install():
     # First we check if the installation folder already exists.
     # "get_path" returns the path to where the config file is supposed to be installed to.
