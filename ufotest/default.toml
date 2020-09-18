@@ -95,6 +95,13 @@ title = "UfoTest Config"
     sensor_width = 5120
     sensor_height = 3840
 
+    model = 'cmv20000'
+
+    [camera.cmv20000]
+        sensor_width = 5120
+        sensor_heigth = 3840
+
+
 # Within this section it is possible to define environmental variables which are needed for the operation of the camera
 # Every key value pair written in this section will be translated to an environmental variable before the execution of
 # any camera related command
