@@ -50,3 +50,16 @@ class TestTestRunner(UfotestTestCase):
         self.assertEqual(1, test_results.test_count)
         self.assertEqual(1, test_results.passing_count)
         self.assertEqual(0, test_results.error_count)
+
+    def test_run_mock_suite(self):
+        """
+        Tests if the "mock" test suite is being run correctly
+        """
+        test_runner = TestRunner(config=self.config)
+        test_runner.load()
+
+        test_results = test_runner.run_suite('mock')
+        self.assertIsInstance(test_results, TestReport)
+        self.assertEqual(1, test_results.test_count)
+        self.assertEqual(1, test_results.passing_count)
+        self.assertEqual(0, test_results.error_count)

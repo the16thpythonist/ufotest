@@ -136,4 +136,4 @@ title = "UfoTest Config"
     # from the CLI test command to execute a bunch of tests.
     # This subsection can be used to create new custom test suites, by simply defining a list of test names.
     [tests.suites]
-        basic = ['power_up']
+        mock = ['mock']

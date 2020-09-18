@@ -56,3 +56,9 @@ def load_config():
 
 
 CONFIG = load_config()
+
+
+def reload_config():
+    global CONFIG
+    CONFIG = load_config()
+

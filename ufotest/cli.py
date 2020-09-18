@@ -29,6 +29,7 @@ from ufotest.install import (install_dependencies,
                              install_uca_ufo,
                              install_ipecamera)
 from ufotest.camera import save_frame, import_raw, set_up_camera, tear_down_camera
+from ufotest.testing import TestRunner
 
 
 @click.group(invoke_without_command=True)
@@ -285,15 +286,35 @@ def flash(verbose, file: str):
 @click.command('test', short_help="run a camera test")
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 @click.option('--email', '-e', type=click.STRING, help='An email address to send the final report of the test to')
+@click.option('--suite', '-s', is_flag=True, help='Execute a test SUITE with the given name')
 @click.argument('test_id', type=click.STRING)
-def test(verbose, email, test_id):
+def test(verbose, email, suite, test_id):
     """
     Run the test "TEST_ID"
 
     TEST_ID is a string, which identifies a certain test procedure. To view all these possible identifiers consult the
     config file.
     """
-    print("SCAN THE TEST FOLDERS AND ENUMERATE ALL THE TESTS")
+    if not check_install():
+        return 1
+
+    test_runner = TestRunner()
+    test_runner.load()
+    click.secho('Tests have been loaded!', fg='green')
+
+    try:
+        if suite:
+            click.secho('Executing test suite "{}"...'.format(test_id), bold=True)
+            test_report = test_runner.run_test(test_id)
+        else:
+            click.secho('Executing test "{}"...'.format(test_id), bold=True)
+            test_report = test_runner.run_suite(test_id)
+    except Exception as e:
+        click.secho(str(e), fg='red', bold=True)
+        return 1
+
+    click.secho(test_report.to_string())
+    return 0
 
 
 # Registering the commands within the click group

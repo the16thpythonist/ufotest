@@ -112,15 +112,23 @@ History
 - extended the "usage" section of the documentation with the new flash command
 
 
-0.7.0 (2020-09-??)
+0.7.0 (2020-09-18)
 ------------------
 
 - Added the new "test" command, which will execute a camera test procedure
     - Added the "tests" subfolder within the package, which will hold files that define these kind of test routines.
     - Added the TestRunner class which will be used to execute all these tests
     - Added the AbstractTest class, which will act as the base class for defining new camera tests
+    - Added the TestReport class, which will wrap the results of the execution of a TestRunner
+    - Added the TestSuite class, which will represent a test suite consisting of multiple tests
 - Added the "tests" section in the config file.
 - Fixed the "camera_height" to "sensor_height" in the camera.py module
+- Added the module "_testing.py", which provides utilities for unittesting of the project
+    - Added the UfotestTestCase as a extension of the default unittest TestCase, which sets up the project installation
+      folder within a temporary folder
+- Tests
+    - Fixed the errors within "test_ufotest"
+    - Added "test_testing" which contains test cases for testing the TestRunner class
 
 
 TODO
