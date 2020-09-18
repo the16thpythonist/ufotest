@@ -67,9 +67,10 @@ def install(path, verbose, no_dependencies, no_libuca, no_vivado):
     click.secho(' |  STARTING INSTALLATION  |', bold=True, fg='green')
     click.secho(' +-------------------------+', bold=True, fg='green')
 
+    operating_system = CONFIG['install']['os']
     click.secho('\nReading configuration...')
-    click.secho('- Configured OS: {}'.format(CONFIG['install']['os']))
-    click.secho('- Configured package install: {}'.format(CONFIG['install']['package_install']))
+    click.secho('- Configured OS: {}'.format(operating_system))
+    click.secho('- Configured package install: {}'.format(CONFIG['install'][operating_system]['package_install']))
     click.secho('- Camera dimensions: {} x {}'.format(
         CONFIG['camera']['sensor_width'],
         CONFIG['camera']['sensor_height']
@@ -101,17 +102,6 @@ def install(path, verbose, no_dependencies, no_libuca, no_vivado):
         install_ipecamera(path, verbose)
     else:
         click.secho('\n=====| Skipping Libuca |=====', bold=True)
-
-    # if not no_vivado:
-    #     click.secho('\n=====| Installing Vivado |=====', bold=True)
-    #     click.secho('not yet implemented')
-    #
-    #     click.secho('\n=====| Installing Vivado Programmer drivers |=====', bold=True)
-    #     click.secho('not yet implemented')
-    # else:
-    #     click.secho('\n=====| Skipping Vivado |=====', bold=True)
-
-    # The exit code
     return 0
 
 
