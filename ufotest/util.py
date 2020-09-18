@@ -81,6 +81,12 @@ def init_install():
     os.chmod(folder_path, 0o777)
     click.secho('Created the "tests" folder within the ufotest installation', fg='green')
 
+    # Additionally we need to create a folder for the archive of the test runs
+    archive_folder_path = os.path.join(folder_path, 'archive')
+    os.mkdir(archive_folder_path)
+    os.chmod(folder_path, 0o777)
+    click.secho('Created the "archive" folder within the ufotest installation', fg='green')
+
 
 def check_install():
     folder_path = get_path()
