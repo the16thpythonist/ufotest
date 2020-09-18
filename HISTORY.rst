@@ -131,6 +131,12 @@ History
     - Added "test_testing" which contains test cases for testing the TestRunner class
 
 
+0.7.1 (2020-09-18)
+------------------
+
+-
+
+
 TODO
 ----
 

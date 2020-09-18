@@ -8,6 +8,7 @@ from pathlib import Path
 import click
 import matplotlib
 import numpy as np
+import shutil
 import matplotlib.pyplot as plt
 matplotlib.use('TkAgg')
 
@@ -19,6 +20,7 @@ from ufotest.util import (execute_command,
                           check_install,
                           execute_script,
                           get_version,
+                          get_path,
                           check_vivado,
                           check_path)
 from ufotest.install import (install_dependencies,
@@ -114,10 +116,19 @@ def install(path, verbose, no_dependencies, no_libuca, no_vivado):
 
 
 @click.command('init', short_help='initializes the config files for ufotest')
-def init():
+@click.option('--force', '-f', is_flag=True, help='Deletes the current installation to reinstall')
+def init(force):
     """
     Initializes the config files for ufotest
     """
+    if force:
+        installation_path = get_path()
+        if check_path(installation_path, is_dir=True):
+            shutil.rmtree(get_path())
+            click.secho('Deleted old installation folder!', fg='green')
+        else:
+            click.secho('Installation folder did not exist', fg='green')
+
     init_install()
     click.secho('Ufotest is initialized!', bold=True, fg='green')
 
