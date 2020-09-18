@@ -97,8 +97,8 @@ def save_frame(path: str, verbose: bool, tmp_path='/tmp'):
         click.secho('-- Camera height:   {}'.format(CONFIG['camera']['sensor_height']))
         click.secho('-- Camera width:    {}'.format(CONFIG['camera']['sensor_width']))
     decode_command = 'ipedec -r {height} --num-columns {width} {path} {verbose}'.format(
-        height=CONFIG['camera']['camera_height'],
-        width=CONFIG['camera']['camera_width'],
+        height=CONFIG['camera']['sensor_height'],
+        width=CONFIG['camera']['sensor_width'],
         path=data_path,
         verbose='-v' if verbose else ''
     )
