@@ -120,6 +120,7 @@ History
     - Added the TestRunner class which will be used to execute all these tests
     - Added the AbstractTest class, which will act as the base class for defining new camera tests
 - Added the "tests" section in the config file.
+- Fixed the "camera_height" to "sensor_height" in the camera.py module
 
 
 TODO

@@ -94,8 +94,8 @@ def save_frame(path: str, verbose: bool, tmp_path='/tmp'):
     # Decoding the frame into the RAW format
     if verbose:
         click.secho('Decoding the image, with the following settings:')
-        click.secho('-- Camera height:   {}'.format(CONFIG['camera']['camera_height']))
-        click.secho('-- Camera width:    {}'.format(CONFIG['camera']['camera_width']))
+        click.secho('-- Camera height:   {}'.format(CONFIG['camera']['sensor_height']))
+        click.secho('-- Camera width:    {}'.format(CONFIG['camera']['sensor_width']))
     decode_command = 'ipedec -r {height} --num-columns {width} {path} {verbose}'.format(
         height=CONFIG['camera']['camera_height'],
         width=CONFIG['camera']['camera_width'],
