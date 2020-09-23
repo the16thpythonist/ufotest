@@ -11,7 +11,7 @@ title = "UfoTest Config"
 # project. This includes for example information about the target operating system, the URL's to the relevant
 # GIT repositories and the name of the packages to be installed.
 [install]
-    # Can be one of: "ubuntu", "suse"
+    # Can be one of: "ubuntu", "suse", "debian"
     os = "ubuntu"
 
     # The following strings contain the git URL's for the necessary repositories, which have to be installed for the
@@ -39,6 +39,33 @@ title = "UfoTest Config"
     # names for the required system packages, which may be slightly different naming conventions between different
     # distributions.
     [install.ubuntu]
+        package_install = 'sudo apt-get -y install'
+        packages = [
+            # For this CLI tool to work properly
+            "curl",
+            "git",
+            "gcc",
+            "python3-tk",
+            "tk-dev",
+            # To install the required repositories
+            "swig",
+            "cmake",
+            "uuid-dev",
+            "xfsprogs",
+            "xfslibs-dev",
+            "python2",
+            "python2-dev",
+            "doxygen",
+            "uthash-dev",
+            "libxml2",
+            "libxml2-dev",
+            # To install optional libuca
+            "libglib2.0",
+            "libgtk+2.0-dev",
+            "gobject-introspection"
+        ]
+
+    [install.debian]
         package_install = 'sudo apt-get -y install'
         packages = [
             # For this CLI tool to work properly

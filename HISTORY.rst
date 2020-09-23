@@ -168,6 +168,7 @@ History
 -Documentation
     - Added the installation of python tkinter as a requirement
     - Changed the installation instructions to not use sudo anymore, but instead to modify PATH
+- Added a "debian" option as operating system in the config file
 
 
 TODO
