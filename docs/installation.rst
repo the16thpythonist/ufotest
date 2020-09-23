@@ -4,7 +4,6 @@
 Installation
 ============
 
-
 Stable release
 --------------
 
@@ -22,7 +21,6 @@ you through the process.
 .. _pip: https://pip.pypa.io
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 
-
 From sources
 ------------
 
@@ -34,22 +32,25 @@ You can either clone the public repository:
 
     $ git clone git://github.com/the16thpythonist/ufotest
 
-Or download the `tarball`_:
-
-.. code-block:: console
-
-    $ curl -OJL https://github.com/the16thpythonist/ufotest/tarball/master
-
 Once you have a copy of the source, you can install it with:
 
 .. code-block:: console
 
     $ sudo python3 setup.py install
 
-
 .. _Github repo: https://github.com/the16thpythonist/ufotest
-.. _tarball: https://github.com/the16thpythonist/ufotest/tarball/master
 
+Running Unittest (Recommended)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+It is recommended to run the unittests of the project, if there are any problems with the project. This should provide
+some insight into which kind of problem has occurred.
+
+To run the unittests first navigate to the folder of the repository and then type:
+
+.. code-block:: console
+
+    $ sudo pytest tests/
 
 Installing dependencies manually
 --------------------------------
