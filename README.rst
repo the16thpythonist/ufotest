@@ -2,8 +2,6 @@
 ufotest
 =======
 
-.. image:: logo.png
-        :alt: Logo
 .. image:: ../logo.png
         :alt: Logo
 

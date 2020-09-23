@@ -159,6 +159,12 @@ History
   saved in an archive
 - Added pytest to the requirements.txt
 
+0.8.1 (2020-09-23)
+------------------
+
+- Changed the file mode of the templates
+- lol
+
 TODO
 ----
 
