@@ -162,8 +162,12 @@ History
 0.8.1 (2020-09-23)
 ------------------
 
-- Changed the file mode of the templates
-- lol
+- Fixes
+    - Changed the file mode of the templates
+-Documentation
+    - Added the installation of python tkinter as a requirement
+    - Changed the installation instructions to not use sudo anymore, but instead to modify PATH
+
 
 TODO
 ----

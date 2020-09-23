@@ -4,19 +4,46 @@
 Installation
 ============
 
-Stable release
---------------
+Requirements
+------------
 
-To install ufotest, run this command in your terminal:
+The projects needs python tkinter as one of it's dependencies. This will not be installed with pip, but has to
+be installed with the operating systems project manager instead.
 
 .. code-block:: console
+    # Ubuntu/Debian
+    $ sudo apt-get -y install python3-tk
+    # OpenSUSE
+    $ zypper install -y python3-tk
 
-    $ sudo pip install ufotest
+Stable release (Recommended)
+----------------------------
 
 This is the preferred method to install ufotest, as it will always install the most recent stable release.
 
 If you don't have `pip`_ installed, this `Python installation guide`_ can guide
 you through the process.
+
+To install ufotest, run this command in your terminal:
+
+.. code-block:: console
+
+    $ pip3 install ufotest
+
+The executable files for the actual command line interface will *most likely* not be installed into a valid PATH
+location. Instead the executable will be installed to `$HOME/.local/bin`. So this path has to be added to the PATH
+variable for the executable to be callable from the console:
+
+.. code-block:: console
+
+    $ export PATH=$PATH:$HOME/.local/bin
+
+**NOTE**: This extension of the PATH variable will be lost after a restart of the host machine. It is advised to add
+this line to the bashrc file:
+
+.. code-block:: console
+
+    $ echo 'export PATH=$PATH:/$HOME/.local/bin' >> $HOME/.bashrc
 
 .. _pip: https://pip.pypa.io
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
@@ -38,6 +65,21 @@ Once you have a copy of the source, you can install it with:
 
     $ sudo python3 setup.py install
 
+The executable files for the actual command line interface will *most likely* not be installed into a valid PATH
+location. Instead the executable will be installed to `$HOME/.local/bin`. So this path has to be added to the PATH
+variable for the executable to be callable from the console:
+
+.. code-block:: console
+
+    $ export PATH=$PATH:$HOME/.local/bin
+
+**NOTE**: This extension of the PATH variable will be lost after a restart of the host machine. It is advised to add
+this line to the bashrc file:
+
+.. code-block:: console
+
+    $ echo 'export PATH=$PATH:/$HOME/.local/bin' >> $HOME/.bashrc
+
 .. _Github repo: https://github.com/the16thpythonist/ufotest
 
 Running Unittest (Recommended)
@@ -51,6 +93,12 @@ To run the unittests first navigate to the folder of the repository and then typ
 .. code-block:: console
 
     $ sudo pytest tests/
+
+Adding the script to PATH
+-------------------------
+
+
+
 
 Installing dependencies manually
 --------------------------------

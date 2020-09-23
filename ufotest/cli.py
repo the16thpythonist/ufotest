@@ -74,8 +74,8 @@ def install(path, verbose, no_dependencies, no_libuca, no_vivado):
     click.secho('- Configured OS: {}'.format(operating_system))
     click.secho('- Configured package install: {}'.format(CONFIG['install'][operating_system]['package_install']))
     click.secho('- Camera dimensions: {} x {}'.format(
-        CONFIG['camera']['sensor_width'],
-        CONFIG['camera']['sensor_height']
+        CONFIG.get_sensor_width(),
+        CONFIG.get_sensor_height()
     ))
 
     if not no_dependencies:
@@ -169,8 +169,8 @@ def frame(verbose, output, display):
         images = import_raw(
             path=output,
             n=1,
-            sensor_height=CONFIG['camera']['sensor_height'],
-            sensor_width=CONFIG['camera']['sensor_width']
+            sensor_height=CONFIG.get_sensor_height(),
+            sensor_width=CONFIG.get_sensor_width()
         )
 
         plt.imshow(images[0])

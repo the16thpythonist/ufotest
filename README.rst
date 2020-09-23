@@ -31,7 +31,8 @@ also register the CLI commands to be usable.
 
 .. code-block:: console
 
-    $ sudo pip3 install ufotest
+    $ pip3 install ufotest
+    $ export PATH=$PATH:$HOME/.local/bin
     $ ufotest init
 
 Usage
