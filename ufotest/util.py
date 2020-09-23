@@ -1,11 +1,15 @@
 """
 A module containing various utility functions for usage in other modules.
 """
-import os
+import string
 import click
+import random
 import subprocess
 import importlib.util
 from typing import Optional
+from abc import ABC, abstractmethod
+
+from jinja2 import Template
 
 from ufotest.config import *
 from ufotest.scripts import SCRIPTS
@@ -14,9 +18,13 @@ from ufotest.scripts import SCRIPTS
 VERSION_PATH = os.path.join(PATH, 'VERSION')
 
 
+# FUNCTIONS
+# =========
+
 def get_version():
     with open(VERSION_PATH) as version_file:
         version = version_file.read()
+        version = version.replace(' ', '').replace('\n', '')
 
     return version
 
@@ -27,7 +35,6 @@ def dynamic_import(module_name: str, file_path: str):
     spec.loader.exec_module(module)
 
     return module
-
 
 def get_command_output(command: str, cwd: Optional[str] = None):
     completed_process = subprocess.run(command, cwd=cwd, shell=True)
@@ -57,7 +64,7 @@ def setup_environment():
 
 
 def create_folder(folder_path: str):
-    if os.path.exists(folder_path):
+    if not os.path.exists(folder_path):
         os.mkdir(folder_path)
         os.chmod(folder_path, 0o777)
 
@@ -79,7 +86,7 @@ def init_install():
     config_path = get_config_path()
     if not os.path.exists(config_path):
         shutil.copyfile(CONFIG_TEMPLATE_PATH, config_path)
-        click.secho('Copied config template to installation folder', fg='green')
+        click.secho('Copied config template to installation folder "{}"'.format(folder_path), fg='green')
 
     # Also we need to create the tests folder inside of this folder
     test_folder_path = os.path.join(folder_path, 'tests')
@@ -148,3 +155,34 @@ def execute_script(name: str, prefix: str = '', verbose: bool = False):
         click.secho('Script "{}" encountered an error!'.format(name), fg='red')
 
     return exit_code
+
+
+def get_template(name: str):
+    template_path = os.path.join(TEMPLATE_PATH, name)
+    with open(template_path, mode='r+') as file:
+        return Template(file.read())
+
+
+def random_string(length: int):
+    letters = string.ascii_letters + ' '
+    return ''.join(random.choice(letters) for i in range(length))
+
+# CLASSES
+# =======
+
+class AbstractRichOutput(ABC):
+
+    # TO BE IMPLEMENTED
+    # -----------------
+
+    @abstractmethod
+    def to_markdown(self) -> str:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def to_latex(self) -> str:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def to_string(self) -> str:
+        raise NotImplementedError()

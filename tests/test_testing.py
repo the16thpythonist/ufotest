@@ -1,8 +1,22 @@
 import inspect
 
 from ufotest._testing import UfotestTestCase
-from ufotest.testing import TestRunner, AbstractTest, TestReport
+from ufotest.util import random_string
+from ufotest.testing import TestRunner, AbstractTest, TestReport, MessageTestResult, TestMetadata
 
+
+# HELPER FUNCTIONS
+# ================
+
+def get_message_test_result(exit_code: int = 0):
+    return MessageTestResult(
+        exit_code=exit_code,
+        message=random_string(20)
+    )
+
+
+# TESTCASES
+# =========
 
 class TestTestRunner(UfotestTestCase):
 
@@ -63,3 +77,27 @@ class TestTestRunner(UfotestTestCase):
         self.assertEqual(1, test_results.test_count)
         self.assertEqual(1, test_results.passing_count)
         self.assertEqual(0, test_results.error_count)
+
+
+class TestTestReport(UfotestTestCase):
+
+    def test_construction(self):
+        """
+        If an instance can be constructed without errors
+        """
+        test_report = TestReport({'test': get_message_test_result()}, TestMetadata())
+        self.assertIsInstance(test_report, TestReport)
+
+    def test_markdown_conversion_rough(self):
+        """
+        If the markdown conversion works at all
+        """
+        results = {}
+        for i in range(5):
+            results['test {}'.format(i)] = get_message_test_result()
+
+        test_report = TestReport(results, TestMetadata())
+        markdown_string = test_report.to_markdown()
+
+        self.assertIn('# Test Report', markdown_string)
+

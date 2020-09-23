@@ -3,13 +3,17 @@ Module containing the functions to access the configuration of ufotest.
 """
 import os
 import toml
-import shutil
 from pathlib import Path
+
+import shutil
+from jinja2 import Environment, PackageLoader, select_autoescape
 
 # The path of the this very python package and the path to the default TOML config file, which will be copied during
 # the installation of this project
 PATH = Path(__file__).parent.absolute()
-CONFIG_TEMPLATE_PATH = os.path.join(PATH, 'default.toml')
+
+TEMPLATE_PATH = os.path.join(PATH, 'templates')
+CONFIG_TEMPLATE_PATH = os.path.join(TEMPLATE_PATH, 'default.toml')
 
 # This will be the string path to the HOME folder of the user which is currently executing the script
 HOME_PATH = str(Path.home())
@@ -70,7 +74,7 @@ class Singleton(type):
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances
+        return cls._instances[cls]
 
 
 class Config(metaclass=Singleton):
@@ -111,6 +115,9 @@ class Config(metaclass=Singleton):
     def __setitem__(self, key, value):
         self.data[key] = value
 
+    def __contains__(self, item):
+        return item in self.data.keys()
+
     def keys(self):
         return self.data.keys()
 
@@ -131,8 +138,14 @@ class Config(metaclass=Singleton):
         sensor_model = self.data['camera']['model']
         return self.data['camera'][sensor_model]['sensor_height']
 
-    def get_archive_folder(self):
-        return self.data['tests']['archive']
+    def get_archive_path(self):
+        return os.path.expandvars(self.data['tests']['archive'])
+
+    def get_date_format(self):
+        return self.data['general']['date_format']
+
+    def get_time_format(self):
+        return self.data['general']['time_format']
 
     # UTILITY METHODS
     # ---------------

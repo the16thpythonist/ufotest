@@ -1,13 +1,13 @@
 import os
 import inspect
-import time
+import platform
 import datetime
 import logging
 from abc import ABC, abstractmethod
 from typing import Tuple, Dict, List, Type
 
 from ufotest.config import PATH, Config
-from ufotest.util import check_path, dynamic_import, create_folder
+from ufotest.util import check_path, dynamic_import, create_folder, get_template, get_version, AbstractRichOutput
 
 
 class TestRunner(object):
@@ -19,9 +19,12 @@ class TestRunner(object):
         self.modules = {}
         self.tests = {}
 
-        self.archive_folder_path = self.config.get_archive_folder()
+        self.archive_folder_path = self.config.get_archive_path()
         self.start_time = datetime.datetime.now()
-        self.folder_path = os.path.join(self.archive_folder_path, self.start_time.strftime('%d_%m_%Y__%H_%M_%S'))
+        self.folder_path = os.path.join(
+            self.archive_folder_path,
+            self.start_time.strftime('test_run_%d_%m_%Y__%H_%M_%S')
+        )
         create_folder(self.folder_path)
 
         # Initializing the logging
@@ -54,6 +57,7 @@ class TestRunner(object):
         result = test.execute()
 
         test_report = TestReport({test_name: result}, TestMetadata())
+        test_report.save(self.folder_path)
         return test_report
 
     def run_suite(self, suite_name: str):
@@ -61,6 +65,7 @@ class TestRunner(object):
         results = test_suite.execute_all()
 
         test_report = TestReport(results, TestMetadata())
+        test_report.save(self.folder_path)
         return test_report
 
     # HELPER METHODS
@@ -96,7 +101,7 @@ class TestRunner(object):
         return test_suite
 
 
-class AbstractTestResult(ABC):
+class AbstractTestResult(AbstractRichOutput, ABC):
 
     def __init__(self, exit_code: int):
         self.exit_code = exit_code
@@ -118,10 +123,6 @@ class AbstractTestResult(ABC):
         time_delta: datetime.timedelta = self.end_datetime - self.start_datetime
         return time_delta.total_seconds()
 
-    @abstractmethod
-    def to_string(self) -> str:
-        raise NotImplementedError()
-
 
 class MessageTestResult(AbstractTestResult):
 
@@ -129,7 +130,16 @@ class MessageTestResult(AbstractTestResult):
         AbstractTestResult.__init__(self, exit_code)
         self.message = message
 
+    # IMPLEMENT "AbstractRichOutput"
+    # ------------------------------
+
     def to_string(self) -> str:
+        return self.message
+
+    def to_markdown(self) -> str:
+        return self.message
+
+    def to_latex(self) -> str:
         return self.message
 
 
@@ -179,32 +189,80 @@ class TestSuite(object):
         return 'suite:{}'.format(self.suite_name)
 
 
-# TODO: Add some meta data.
-class TestMetadata(object):
+class TestMetadata(AbstractRichOutput):
 
-    def __init__(self):
-        pass
+    def __init__(self, config: Config = Config()):
+        self.config = config
+
+        self.date_time = datetime.datetime.now()
+        self.platform = platform.platform()
+        self.version = get_version()
+
+    def get_date(self):
+        date_format = self.config.get_date_format()
+        return self.date_time.strftime(date_format)
+
+    def get_time(self):
+        time_format = self.config.get_time_format()
+        return self.date_time.strftime(time_format)
+
+    # IMPLEMENT "AbstractRichOutput"
+    # ------------------------------
+
+    def to_string(self) -> str:
+        return ""
+
+    def to_markdown(self) -> str:
+        template = get_template('test_meta.md')
+        return template.render(
+            date=self.get_date(),
+            time=self.get_time(),
+            platform=self.platform,
+            config=self.config,
+            version=self.version
+        )
+
+    def to_latex(self) -> str:
+        return ""
 
 
-class TestReport(object):
+class TestReport(AbstractRichOutput):
 
     def __init__(self, test_results: Dict[str, AbstractTestResult], test_meta: TestMetadata):
         self.results = test_results
         self.meta = test_meta
 
-    def to_markdown(self):
-        string = '# Test Report \n\n'
-        string += '## Individual Test Outputs\n\n'
+        # COMPUTED ATTRIBUTES
+        self.test_count = len(self.results)
+        self.passing_count = sum(1 for result in self.results.values() if result.passing)
+        self.error_count = sum(1 for result in self.results.values() if not result.passing)
+        self.success_ratio = round(self.passing_count / self.test_count, ndigits=5)
 
-        for name, result in self.results.items():
-            string += '### {name} ({status})\n'.format(
-                name=name,
-                status=result.get_status()
-            )
-            string += result.to_string()
-            string += '\n'
+    def save(self, path: str):
+        # Save the report as an markdown file
+        markdown_path = os.path.join(path, 'report.md')
+        with open(markdown_path, mode='w+') as file:
+            file.write(self.to_markdown())
 
-        return string
+    # HELPER METHODS
+    # --------------
 
-    def to_string(self):
+    def get_file_name(self):
+        return
+
+    # IMPLEMENT "AbstractRichOutput"
+    # ------------------------------
+
+    def to_string(self) -> str:
         return self.to_markdown()
+
+    def to_markdown(self) -> str:
+        template = get_template('test_report.md')
+        return template.render(
+            report=self,
+            meta=self.meta,
+            results=self.results
+        )
+
+    def to_latex(self) -> str:
+        return ""

@@ -12,7 +12,7 @@ import shutil
 import matplotlib.pyplot as plt
 matplotlib.use('TkAgg')
 
-from ufotest.config import PATH, CONFIG, get_config_path
+from ufotest.config import PATH, get_config_path, Config
 from ufotest.scripts import SCRIPTS, SCRIPTS_PATH
 from ufotest.util import (execute_command,
                           setup_environment,
@@ -33,6 +33,8 @@ from ufotest.install import (install_dependencies,
 from ufotest.camera import save_frame, import_raw, set_up_camera, tear_down_camera
 from ufotest.testing import TestRunner
 
+
+CONFIG = Config()
 
 @click.group(invoke_without_command=True)
 @click.option('--version', '-v', is_flag=True, help='Print the version of the program')
@@ -314,7 +316,9 @@ def test(verbose, email, suite, test_id):
         click.secho(str(e), fg='red', bold=True)
         return 1
 
-    click.secho(test_report.to_string())
+    if verbose:
+        click.secho(test_report.to_string())
+    click.secho('Test report saved to "{}"'.format(test_runner.folder_path), fg='green', bold=True)
     return 0
 
 

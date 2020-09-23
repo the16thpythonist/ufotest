@@ -4,7 +4,7 @@ import os
 from unittest import TestCase
 
 from ufotest.util import init_install, get_path
-from ufotest.config import CONFIG, reload_config, load_config
+from ufotest.config import CONFIG, reload_config, load_config, Config
 
 
 class UfotestTestCase(TestCase):
@@ -21,8 +21,8 @@ class UfotestTestCase(TestCase):
         # After that we can install ufotest into this folder
         init_install()
         # After the installation we also need to reload the config dictionary for the whole system
-        reload_config()
-        cls.config = load_config()
+        cls.config = Config()
+        cls.config.reload()
 
     @classmethod
     def tearDownClass(cls) -> None:

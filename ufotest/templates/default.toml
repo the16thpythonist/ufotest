@@ -1,5 +1,12 @@
 title = "UfoTest Config"
 
+# This "general" section will contain all the configuration, which is not directly related to any specific
+# topic
+[general]
+    # These are the format strings for the python datetime objects, which will be used throughout the project.
+    date_format = "%d %b %Y"
+    time_format = "%H:%M:%S"
+
 # The installation section contains all the configuration, which us used to install all the requirements for the
 # project. This includes for example information about the target operating system, the URL's to the relevant
 # GIT repositories and the name of the packages to be installed.
@@ -88,18 +95,16 @@ title = "UfoTest Config"
 # The section for the camera is used to define some camera specific parameters, which will be needed by this program
 # to function properly
 [camera]
-    # These two integers are used to pass the sensor dimensions to the program. These parameters are needed for the
-    # decoding of the raw frame data for example. It is important that these parameters are also correctly set for
-    # the "install" command, since these dimensions have to be hard-built into some of the required repositories.
-    # After changing the sensor to one with another dimension it is thus required to reinstall the project!
-    sensor_width = 5120
-    sensor_height = 3840
 
     model = 'cmv20000'
 
     [camera.cmv20000]
+        # These two integers are used to pass the sensor dimensions to the program. These parameters are needed for the
+        # decoding of the raw frame data for example. It is important that these parameters are also correctly set for
+        # the "install" command, since these dimensions have to be hard-built into some of the required repositories.
+        # After changing the sensor to one with another dimension it is thus required to reinstall the project!
         sensor_width = 5120
-        sensor_heigth = 3840
+        sensor_height = 3840
 
 
 # Within this section it is possible to define environmental variables which are needed for the operation of the camera
@@ -137,8 +142,12 @@ title = "UfoTest Config"
     # added by the user by placing the python modules into this path. Given these modules contain valid test code
     # (for the necessary instructions regarding the writing of tests please consult the documentation), the test
     # runner will dynamically import them from this folder and they will be made available to the CLI.
-    folder = '~/.ufotest/tests'
-    archive = '~/.ufotest/archive'
+    folder = '$HOME/.ufotest/tests'
+    archive = '$HOME/.ufotest/archive'
+
+    # Every test run is being archived as a separate folder.
+    # This is a datetime format string for the creation of the folder name for the test reports.
+    name_format = "test_run_%d_%m_%Y_%H_%M_%S"
 
     # The concept of test suites is to define subsets of tests by their names. These suites can then be directly called
     # from the CLI test command to execute a bunch of tests.

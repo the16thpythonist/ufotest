@@ -1,6 +1,18 @@
 Welcome to ufotest's documentation!
 ======================================
 
+Content Overview
+----------------
+
+- **ufotest** This is the readme file, as it can also be seen on the Github repository of the project
+- **Installation** Will provide information on how to install the project. (Also contains information on how to install
+  the dependencies for the UFO camera manually)
+- **Usage** This section will explain what kind of commands the CLI tool offers and how they are used.
+- **UFO Camera** Some notes about the UFO camera / HighFlex FPGA board itself, which is not directly related to the
+  CLI project.
+- **Source Code Documentation** Contains the information about all the source code of the project based on the
+  python docstrings.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
@@ -9,6 +21,7 @@ Welcome to ufotest's documentation!
    installation
    current
    usage
+   camera
    modules
    authors
    history

@@ -1,0 +1,6 @@
+- Start time: {{ date }}, {{ time }}
+- Operating Platform: {{ platform }}
+- Configured Linux: {{ config["install"]["os"] }}
+- Ufotest Version: {{ version }}
+- Sensor Width: {{ config.get_sensor_width() }}
+- Sensor Height: {{ config.get_sensor_height() }}

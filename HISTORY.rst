@@ -133,21 +133,35 @@ History
   it
 
 
-0.8.0 (2020-09-18)
+0.8.0 (2020-09-23)
 ------------------
 
 - Fixes
     - Fixed a broken dict index in install command
+    - Fixed wrong config in _testing.py
+    - Fixed naming error in default.toml
+- Documentation
+    - Added a short description for the items in the table of contents
+    - Added a stub for an additional section which will contain notes about the camera itself
+    - Changed the recommended way of installation to "from source" because then you could also run
+      the unittests, which is pretty important
 - Added the "archive" folder to be created with the "init" command. This folder will contain the results of
   the execution of a test runner.
-- Added the "Config" singletong class, which should be used for config access in the future...
-
-
+- Added the "Config" singleton class, which should be used for config access in the future...
+- Added a "general" section in the config file, which will store the date time format configuration for now, but
+  will be used in the future for all configuration, which is not bound to any particular topic.
+- Added the class "AbstractRichOutput", which will serve as an interface for all classes (mainly related to the
+  testing functionality) which are supposed to implement plaintext, markdown and latex conversions...+
+- Using jinja2 for templating in the project now
+- Added the "templates" folder to the project. This folder will contain jinja2 templates, which will be used to
+  generate the output for the test reports etc.
+- Implemented Markdown conversion for TestReport and TestMetadata. The markdown versions of the test reports are now
+  saved in an archive
+- Added pytest to the requirements.txt
 
 TODO
 ----
 
-- Write explanation for every item in the initial page of the documentation.
 - Document camera properties "Notes"
 - Change all usages from config to singleton class
 - Write a test function, which will take a frame and check it for some properties
