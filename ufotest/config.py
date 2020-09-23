@@ -59,9 +59,6 @@ def load_config():
         return toml.load(config_path)
 
 
-CONFIG = load_config()
-
-
 def reload_config():
     global CONFIG
     CONFIG = load_config()
@@ -152,3 +149,6 @@ class Config(metaclass=Singleton):
 
     def reload(self):
         self.data = load_config()
+
+
+CONFIG = Config()

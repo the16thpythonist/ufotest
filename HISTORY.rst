@@ -164,6 +164,7 @@ History
 
 - Fixes
     - Changed the file mode of the templates
+    - Fixed the way to acces the sensor dimensions in the install.py module
 -Documentation
     - Added the installation of python tkinter as a requirement
     - Changed the installation instructions to not use sudo anymore, but instead to modify PATH

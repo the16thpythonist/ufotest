@@ -156,8 +156,8 @@ def install_libufodecode(path:str, verbose=True):
         verbose,
         {
             'CMAKE_INSTALL_PREFIX': '/usr',
-            'IPECAMERA_WIDTH': CONFIG['camera']['sensor_width'],
-            'IPECAMERA_HEIGHT': CONFIG['camera']['sensor_height']
+            'IPECAMERA_WIDTH': CONFIG.get_sensor_width(),
+            'IPECAMERA_HEIGHT': CONFIG.get_sensor_height()
         }
     )
 
@@ -186,8 +186,8 @@ def install_uca_ufo(path: str, verbose=True):
         verbose,
         {
             'CMAKE_INSTALL_PREFIX': '/usr',
-            'CMOSIS_SENSOR_WIDTH': CONFIG['camera']['sensor_width'],
-            'CMOSIS_SENSOR_HEIGHT': CONFIG['camera']['sensor_height']
+            'CMOSIS_SENSOR_WIDTH': CONFIG.get_sensor_width(),
+            'CMOSIS_SENSOR_HEIGHT': CONFIG.get_sensor_height()
         }
     )
 
