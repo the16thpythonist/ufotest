@@ -36,8 +36,9 @@ def dynamic_import(module_name: str, file_path: str):
 
     return module
 
+
 def get_command_output(command: str, cwd: Optional[str] = None):
-    completed_process = subprocess.run(command, cwd=cwd, shell=True)
+    completed_process = subprocess.run(command, cwd=cwd, shell=True, stdout=subprocess.PIPE)
     return completed_process.stdout
 
 
