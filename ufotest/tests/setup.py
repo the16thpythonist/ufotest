@@ -2,6 +2,7 @@ import time
 
 from ufotest.testing import AbstractTest, MessageTestResult, TestRunner
 from ufotest.camera import pci_read, pci_write
+from ufotest.util import clean_pci_read_output
 
 
 class PowerUpTest(AbstractTest):
@@ -13,20 +14,19 @@ class PowerUpTest(AbstractTest):
 
     def run(self):
 
-        pci_write('9000', 'DFFF')
-        result1 = pci_read('9010', '1')
-        print(result1)
-        time.sleep(0.2)
+        writes = [
+            ('9000', 'DFFF'),
+            ('9000', 'E0FF'),
+            ('9000', 'E10F')
+        ]
 
-        pci_write('9000', 'E0FF')
-        result2 = pci_read('9010', '1')
-        print(result2)
-        time.sleep(0.2)
+        results = []
 
-        pci_write('9000', 'E10F')
-        result3 = pci_read('9010', '1')
-        print(result3)
-        time.sleep(0.2)
+        for address, value in writes:
+            pci_write(address, value)
+            result = pci_read('9010', '1')
+            results.append(clean_pci_read_output(result))
+            time.sleep(0.2)
 
-        return MessageTestResult(0, 'RESULT: {}'.format(result1))
+        return MessageTestResult(0, '\n'.join(results))
 
