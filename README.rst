@@ -2,7 +2,8 @@
 ufotest
 =======
 
-.. image:: ../logo.png
+.. image:: https://github.com/the16thpythonist/ufotest/blob/master/logo.png
+        :target: https://pypi.python.org/pypi/ufotest
         :alt: Logo
 
 .. image:: https://img.shields.io/pypi/v/ufotest.svg
@@ -31,7 +32,7 @@ also register the CLI commands to be usable.
 
 .. code-block:: console
 
-    $ pip3 install ufotest
+    $ pip3 install --user ufotest
     $ export PATH=$PATH:$HOME/.local/bin
     $ ufotest init
 
@@ -50,14 +51,21 @@ Features
 
 - Global configuration file
 - Automatic installation of all dependencies for a barebones operation of the UFO camera
+- Frame acquisition and display with matplotlib
+- Dynamic discovery of custom camera test cases
+- Automatic generation of test reports
 
 Credits
 -------
 
 The following software was used in the creation of the project:
 
+* Click_: Python library for creating CLI applications
+* Jinja2_: Templating library for Python
 * Cookiecutter_: A CLI tool for project templating
 * `audreyr/cookiecutter-pypackage`_: A basic template for python package projects
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+.. _Click: https://click.palletsprojects.com/en/7.x/
+.. _Jinja2: https://jinja.palletsprojects.com/en/2.11.x/
