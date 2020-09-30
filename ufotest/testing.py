@@ -1,4 +1,5 @@
 import os
+import re
 import inspect
 import platform
 import datetime
@@ -141,6 +142,54 @@ class MessageTestResult(AbstractTestResult):
 
     def to_latex(self) -> str:
         return self.message
+
+
+class AssertionTestResult(AbstractTestResult):
+
+    def __init__(self, detailed: bool = False):
+        AbstractTestResult.__init__(self, 0)
+        self.detailed = detailed
+
+        self.assertions = []
+
+    def assert_pci_read_ok(self, read_result: str):
+        match = re.match('.* 000f.*', read_result)
+        result = bool(match)
+
+        return self.assertion_result(
+            result,
+            '(+) PCI READ "{}" IS FINE'.format(read_result),
+            '(-) PCI READ "{}" CONTAINS ERROR!'.format(read_result)
+        )
+
+    # HELPER METHODS
+    # --------------
+
+    def assertion_result(self, result: bool, success_message: str, error_message: str):
+        if result:
+            return result, success_message
+        else:
+            self.exit_code = 1
+            return result, error_message
+
+    # IMPLEMENT "AbstractRichOutput"
+    # ------------------------------
+
+    def to_string(self) -> str:
+        pass
+
+    def to_markdown(self) -> str:
+        lines = []
+
+        if self.detailed:
+            lines += [message for result, message in self.assertions if result]
+
+        lines += ['**{}**'.format(message) for result, message in self.assertions if not result]
+
+        return '\n'.join(lines)
+
+    def to_latex(self) -> str:
+        pass
 
 
 class AbstractTest(ABC):
