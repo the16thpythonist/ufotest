@@ -151,6 +151,7 @@ class AssertionTestResult(AbstractTestResult):
         self.detailed = detailed
 
         self.assertions = []
+        self.error_count = 0
 
     def assert_pci_read_ok(self, read_result: str):
         match = re.match('.* 000f.*', read_result)
@@ -170,7 +171,8 @@ class AssertionTestResult(AbstractTestResult):
             self.assertions.append((result, success_message))
         else:
             self.exit_code = 1
-            return self.assertions.append((result, error_message))
+            self.error_count += 1
+            self.assertions.append((result, error_message))
 
     # IMPLEMENT "AbstractRichOutput"
     # ------------------------------
@@ -179,14 +181,13 @@ class AssertionTestResult(AbstractTestResult):
         pass
 
     def to_markdown(self) -> str:
-        lines = []
-
-        if self.detailed:
-            lines += [message for result, message in self.assertions if result]
-
-        lines += ['**{}**'.format(message) for result, message in self.assertions if not result]
-
-        return '\n'.join(lines)
+        template = get_template('assertion_test_result.md')
+        return template.render(
+            exit_code=self.exit_code,
+            assertions=self.assertions,
+            detailed=self.detailed,
+            error_count=self.error_count
+        )
 
     def to_latex(self) -> str:
         pass
