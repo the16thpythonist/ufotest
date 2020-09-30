@@ -189,6 +189,16 @@ History
     - Extended "usage" with how to use the "test" command
     - Added additional section "tests", which explains how to write a custom test class.
 
+0.8.3 (2020-09-30)
+------------------
+
+- Fixes
+    - Fixed the access to the config values of the camera dimensions in the function which acquires
+      a frame.
+- Changes
+    - Updated the readme
+
+
 TODO
 ----
 
