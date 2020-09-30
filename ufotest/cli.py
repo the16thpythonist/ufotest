@@ -308,10 +308,10 @@ def test(verbose, email, suite, test_id):
     try:
         if suite:
             click.secho('Executing test suite "{}"...'.format(test_id), bold=True)
-            test_report = test_runner.run_test(test_id)
+            test_report = test_runner.run_suite(test_id)
         else:
             click.secho('Executing test "{}"...'.format(test_id), bold=True)
-            test_report = test_runner.run_suite(test_id)
+            test_report = test_runner.run_test(test_id)
     except Exception as e:
         click.secho(str(e), fg='red', bold=True)
         return 1
