@@ -154,7 +154,10 @@ class AbstractTest(ABC):
 
     def execute(self) -> AbstractTestResult:
         start_datetime = datetime.datetime.now()
-        test_result = self.run()
+        try:
+            test_result = self.run()
+        except Exception as e:
+            test_result = MessageTestResult(1, 'Test Execution failed with error "{}"'.format(str(e)))
         end_datetime = datetime.datetime.now()
 
         test_result.start_datetime = start_datetime

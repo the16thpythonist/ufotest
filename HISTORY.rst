@@ -171,6 +171,15 @@ History
 - Added a "debian" option as operating system in the config file
 
 
+0.8.2 (2020-09-30)
+------------------
+
+- Fixes
+    -
+- Added
+    - The run method of a single "AbstractTest" is now wrapped int a try/except statement.
+
+
 TODO
 ----
 
