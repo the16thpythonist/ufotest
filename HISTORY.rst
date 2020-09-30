@@ -177,10 +177,17 @@ History
 - Fixes
     - "test" command had the execution of a suite and a single test switched around
     - fixed the "get_command_output" function which was not working
+    - fixed a minor issue in the test report markdown template
 - Added
     - The run method of a single "AbstractTest" is now wrapped int a try/except statement.
     - The class "AssertionTestResult", which can be used for tests to define assertion cases.
         - Unittests for this class
+    - Test suite "full" which is meant to contain all the tests in the future
+- Changes
+    - The "no-dependencies" flag of the "install" command now only skips the system packages
+- Documentation
+    - Extended "usage" with how to use the "test" command
+    - Added additional section "tests", which explains how to write a custom test class.
 
 TODO
 ----

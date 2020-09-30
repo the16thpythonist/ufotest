@@ -28,7 +28,7 @@ test case.
 {% for key, result in results.items() %}
 {%- if result.passing -%}
 **[O]** {{ key }}<br>
-{% else %}
+{%- else %}
 **[X]** {{ key }}<br>
 {% endif -%}
 {% endfor %}

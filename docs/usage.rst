@@ -194,3 +194,59 @@ If an appropriate ".bit" file exists, it can be used to program the fpga board l
 
     It is important that the file actually has the file extension ".bit"
 
+
+Running a camera test
+---------------------
+
+It is additionally possible to run camera tests. A camera test is a special test routine, which tests some features
+related to the camera. This could for example be whether the acquisition of a frame works properly, but could also be
+checking if some dependency is installed correctly.
+
+Such a camera test is executed with the `test` command of the CLI. This command takes exactly one required argument:
+The string identifier of the test. Each test has to be named with a unique identifier. For this example, we are going
+to use the 'mock' test, which is only implemented for testing purposes.
+
+.. code-block:: console
+
+    $ ufotest test mock
+
+This command will execute the 'mock' test. Every execution of a camera test creates a *test report*. Currently this test
+report is only available as a markdown (report.MD) file. This report first of all contains meta informations about the
+test run, such as the starting/ending time, the target operating system and the CLI version. Additionally, it contains
+an overview and a detailed description of the test results of all the tests, which were included in the
+test run.
+
+By default, these test reports can be found in the path `$HOME\.ufotest\archive` (or `$UFOTEST_PATH/archive` for
+custom install). Each test run will create a separate folder within this "archive". The folders will be named with the
+date and starting time of their corresponding test runs. Within these folders the "report.md" can be found.
+
+.. note::
+
+    The naming convention for the folder names can be changed in the config file
+
+Test suites
+"""""""""""
+
+By default the `test` command will execute only a single test by it's string name. Because that is not very useful,
+there is also the possibility to run multiple tests in a sequence. For this purpose it is possible to define
+*test suites*.
+
+To run such a suite use the '-s/--suite' option for the `test` command and use the string name of the suite:
+
+.. code-block:: console
+
+    $ ufotest test --suite mock
+
+Some existing test suites are the following:
+- **full**: This contains all tests, which are implemented by default
+- **mock**: Will only execute the "mock" test. For testing purposes
+
+It is also possible to create a custom test suite. This can be done by adding an additional key value pair within the
+"test/suite" section of the config file. The key will be the string name by which the suite will be identified and the
+value is supposed to be a list of string test names. The tests will be executed in the order in which they appear in
+this list.
+
+.. note::
+
+    To acquire the names of test to put into a custom suite, take a look at the "full" suite in the config file.
+    It contains all tests, which are available.
