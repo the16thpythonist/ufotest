@@ -166,7 +166,7 @@ class AssertionTestResult(AbstractTestResult):
         )
 
     def assert_pci_read_ok(self, read_result: str):
-        match = re.match('.* 000f.*', read_result)
+        match = re.match('.*000f.*', read_result)
         result = bool(match)
 
         self.assertion_result(

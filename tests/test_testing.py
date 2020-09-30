@@ -159,10 +159,10 @@ class TestAssertionTestResult(UfotestTestCase):
         """
         test_result = AssertionTestResult()
 
-        correct_pci_read = '9010: 000f726ee'
+        correct_pci_read = '9010:  000fdf00'
         test_result.assert_pci_read_ok(correct_pci_read)
 
-        error_pci_read = '9010: 000bee324'
+        error_pci_read = '9010:  000bef00'
         test_result.assert_pci_read_ok(error_pci_read)
 
         # Now it needs to have one correct assertion and one error!
