@@ -84,14 +84,14 @@ def install(path, verbose, no_dependencies, no_libuca, no_vivado):
     else:
         click.secho('\n=====| Skipping Dependencies |=====', bold=True)
 
-        click.secho('\n=====| Installing fastwriter |=====', bold=True)
-        install_fastwriter(path, verbose=verbose)
+    click.secho('\n=====| Installing fastwriter |=====', bold=True)
+    install_fastwriter(path, verbose=verbose)
 
-        click.secho('\n=====| Installing pcitools |=====', bold=True)
-        install_pcitools(path, verbose=verbose)
+    click.secho('\n=====| Installing pcitools |=====', bold=True)
+    install_pcitools(path, verbose=verbose)
 
-        click.secho('\n=====| Installing libufodecode |=====', bold=True)
-        install_libufodecode(path, verbose=verbose)
+    click.secho('\n=====| Installing libufodecode |=====', bold=True)
+    install_libufodecode(path, verbose=verbose)
 
     if not no_libuca:
         click.secho('\n=====| Installing Libuca |=====', bold=True)
