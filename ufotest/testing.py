@@ -156,7 +156,7 @@ class AssertionTestResult(AbstractTestResult):
         match = re.match('.* 000f.*', read_result)
         result = bool(match)
 
-        return self.assertion_result(
+        self.assertion_result(
             result,
             '(+) PCI READ "{}" IS FINE'.format(read_result),
             '(-) PCI READ "{}" CONTAINS ERROR!'.format(read_result)
@@ -167,10 +167,10 @@ class AssertionTestResult(AbstractTestResult):
 
     def assertion_result(self, result: bool, success_message: str, error_message: str):
         if result:
-            return result, success_message
+            self.assertions.append((result, success_message))
         else:
             self.exit_code = 1
-            return result, error_message
+            return self.assertions.append((result, error_message))
 
     # IMPLEMENT "AbstractRichOutput"
     # ------------------------------
