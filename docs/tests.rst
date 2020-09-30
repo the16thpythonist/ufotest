@@ -19,12 +19,12 @@ extended, but which is usable the way it is.
     from ufotest.testing import AbstractTest
     from ufotest.testing import MessageTestResult, AbstractTestResult
 
-    # Every test is represented by a single class. (One module can contain multiple test classes)
-    # This class has to be a child class of "AbstractTest"
+    # Every test is represented by a single class. (One module can contain multiple test
+    # classes) This class has to be a child class of "AbstractTest"
     class MyTest(AbstractTest):
 
-        # This is the name, by which the test will then be identified to run it with the "test"
-        # command for example.
+        # This is the name, by which the test will then be identified to run it with the
+        # "test" command for example.
         # The name should be unique and not contain any whitespaces.
         name = "my_test"
 
@@ -35,18 +35,18 @@ extended, but which is usable the way it is.
 
             # YOUR CUSTOM SETUP CODE
 
-         # The "run" method should contain all the code, which *actuall* executes the test. This
-         # method will be executed by the TestRunner.
+         # The "run" method should contain all the code, which *actually* executes the test.
+         # This method will be executed by the TestRunner.
          def run() -> AbstractTestResult:
 
             # YOUR TEST CODE
 
             # The "run" method has to return a child class of "AbstractTestResult".
-            # MessageTestResult is a predefined child class. It is the simplest version, which represents
-            # the result of the string by a single string. This string message will then be inserted into
-            # the "detailed results" section of the test report.
-            # The first argument is the integer exit code. This will define if the test was successful (0)
-            # or not (1)
+            # MessageTestResult is a predefined child class. It is the simplest version,
+            # which represents the result of the string by a single string. This string message
+            # will then be inserted into the "detailed results" section of the test report.
+            # The first argument is the integer exit code. This will define if the test was
+            # successful (0) or not (1)
             return MessageTestResult(0, "My detailed message")
 
 After having defined this module, it has to be placed into the "tests" folder. After that it can be used immediately:
