@@ -8,6 +8,8 @@ Content Overview
 - **Installation** Will provide information on how to install the project. (Also contains information on how to install
   the dependencies for the UFO camera manually)
 - **Usage** This section will explain what kind of commands the CLI tool offers and how they are used.
+- **Camera Testing** This section introduces custom test classes and how to dynamically include them to be usable
+  for the test command.
 - **UFO Camera** Some notes about the UFO camera / HighFlex FPGA board itself, which is not directly related to the
   CLI project.
 - **Source Code Documentation** Contains the information about all the source code of the project based on the
@@ -21,6 +23,7 @@ Content Overview
    installation
    current
    usage
+   tests
    camera
    modules
    authors

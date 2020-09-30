@@ -2,7 +2,7 @@ import inspect
 
 from ufotest._testing import UfotestTestCase
 from ufotest.util import random_string
-from ufotest.testing import TestRunner, AbstractTest, TestReport, MessageTestResult, TestMetadata
+from ufotest.testing import TestRunner, AbstractTest, TestReport, MessageTestResult, TestMetadata, AssertionTestResult
 
 
 # HELPER FUNCTIONS
@@ -101,3 +101,70 @@ class TestTestReport(UfotestTestCase):
 
         self.assertIn('# Test Report', markdown_string)
 
+
+class TestAssertionTestResult(UfotestTestCase):
+
+    def test_construction(self):
+        """
+        If the construction of an instance generally works
+        """
+        test_result = AssertionTestResult()
+        self.assertIsInstance(test_result, AssertionTestResult)
+
+    def test_adding_assertions(self):
+        """
+        If the adding of new assertions works and causes the object to update internal state properly
+        """
+        test_result = AssertionTestResult()
+
+        test_result.assert_equal(1, 1)
+        test_result.assert_equal(2, 2)
+
+        self.assertEqual(2, len(test_result.assertions))
+        self.assertEqual(0, test_result.error_count)
+        self.assertEqual(0, test_result.exit_code)
+
+    def test_adding_false_assertions(self):
+        """
+        If adding a false assertion gets registered correctly
+        """
+        test_result = AssertionTestResult()
+
+        test_result.assert_equal(1, 1)
+        test_result.assert_equal(1, 2)
+
+        self.assertEqual(2, len(test_result.assertions))
+        self.assertEqual(1, test_result.error_count)
+        self.assertNotEqual(0, test_result.exit_code)
+
+    def test_markdown_conversion(self):
+        """
+        If the conversion to markdown works
+        """
+        test_result = AssertionTestResult()
+
+        test_result.assert_equal(1, 1)
+        test_result.assert_equal(1, 2)
+        test_result.assert_equal("hello", "bello")
+
+        markdown_string = test_result.to_markdown()
+        print(markdown_string)
+
+        self.assertIsInstance(markdown_string, str)
+        self.assertIn('NOT EQUAL', markdown_string)
+
+    def test_pci_read_assertion(self):
+        """
+        if the custom assertion for the output of a pci_read function works properly
+        """
+        test_result = AssertionTestResult()
+
+        correct_pci_read = '9010:  000fdf00'
+        test_result.assert_pci_read_ok(correct_pci_read)
+
+        error_pci_read = '9010:  000bef00'
+        test_result.assert_pci_read_ok(error_pci_read)
+
+        # Now it needs to have one correct assertion and one error!
+        self.assertEqual(2, len(test_result.assertions))
+        self.assertEqual(1, test_result.error_count)

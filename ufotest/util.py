@@ -36,9 +36,23 @@ def dynamic_import(module_name: str, file_path: str):
 
     return module
 
+
 def get_command_output(command: str, cwd: Optional[str] = None):
-    completed_process = subprocess.run(command, cwd=cwd, shell=True)
-    return completed_process.stdout
+    """
+    Executes the given "command" and returns the output of the command as string
+
+    The additional "cwd" option can be used to pass a string path description, which is supposed to be used as the
+    current working directory for the command execution.
+
+    :param command: The command which is to be executed
+    :type command: str
+
+    :param cwd: The path string of the current working directory to be assumed for the command execution
+    :type cwd: Optional[str]
+    """
+    completed_process = subprocess.run(command, cwd=cwd, shell=True, stdout=subprocess.PIPE)
+    byte_output = completed_process.stdout
+    return byte_output.decode('utf-8')
 
 
 def execute_command(command: str, verbose: bool, cwd: Optional[str] = None):
@@ -166,6 +180,25 @@ def get_template(name: str):
 def random_string(length: int):
     letters = string.ascii_letters + ' '
     return ''.join(random.choice(letters) for i in range(length))
+
+
+def clean_pci_read_output(output: str):
+    """
+    Cleans the output from the "pci_read" function.
+
+    This essentially only means, that all the newlines and the leading whitespaces are being removed.
+
+    :param output: The output message of the "pci_read" function
+    :type output: str
+
+    :return:
+    """
+    # Removing the newlines
+    cleaned = output.replace('\n', '')
+    # Removing the whitespaces in the front
+    cleaned = cleaned.lstrip(' ')
+
+    return cleaned
 
 # CLASSES
 # =======

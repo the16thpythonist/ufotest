@@ -1,10 +1,11 @@
 import os
+import re
 import inspect
 import platform
 import datetime
 import logging
 from abc import ABC, abstractmethod
-from typing import Tuple, Dict, List, Type
+from typing import Tuple, Dict, List, Type, Any
 
 from ufotest.config import PATH, Config
 from ufotest.util import check_path, dynamic_import, create_folder, get_template, get_version, AbstractRichOutput
@@ -143,6 +144,89 @@ class MessageTestResult(AbstractTestResult):
         return self.message
 
 
+class AssertionTestResult(AbstractTestResult):
+
+    def __init__(self, detailed: bool = False):
+        AbstractTestResult.__init__(self, 0)
+        self.detailed = detailed
+
+        self.assertions = []
+        self.error_count = 0
+
+    # ASSERTION IMPLEMENTATIONS
+    # -------------------------
+
+    def assert_equal(self, expected: Any, actual: Any):
+        result = (expected == actual)
+
+        self.assertion_result(
+            result,
+            '(+) EQUAL "{}" == "{}"'.format(expected, actual),
+            '(-) NOT EQUAL "{}" != "{}"'.format(expected, actual)
+        )
+
+    def assert_pci_read_ok(self, read_result: str):
+        match = re.match('.*:[ ]*000f.*', read_result)
+        result = not bool(match)
+
+        self.assertion_result(
+            result,
+            '(+) PCI READ "{}" IS FINE'.format(read_result),
+            '(-) PCI READ "{}" CONTAINS ERROR!'.format(read_result)
+        )
+
+    # HELPER METHODS
+    # --------------
+
+    def assertion_result(self, result: bool, success_message: str, error_message: str):
+        if result:
+            self.assertions.append((result, success_message))
+        else:
+            self.exit_code = 1
+            self.error_count += 1
+            self.assertions.append((result, error_message))
+
+    # IMPLEMENT "AbstractRichOutput"
+    # ------------------------------
+
+    def to_string(self) -> str:
+        pass
+
+    def to_markdown(self) -> str:
+        template = get_template('assertion_test_result.md')
+        return template.render(
+            exit_code=self.exit_code,
+            assertions=self.assertions,
+            detailed=self.detailed,
+            error_count=self.error_count
+        )
+
+    def to_latex(self) -> str:
+        pass
+
+
+class CombinedTestResult(AbstractTestResult):
+
+    def __init__(self, *test_results):
+        self.test_results = test_results
+        self.exit_codes = [test_result.exit_code for test_result in self.test_results]
+        exit_code = 1 if 1 in self.exit_codes else 0
+        AbstractTestResult.__init__(self, exit_code)
+
+    # IMPLEMENT "AbstractRichOutput"
+    # ------------------------------
+
+    def to_string(self) -> str:
+        return '\n\n'.join(test_result.to_string() for test_result in self.test_results)
+
+    def to_markdown(self) -> str:
+        return '\n\n'.join(test_result.to_markdown() for test_result in self.test_results)
+
+    def to_latex(self) -> str:
+        return '\\\\ \\\\ \n'.join(test_result.to_latex() for test_result in self.test_results)
+
+
+
 class AbstractTest(ABC):
 
     name = "abstract"
@@ -154,7 +238,10 @@ class AbstractTest(ABC):
 
     def execute(self) -> AbstractTestResult:
         start_datetime = datetime.datetime.now()
-        test_result = self.run()
+        try:
+            test_result = self.run()
+        except Exception as e:
+            test_result = MessageTestResult(1, 'Test Execution failed with error "{}"'.format(str(e)))
         end_datetime = datetime.datetime.now()
 
         test_result.start_datetime = start_datetime

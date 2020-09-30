@@ -14,7 +14,7 @@ from ufotest.util import execute_command, get_command_output, execute_script
 
 def pci_write(addr: str, value: str):
     pci_command = 'pci -w {} {}'.format(addr, value)
-    exit_code = execute_command(pci_command, False)
+    exit_code = execute_command(pci_command, verbose=False)
     if exit_code:
         click.secho('Command "{}" failed!'.format(pci_command), fg='red')
 

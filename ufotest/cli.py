@@ -49,7 +49,7 @@ def cli(version):
 @click.command('install', short_help='Install the project and its dependencies')
 @click.argument('path', type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True))
 @click.option('--verbose', '-v', is_flag=True, help='Show additional console output')
-@click.option('--no-dependencies', '-d', is_flag=True, help='Skip installation of required repositories')
+@click.option('--no-dependencies', '-d', is_flag=True, help='Skip installation of required system packages')
 @click.option('--no-libuca', '-l', is_flag=True, help='Skip installation of libuca')
 @click.option('--no-vivado', is_flag=True, help='Skip installation of vivado')
 def install(path, verbose, no_dependencies, no_libuca, no_vivado):
@@ -81,6 +81,8 @@ def install(path, verbose, no_dependencies, no_libuca, no_vivado):
     if not no_dependencies:
         click.secho('\n=====| Installing System Packages |=====', bold=True)
         install_dependencies(verbose=verbose)
+    else:
+        click.secho('\n=====| Skipping Dependencies |=====', bold=True)
 
         click.secho('\n=====| Installing fastwriter |=====', bold=True)
         install_fastwriter(path, verbose=verbose)
@@ -90,8 +92,6 @@ def install(path, verbose, no_dependencies, no_libuca, no_vivado):
 
         click.secho('\n=====| Installing libufodecode |=====', bold=True)
         install_libufodecode(path, verbose=verbose)
-    else:
-        click.secho('\n=====| Skipping Dependencies |=====', bold=True)
 
     if not no_libuca:
         click.secho('\n=====| Installing Libuca |=====', bold=True)
@@ -308,10 +308,10 @@ def test(verbose, email, suite, test_id):
     try:
         if suite:
             click.secho('Executing test suite "{}"...'.format(test_id), bold=True)
-            test_report = test_runner.run_test(test_id)
+            test_report = test_runner.run_suite(test_id)
         else:
             click.secho('Executing test "{}"...'.format(test_id), bold=True)
-            test_report = test_runner.run_suite(test_id)
+            test_report = test_runner.run_test(test_id)
     except Exception as e:
         click.secho(str(e), fg='red', bold=True)
         return 1
