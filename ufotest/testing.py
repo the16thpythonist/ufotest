@@ -5,7 +5,7 @@ import platform
 import datetime
 import logging
 from abc import ABC, abstractmethod
-from typing import Tuple, Dict, List, Type
+from typing import Tuple, Dict, List, Type, Any
 
 from ufotest.config import PATH, Config
 from ufotest.util import check_path, dynamic_import, create_folder, get_template, get_version, AbstractRichOutput
@@ -152,6 +152,18 @@ class AssertionTestResult(AbstractTestResult):
 
         self.assertions = []
         self.error_count = 0
+
+    # ASSERTION IMPLEMENTATIONS
+    # -------------------------
+
+    def assert_equal(self, expected: Any, actual: Any):
+        result = (expected == actual)
+
+        self.assertion_result(
+            result,
+            '(+) EQUAL "{}" == "{}"'.format(expected, actual),
+            '(-) NOT EQUAL "{}" != "{}"'.format(expected, actual)
+        )
 
     def assert_pci_read_ok(self, read_result: str):
         match = re.match('.* 000f.*', read_result)

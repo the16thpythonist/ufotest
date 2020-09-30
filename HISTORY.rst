@@ -179,7 +179,8 @@ History
     - fixed the "get_command_output" function which was not working
 - Added
     - The run method of a single "AbstractTest" is now wrapped int a try/except statement.
-
+    - The class "AssertionTestResult", which can be used for tests to define assertion cases.
+        - Unittests for this class
 
 TODO
 ----

@@ -1,10 +1,10 @@
-{% if exit_code %}
+{%- if exit_code %}
 ({{ error_count }}/{{ assertions|length }}) ASSERTIONS FAILED
-{% for result, message in assertions %}
-{% if detailed || not result %}
+{%- for result, message in assertions %}
+{%- if detailed or not result %}
 {{ message }}
-{% endif %}
-{% endfor %}
-{% else %}
+{%- endif %}
+{%- endfor %}
+{%- else %}
 ({{ assertions|length }}/{{ assertions|length }}) ASSERTIONS SUCCESSFUL
-{% endif %}
+{%- endif %}
