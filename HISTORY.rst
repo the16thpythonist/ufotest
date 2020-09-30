@@ -184,3 +184,5 @@ TODO
 - Make "init" add the necessary stuff to the bashrc file. use jinja2?
 - EEPROM Programmierung
 - tcl Sprache
+
+- merge branches
