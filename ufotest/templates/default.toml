@@ -181,3 +181,13 @@ title = "UfoTest Config"
     # This subsection can be used to create new custom test suites, by simply defining a list of test names.
     [tests.suites]
         mock = ['mock']
+
+        # This test suite runs all the tests
+        full = [
+            # Installation
+            'libuca_installed',
+            # Camera setup
+            'power_up',
+            # Frame acquisition
+            'single_frame'
+        ]

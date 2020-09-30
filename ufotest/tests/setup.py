@@ -25,7 +25,7 @@ class PowerUpTest(AbstractTest):
             pci_write(address, value)
             read = pci_read('9010', '1')
             cleaned_read = clean_pci_read_output(read)
-            test_result.assert_pci_read_ok(cleaned_read)
+            test_result.assert_pci_read_ok('write {}, {} --> {}'.format(address, value, cleaned_read))
             time.sleep(0.2)
 
         return test_result

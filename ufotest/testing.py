@@ -166,7 +166,7 @@ class AssertionTestResult(AbstractTestResult):
         )
 
     def assert_pci_read_ok(self, read_result: str):
-        match = re.match('.*000f.*', read_result)
+        match = re.match('.*:[ ]*000f.*', read_result)
         result = not bool(match)
 
         self.assertion_result(
@@ -203,6 +203,28 @@ class AssertionTestResult(AbstractTestResult):
 
     def to_latex(self) -> str:
         pass
+
+
+class CombinedTestResult(AbstractTestResult):
+
+    def __init__(self, *test_results):
+        self.test_results = test_results
+        self.exit_codes = [test_result.exit_code for test_result in self.test_results]
+        exit_code = 1 if 1 in self.exit_codes else 0
+        AbstractTestResult.__init__(self, exit_code)
+
+    # IMPLEMENT "AbstractRichOutput"
+    # ------------------------------
+
+    def to_string(self) -> str:
+        return '\n\n'.join(test_result.to_string() for test_result in self.test_results)
+
+    def to_markdown(self) -> str:
+        return '\n\n'.join(test_result.to_markdown() for test_result in self.test_results)
+
+    def to_latex(self) -> str:
+        return '\\\\ \\\\ \n'.join(test_result.to_latex() for test_result in self.test_results)
+
 
 
 class AbstractTest(ABC):
