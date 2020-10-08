@@ -10,7 +10,7 @@ import matplotlib
 import numpy as np
 import shutil
 import matplotlib.pyplot as plt
-matplotlib.use('TkAgg')
+# matplotlib.use('TkAgg')
 
 from ufotest.config import PATH, get_config_path, Config
 from ufotest.scripts import SCRIPTS, SCRIPTS_PATH
