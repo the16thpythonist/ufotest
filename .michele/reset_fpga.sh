@@ -10,3 +10,5 @@ sleep 0.2
 echo "---------- ENABLE R/W ------------------"
 pci -w 9040 0x201 
 pci -w 64 0ffffff
+
+./IODELAY_Set.sh

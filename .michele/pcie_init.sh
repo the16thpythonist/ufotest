@@ -34,3 +34,8 @@ echo "set bus master dma"
 dev=$device  
 echo Enabling bus mastering on device $dev
 setpci -s $dev 4.w=0x07
+
+export LD_LIBRARY_PATH=/usr/lib
+export PCILIB_MODEL=ipedma
+
+./dma.sh

@@ -195,6 +195,7 @@ History
 - Fixes
     - Fixed the access to the config values of the camera dimensions in the function which acquires
       a frame.
+    - fixed the install command
 - Changes
     - Updated the readme
 

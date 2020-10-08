@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # by Michele caselle for 20MPixel - camera
 echo "-----------------------------"
 echo "----  S T A T U S ---------"
@@ -80,10 +79,10 @@ sensor_tmp=$(echo "scale = 2; ($sensor_tmp-$offset_zero_celsius)*$tmp_slope_sens
 
 # echo "Sensor temperature,according to the datasheet: $sensor_tmp C"
 echo "Sensor temperature, clock $clk_mhz MHz: $sensor_tmp C"
-echo "FPGA temperature: $fpga_tmp C"
-if [ "$monitor_val" != "000" ]; then
-    echo "ERROR FPGA MONITOR: $monitor_val"
-    # exit
-else
-    echo "MONITOR OK"
-fi
+#echo "FPGA temperature: $fpga_tmp C"
+#if [ "$monitor_val" != "000" ]; then
+#    echo "ERROR FPGA MONITOR: $monitor_val"
+#    # exit
+#else
+#    echo "MONITOR OK"
+#fi

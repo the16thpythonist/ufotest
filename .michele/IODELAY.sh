@@ -1,4 +1,4 @@
 #!/bin/bash
 echo "IODELAY SETTINGs.. "  
 
-pci -r 9500 -s 80
+pci -r 9300 -s 80

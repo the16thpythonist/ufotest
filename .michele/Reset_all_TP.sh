@@ -1,9 +1,12 @@
 #!/bin/bash
-# By Michele Caselle for UFO 6 / 20 MPixels - camera
-echo "--------------------------------"
-echo "-------  	S T A R T  -----------"
-echo "-- C O N F I G U R A T I O N  --"
-echo "--------------------------------"
+# By Michele Caselle for UFO 6 / 20 MPixels - camera, date: August 2020
+	
+echo "--------------------------------------------------------------------"
+echo "--------------------------- S T A R T  -----------------------------"
+echo "-------------------- C O N F I G U R A T I O N  --------------------"
+echo "---------------------- ( UFO 6 - 20 MPixel ) -----------------------"
+echo "------------------------ Test Pattern mode -------------------------"
+echo "--------------------------------------------------------------------"
 
 pci -w 9020 100
 sleep 0.2
@@ -74,12 +77,12 @@ pci -w 9000 9900
 sleep 0.2
 pci -r 9010 -s1
 
-echo "Set the exp time .. 4 ms"  
-pci -w 9000 a0ff
+echo "Set the min exp time .. 96 us"  
+pci -w 9000 a001
 sleep 0.2
 pci -r 9010 -s1
 sleep 0.2
-pci -w 9000 a102
+pci -w 9000 a100
 sleep 0.2
 pci -r 9010 -s1
 sleep 0.2
@@ -90,10 +93,7 @@ sleep 0.2
 pci -r 9010 -s1
 
 echo "FPGA Reset ... "	
-pci -w 9040 80000005
-sleep 0.2
-pci -w 9040 80000201
-sleep 0.2
+./reset_fpga.sh 
 
 echo "Set DMA timeout"
 pci -w 64 ffffff
@@ -101,7 +101,10 @@ sleep 0.2
 
 echo "Set the number of frame on CMOS internal frame generator"
 pci -w 9000 9601
-echo "Set 1 frame for each frame requested"
-sleep 0.2
+pci -r 9010 -s1
 
-echo "finish .. "  
+echo "--------------------------------------------------------------------"
+echo "finish ... "
+echo "--------------------------------------------------------------------"
+echo "status ..."  
+pci -r 9050 -s 8
