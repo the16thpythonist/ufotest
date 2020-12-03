@@ -18,6 +18,8 @@ The following is a small overview of the available commands:
 - **setup**: Executes all the reset scripts, which are required to make the camera operational
 - **frame**: Acquires a single frame from the camera and optionally displays it to the user
 - **flash**: Flashes a new fpga configuration to the Hiflex board
+- **test**: Runs either a single camera unittest or a suite of multiple unittests. A report file is generated and saved
+  into the archive of competed test runs
 
 Check CLI version
 """""""""""""""""

@@ -208,11 +208,20 @@ Additions
   of the reports into actual html pages which can be viewed.
 - Implemented a utility function to convert a markdown file into an html file.
 
+Documentation
+
+- Added documentation which explains how to setup an nginx server to be able to view the test reports remotely using
+  a browser.
+- Fixed the issues with the documentation not building
+- Fixed the Logo not being displayed in the documentation version of the readme
+
 
 TODO
 ----
 
 - Catch the error in init when the the folder already exists
+- I just realized that there might be an issue when converting an md file to html which contains images. would this
+  still work with the images also being displayed in the browser.
 
 - Document camera properties "Notes"
 - Change all usages from config to singleton class
