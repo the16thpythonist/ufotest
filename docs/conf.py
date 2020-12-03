@@ -32,7 +32,7 @@ from ufotest.util import get_version
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode', 'sphinx_rtd_theme', 'rst2pdf.pdfbuilder']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode', 'sphinx_rtd_theme']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -127,11 +127,13 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass
 # [howto, manual, or own class]).
-latex_documents = [
-    (master_doc, 'ufotest.tex',
-     'ufotest Documentation',
-     'Jonas Teufel', 'manual'),
-]
+
+# latex_documents = [
+#     (master_doc, 'ufotest.tex',
+#      'ufotest Documentation',
+#      'Jonas Teufel', 'manual'),
+# ]
+latex_documents = []
 
 
 # -- Options for manual page output ------------------------------------
@@ -150,14 +152,15 @@ man_pages = [
 # Grouping the document tree into Texinfo files. List of tuples
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
-texinfo_documents = [
-    (master_doc, 'ufotest',
-     'ufotest Documentation',
-     author,
-     'ufotest',
-     'One line description of project.',
-     'Miscellaneous'),
-]
 
+# texinfo_documents = [
+#     (master_doc, 'ufotest',
+#      'ufotest Documentation',
+#      author,
+#      'ufotest',
+#      'One line description of project.',
+#      'Miscellaneous'),
+# ]
+texinfo_documents = []
 
 
