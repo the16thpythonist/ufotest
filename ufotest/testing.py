@@ -8,7 +8,12 @@ from abc import ABC, abstractmethod
 from typing import Tuple, Dict, List, Type, Any
 
 from ufotest.config import PATH, Config
-from ufotest.util import check_path, dynamic_import, create_folder, get_template, get_version, AbstractRichOutput
+from ufotest.util import (markdown_to_html,
+                          dynamic_import,
+                          create_folder,
+                          get_template,
+                          get_version,
+                          AbstractRichOutput)
 
 
 class TestRunner(object):
@@ -21,11 +26,16 @@ class TestRunner(object):
         self.tests = {}
 
         self.archive_folder_path = self.config.get_archive_path()
+        # So here I have added a separate step/attribute, which adds the pure folder name string to be saved separately
+        # instead of directly assembling it into the absolute path. This value will be needed for example to
+        # construct the url to the file server which can be used to view the reports online.
         self.start_time = datetime.datetime.now()
+        self.name = self.start_time.strftime('test_run_%d_%m_%Y__%H_%M_%S')
         self.folder_path = os.path.join(
             self.archive_folder_path,
-            self.start_time.strftime('test_run_%d_%m_%Y__%H_%M_%S')
+            self.name
         )
+
         create_folder(self.folder_path)
 
         # Initializing the logging
@@ -326,10 +336,26 @@ class TestReport(AbstractRichOutput):
         self.success_ratio = round(self.passing_count / self.test_count, ndigits=5)
 
     def save(self, path: str):
+        """Saves the test report into the folder with the given *path*
+
+        At the current time, the test report will be saved as both a markdown file and an html file which was generated
+        from the markdown file. Using a simple web server to serve the archives folder, the test report in the form of
+        this html file could then be viewed using a web browser.
+
+        All generated files will have the same base name 'report' but different file endings dependings based on their
+        type.
+
+        :param path: the path of the folder into which to save the report
+        """
         # Save the report as an markdown file
         markdown_path = os.path.join(path, 'report.md')
         with open(markdown_path, mode='w+') as file:
             file.write(self.to_markdown())
+
+        # Converting the file to a simple html file
+        html_path = os.path.join(path, 'report.html')
+        markdown_to_html(markdown_path, html_path, [])
+
 
     # HELPER METHODS
     # --------------

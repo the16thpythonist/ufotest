@@ -4,3 +4,4 @@ matplotlib>=3.3.0
 jinja2>=2.11.2
 pytest==4.6.5
 pytest-runner==5.1
+md-to-html==0.7.0

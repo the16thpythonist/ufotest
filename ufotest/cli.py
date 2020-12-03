@@ -297,6 +297,10 @@ def test(verbose, email, suite, test_id):
 
     TEST_ID is a string, which identifies a certain test procedure. To view all these possible identifiers consult the
     config file.
+
+    This command will execute either a single test case for the camera or a test suite, combines multiple test cases.
+    The results of these tests will generate a test report. This test report will be saved into the archive of all
+    test reports as a markdown and html file.
     """
     if not check_install():
         return 1
@@ -318,7 +322,10 @@ def test(verbose, email, suite, test_id):
 
     if verbose:
         click.secho(test_report.to_string())
+
     click.secho('Test report saved to "{}"'.format(test_runner.folder_path), fg='green', bold=True)
+    click.secho('View the report at: http://localhost/archive/{}/report.html'.format(test_runner.name))
+
     return 0
 
 

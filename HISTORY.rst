@@ -199,9 +199,20 @@ History
 - Changes
     - Updated the readme
 
+0.9.0
+-----
+
+Additions
+
+- Added the python package 'md-to-html' to the list of requirements. It will be needed to convert the markdown output
+  of the reports into actual html pages which can be viewed.
+- Implemented a utility function to convert a markdown file into an html file.
+
 
 TODO
 ----
+
+- Catch the error in init when the the folder already exists
 
 - Document camera properties "Notes"
 - Change all usages from config to singleton class

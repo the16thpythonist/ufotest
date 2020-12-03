@@ -84,4 +84,4 @@ dist: clean ## builds source and wheel package
 install: clean ## install the package to the active Python's site-packages
 	## Copying the version file into the code folder
 	cp VERSION ufotest/VERSION
-	sudo python3 -m pip install .
+	python3 -m pip install --user .

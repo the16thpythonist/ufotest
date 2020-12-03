@@ -6,7 +6,7 @@ import click
 import random
 import subprocess
 import importlib.util
-from typing import Optional
+from typing import Optional, List
 from abc import ABC, abstractmethod
 
 from jinja2 import Template
@@ -20,6 +20,42 @@ VERSION_PATH = os.path.join(PATH, 'VERSION')
 
 # FUNCTIONS
 # =========
+
+def markdown_to_html(input_path: str, output_path: str, header_lines: List[str] = []):
+    """Converts the markdown file at *input_path* to html file at *output_path*
+
+    The functionality of this function is provided by the command line tool 'md-to-html' provided by the python
+    package of the same name.
+    This function also offers the additional possibility to add custom string lines to the head section of the created
+    html file to potentially insert additional styles.
+
+    :param input_path: The path to the original markdown file
+    :param output_path: The path to be created for the html file
+    :param header_lines: A list of strings to be included as separate lines into the head of the html
+    """
+    # The command md-to-html should be pretty self explanatory, it takes a markdown file as the input and produces a
+    # corresponding html file from it. We can assume that this command generally works because it is provided by a
+    # python module with the same name which is listed as one of the dependencies of this project. So when the ufotest
+    # package is installed, this will be installed as well automatically.
+    command = 'md-to-html --input {} --output {}'.format(
+        input_path,
+        output_path
+    )
+    execute_command(command, False)
+
+    # This plain html file which was created looks pretty plain, so additionally there should be the possibility to
+    # add stylesheets to the header of the document. This will be realized by being able to generally insert any kind
+    # of string to the header section of the html file. Luckily this will be a rather simple string operation since
+    # the previous conversion creates a html file which is very well structured by new lines.
+    with open(output_path, mode='r+') as read_file:
+        lines = read_file.readlines()
+
+    for line in header_lines:
+        lines.insert(lines.index(' </head>'), line)
+
+    with open(output_path, mode='w+') as write_file:
+        write_file.write('\n'.join(lines))
+
 
 def get_version():
     with open(VERSION_PATH) as version_file:
