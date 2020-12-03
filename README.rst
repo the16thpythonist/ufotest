@@ -2,7 +2,7 @@
 ufotest
 =======
 
-.. image:: https://github.com/the16thpythonist/ufotest/blob/master/logo.png
+.. image:: https://raw.githubusercontent.com/the16thpythonist/ufotest/master/logo.png
         :target: https://pypi.python.org/pypi/ufotest
         :alt: Logo
 
