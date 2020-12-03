@@ -133,7 +133,6 @@ latex_elements = {
 #      'ufotest Documentation',
 #      'Jonas Teufel', 'manual'),
 # ]
-latex_documents = []
 
 
 # -- Options for manual page output ------------------------------------
@@ -161,6 +160,5 @@ man_pages = [
 #      'One line description of project.',
 #      'Miscellaneous'),
 # ]
-texinfo_documents = []
 
 
