@@ -191,3 +191,21 @@ title = "UfoTest Config"
             # Frame acquisition
             'single_frame'
         ]
+
+# This section mangages all the configuration for the CI (continuous integration) functionality of the application.
+[ci]
+    # This value is supposed to contain the string url of the repository, which contains the source code for the camera.
+    # Since the camera is based on an FPGA board this source code will most likely be the code which defines the
+    # hardware configuration of this fpga board. Most importantly, this repo has to contain the BIT file which can
+    # be used to flash the new configuration onto the hardware.
+    repository_url = 'https://github.com/the16thpythonist/ufo-mock.git'
+    # This value then represents the path to the bit file which is to be used to flash the hardware. This string should
+    # contain the relative path of the bit file within the repo. The current folder for this relative path will be
+    # assumed to be the most top level folder of the repo.
+    bitfile_path = 'camera.bit'
+    # This value has to contain the string name of the branch which will be used for the cloning of the repository
+    branch = 'main'
+    # This value is supposed to contain the public hostname of the machine on which the application is running on. This
+    # is important for the server funtion of the app. It is possible to start a server which listens to icoming requests
+    # which are created by the git repository whenever new changes are being commited.
+    hostname = 'localhost'

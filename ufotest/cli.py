@@ -32,6 +32,8 @@ from ufotest.install import (install_dependencies,
                              install_ipecamera)
 from ufotest.camera import save_frame, import_raw, set_up_camera, tear_down_camera
 from ufotest.testing import TestRunner
+from ufotest.ci.util import build_repository
+from ufotest.ci.server import server
 
 
 CONFIG = Config()
@@ -64,16 +66,11 @@ def install(path, verbose, no_dependencies, no_libuca, no_vivado):
 
     path = os.path.realpath(path)
 
-    click.secho('\n')
-    click.secho(' +-------------------------+', bold=True, fg='green')
-    click.secho(' |  STARTING INSTALLATION  |', bold=True, fg='green')
-    click.secho(' +-------------------------+', bold=True, fg='green')
-
     operating_system = CONFIG['install']['os']
-    click.secho('\nReading configuration...')
-    click.secho('- Configured OS: {}'.format(operating_system))
-    click.secho('- Configured package install: {}'.format(CONFIG['install'][operating_system]['package_install']))
-    click.secho('- Camera dimensions: {} x {}'.format(
+    click.secho('\n| | STARTING INSTALLATION | |', bold=True)
+    click.secho('--| Configured OS: {}'.format(operating_system))
+    click.secho('--| Configured package install: {}'.format(CONFIG['install'][operating_system]['package_install']))
+    click.secho('--| Camera dimensions: {} x {}'.format(
         CONFIG.get_sensor_width(),
         CONFIG.get_sensor_height()
     ))
@@ -242,36 +239,36 @@ def flash(verbose, file: str):
     if not check_install():
         return 1
 
-    click.secho('FLASHING THE FPGA MEMORY', bold=True)
+    # -- ECHO CONFIGURATION
+    click.secho('\n| | FLASHING THE FPGA MEMORY | |', bold=True)
+    click.secho('--| bitfile: {}\n'.format(file))
 
     # -- CHECKING IF THE GIVEN FILE EVEN EXISTS
     file_path = os.path.abspath(file)
     file_exists = check_path(file_path, is_dir=False)
     if not file_exists:
-        click.secho('The given path does not exist!', fg='red')
+        click.secho('[!] The given path does not exist!', fg='red')
         return 1
 
     # -- CHECKING IF THE FILE EVEN IS A BIT FILE
     file_extension = file_path.split('.')[-1].lower()
     is_bit_file = file_extension == 'bit'
     if not is_bit_file:
-        click.secho('The given file is not a .BIT file', fg='red')
+        click.secho('[!] The given file is not a .BIT file', fg='red')
         return 1
-    elif verbose:
-        click.secho('Flashing bit file "{}"'.format(file))
 
     # -- CHECKING IF VIVADO IS INSTALLED
     vivado_installed = check_vivado()
     if not vivado_installed:
-        click.secho('Vivado is not installed, please install Vivado to be able to flash the fpga!', fg='red')
+        click.secho('[!] Vivado is not installed, please install Vivado to be able to flash the fpga!', fg='red')
         return 1
     elif verbose:
-        click.secho('Vivado installation found!', fg='green')
+        click.secho('    Vivado installation found')
 
     # -- STARTING VIVADO SETTINGS
     vivado_command = CONFIG['install']['vivado_settings']
     execute_command(vivado_command, verbose, cwd=os.getcwd())
-    click.secho('Setup vivado environment', fg='green')
+    click.secho('    Finished setup of vivado environment')
 
     # -- FLASHING THE BIT FILE
     flash_command = "{command} -nolog -nojournal -mode batch -source fpga_conf_bitprog.tcl -tclargs {file}".format(
@@ -280,13 +277,13 @@ def flash(verbose, file: str):
     )
     exit_code = execute_command(flash_command, verbose, cwd=SCRIPTS_PATH)
     if not exit_code:
-        click.secho('SUCCESSFULLY FLASHED FPGA WITH "{}"'.format(file_path), fg='green', bold=True)
+        click.secho('(+) Flashed FPGA with: {}'.format(file_path), fg='green', bold=True)
         return 0
     else:
         return 1
 
 
-@click.command('test', short_help="run a camera test")
+@click.command('test', short_help="Run a camera test")
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 @click.option('--email', '-e', type=click.STRING, help='An email address to send the final report of the test to')
 @click.option('--suite', '-s', is_flag=True, help='Execute a test SUITE with the given name')
@@ -307,14 +304,14 @@ def test(verbose, email, suite, test_id):
 
     test_runner = TestRunner()
     test_runner.load()
-    click.secho('Tests have been loaded!', fg='green')
+    click.secho('    Tests have been loaded')
 
     try:
         if suite:
-            click.secho('Executing test suite "{}"...'.format(test_id), bold=True)
+            click.secho('    Executing test suite "{}"...'.format(test_id), bold=True)
             test_report = test_runner.run_suite(test_id)
         else:
-            click.secho('Executing test "{}"...'.format(test_id), bold=True)
+            click.secho('    Executing test "{}"...'.format(test_id), bold=True)
             test_report = test_runner.run_test(test_id)
     except Exception as e:
         click.secho(str(e), fg='red', bold=True)
@@ -323,11 +320,47 @@ def test(verbose, email, suite, test_id):
     if verbose:
         click.secho(test_report.to_string())
 
-    click.secho('Test report saved to "{}"'.format(test_runner.folder_path), fg='green', bold=True)
-    click.secho('View the report at: http://localhost/archive/{}/report.html'.format(test_runner.name))
+    click.secho('(+) Test report saved to "{}"'.format(test_runner.folder_path), fg='green', bold=True)
+    click.secho('    View the report at: http://localhost/archive/{}/report.html'.format(test_runner.name))
 
     return 0
 
+
+@click.group('ci', short_help='continuous integration related commands')
+def ci():
+    pass
+
+
+@click.command('run', short_help='Applies newest commit from remote repository and then executes test suite')
+@click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
+@click.argument('suite', type=click.STRING)
+def run(verbose, suite):
+    # -- ECHO CONFIGURATION
+    click.secho('\n| | INTEGRATING REMOTE REPOSITORY | |', bold=True)
+    click.secho('--| repository url: {}'.format(CONFIG.get_ci_repository_url()))
+    click.secho('--| repository branch: {}'.format(CONFIG.get_ci_branch()))
+    click.secho('--| bitfile: {}\n'.format(CONFIG.get_ci_bitfile_path()))
+
+    # -- RUNNING THE PROCESS
+    build_repository(suite, verbose=verbose)
+
+
+@click.command('serve', short_help='Runs the CI server which responds to remote repository webhooks')
+@click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
+@click.argument('port', type=click.INT)
+def serve(verbose, port):
+    # -- ECHO CONFIGURATION
+    click.secho('\n| | STARTING CI SERVER | |', bold=True)
+    click.secho('--| repository url: {}'.format(CONFIG.get_ci_repository_url()))
+    click.secho('--| repository branch: {}'.format(CONFIG.get_ci_branch()))
+    click.secho('--| bitfile: {}\n'.format(CONFIG.get_ci_bitfile_path()))
+
+    # -- STARTING THE SERVER
+    server.run(port=port)
+
+
+ci.add_command(run)
+ci.add_command(serve)
 
 # Registering the commands within the click group
 cli.add_command(init)
@@ -340,6 +373,7 @@ cli.add_command(teardown)
 cli.add_command(list_scripts)
 cli.add_command(flash)
 cli.add_command(test)
+cli.add_command(ci)
 
 
 if __name__ == "__main__":

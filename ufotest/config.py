@@ -144,6 +144,15 @@ class Config(metaclass=Singleton):
     def get_time_format(self):
         return self.data['general']['time_format']
 
+    def get_ci_repository_url(self):
+        return self.data['ci']['repository_url']
+
+    def get_ci_bitfile_path(self):
+        return self.data['ci']['bitfile_path']
+
+    def get_ci_branch(self):
+        return self.data['ci']['branch']
+
     # UTILITY METHODS
     # ---------------
 

@@ -5,28 +5,38 @@ import os
 import re
 import click
 import subprocess
-from typing import Optional
+from typing import Optional, Tuple
 
 from ufotest.config import CONFIG
 from ufotest.util import execute_command
 
 
-def git_clone(path: str, git_url: str, verbose: bool):
-    """
-    Clones the repository from "git_url" into the given folder "path"
+def git_clone(path: str, git_url: str, verbose: bool, branch: str = 'master') -> Tuple[str, str]:
+    """Clones the repository from *git_url* into the given folder *path*
+
+    The additional arg *verbose* is a boolean which controls whether the output of this operation is being written to
+    stdout stream.
+
+    :param path: The path of the folder into which the repository is supposed to be clonedS
+    :param git_url: The string url of the git repository from which to clone
+    :param verbose: Whether or not to print additional output to the stdout stream
+    :param branch: The string name of the branch to be cloned. Default is master branch.
+
+    :return: A tuple of two values, where the first one is the string name of the repository and the second is the
+    string of the absolute path of the clones location within the filesystem.
     """
     # Here we are first extracting the name of the git repository, because that will also be the name of the folder
     # into which it was cloned into later on and this that will be important to actually enter this folder
     repository_name = re.findall(r'/([^/]*)\.git', git_url)[0]
     repository_path = os.path.join(path, repository_name)
     if verbose:
-        click.secho('~ Cloning git repository "{}"'.format(git_url))
+        click.secho('   Cloning git repository "{}"'.format(git_url))
 
     # Executing the clone command
-    clone_command = 'git clone {}'.format(git_url)
+    clone_command = 'git clone --single-branch --branch {} {}'.format(branch, git_url)
     exit_code = execute_command(clone_command, verbose, cwd=path)
     if not exit_code:
-        click.secho('Cloned repository "{}" ({})'.format(repository_name, repository_path), fg='green')
+        click.secho('(+) Cloned repository "{}" ({})'.format(repository_name, repository_path), fg='green')
 
     return repository_name, repository_path
 
