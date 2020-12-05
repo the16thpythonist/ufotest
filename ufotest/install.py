@@ -27,7 +27,7 @@ def git_clone(path: str, git_url: str, verbose: bool, branch: str = 'master') ->
     """
     # Here we are first extracting the name of the git repository, because that will also be the name of the folder
     # into which it was cloned into later on and this that will be important to actually enter this folder
-    repository_name = re.findall(r'/([^/]*)\.git', git_url)[0]
+    repository_name = get_repository_name(git_url)
     repository_path = os.path.join(path, repository_name)
     if verbose:
         click.secho('   Cloning git repository "{}"'.format(git_url))
@@ -39,6 +39,18 @@ def git_clone(path: str, git_url: str, verbose: bool, branch: str = 'master') ->
         click.secho('(+) Cloned repository "{}" ({})'.format(repository_name, repository_path), fg='green')
 
     return repository_name, repository_path
+
+
+def get_repository_name(repository_url: str) -> str:
+    """Returns the name of a git repository if the *repository_url* for it is given.
+
+    :param repository_url: the string url of the remote repository
+
+    :return: the string name of the repo, which does NOT include the username it is just the name of the top level
+    folder of that repo.
+    """
+    repository_name = re.findall(r'/([^/]*)\.git', repository_url)[0]
+    return repository_name
 
 
 def install_generic_cmake(path: str, git_url: str, verbose: bool, cmake_args: dict):

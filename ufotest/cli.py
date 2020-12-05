@@ -104,24 +104,33 @@ def install(path, verbose, no_dependencies, no_libuca, no_vivado):
     return 0
 
 
-@click.command('init', short_help='initializes the config files for ufotest')
+@click.command('init', short_help='Initializes the installation folder and config file for the app')
+@click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 @click.option('--force', '-f', is_flag=True, help='Deletes the current installation to reinstall')
-def init(force):
+def init(verbose, force):
+    """Initializes the installation folder for this application. This folder will be located at *$HOME/.ufotest*.
+    This init includes the creation of the necessary folder structure for the archive and the tests, as well as the
+    creation of the config file from a default template.
     """
-    Initializes the config files for ufotest
-    """
-    if force:
-        installation_path = get_path()
-        if check_path(installation_path, is_dir=True):
+    installation_path = get_path()
+    click.secho('\n| | INITIALIZING UFOTEST INSTALLATION | |', bold=True)
+    click.secho('--| installation path: {}'.format(installation_path))
+
+    if check_path(installation_path, is_dir=True):
+        if force:
             shutil.rmtree(get_path())
-            click.secho('Deleted old installation folder!\n', fg='green')
+            click.secho('(+) Deleted old installation folder!', fg='green')
         else:
-            click.secho('Installation folder did not exist\n', fg='green')
+            click.secho('[!] An installation folder already exists!', fg='red')
+            click.secho('    Please use the --force flag if you wish to replace the existing installation')
+            sys.exit(1)
+    else:
+        click.secho('    Installation folder does not yet exist')
 
-    init_install()
-    click.secho('Ufotest is initialized!', bold=True, fg='green')
+    init_install(verbose=verbose)
+    click.secho('(+) UfoTest app is initialized!', bold=True, fg='green')
 
-    return 0
+    sys.exit(0)
 
 
 @click.command('config', short_help='Edit the config for ufotest')
@@ -180,8 +189,7 @@ def frame(verbose, output, display):
 @click.argument('name', type=click.STRING)
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 def script(name, verbose):
-    """
-    Executes a registered script with the given NAME
+    """Executes a registered script with the given NAME
     """
     if not check_install():
         return 1
@@ -343,6 +351,7 @@ def run(verbose, suite):
 
     # -- RUNNING THE PROCESS
     build_repository(suite, verbose=verbose)
+
 
 
 @click.command('serve', short_help='Runs the CI server which responds to remote repository webhooks')

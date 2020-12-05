@@ -91,7 +91,7 @@ def get_command_output(command: str, cwd: Optional[str] = None):
     return byte_output.decode('utf-8')
 
 
-def execute_command(command: str, verbose: bool, cwd: Optional[str] = None):
+def execute_command(command: str, verbose: bool, cwd: Optional[str] = None, foreground=True):
     """
     Executes the given system "command"
 
@@ -100,7 +100,14 @@ def execute_command(command: str, verbose: bool, cwd: Optional[str] = None):
     is to be executed.
     """
     output = None if verbose else subprocess.DEVNULL
-    completed_process = subprocess.run(command, cwd=cwd, shell=True, stdout=output, stderr=output)
+    completed_process = subprocess.run(
+        command,
+        cwd=cwd,
+        shell=True,
+        stdout=output,
+        stderr=output,
+        close_fds=not foreground
+    )
     return completed_process.returncode
 
 
@@ -119,36 +126,47 @@ def create_folder(folder_path: str):
         os.chmod(folder_path, 0o777)
 
 
-def init_install():
+def init_install(verbose=False) -> str:
+    """Initializes the installation folder for the ufotest app.
+
+    :param verbose: whether or not to print additional info to the console.
+
+    :return: The string absolute path to the top level installation folder which has been created.
+    """
     # First we check if the installation folder already exists.
     # "get_path" returns the path to where the config file is supposed to be installed to.
     folder_path = get_path()
     if os.path.exists(folder_path):
-        # Maybe check for folder?
-        pass
+        raise IsADirectoryError('An ufotest installation already exists!')
     else:
         # In case it does not exist we will create it
         os.mkdir(folder_path)
         os.chmod(folder_path, 0o777)
-        click.secho('Created new ufotest installation folder "{}"'.format(folder_path), fg='green')
+        if verbose:
+            click.secho('    Created new folder: {}'.format(folder_path))
 
     # Then we need to copy the default template for the config file into this folder, if it is not already there
     config_path = get_config_path()
     if not os.path.exists(config_path):
         shutil.copyfile(CONFIG_TEMPLATE_PATH, config_path)
-        click.secho('Copied config template to installation folder "{}"'.format(folder_path), fg='green')
+        if verbose:
+            click.secho('    Created default config: {}'.format(folder_path))
 
     # Also we need to create the tests folder inside of this folder
     test_folder_path = os.path.join(folder_path, 'tests')
     os.mkdir(test_folder_path)
     os.chmod(folder_path, 0o777)
-    click.secho('Created the "tests" folder within the ufotest installation', fg='green')
+    if verbose:
+        click.secho('    Created the "tests" folder for ufotest')
 
     # Additionally we need to create a folder for the archive of the test runs
     archive_folder_path = os.path.join(folder_path, 'archive')
     os.mkdir(archive_folder_path)
     os.chmod(folder_path, 0o777)
-    click.secho('Created the "archive" folder within the ufotest installation', fg='green')
+    if verbose:
+        click.secho('    Created the "archive" folder for ufotest')
+
+    return folder_path
 
 
 def check_install():

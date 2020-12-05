@@ -153,6 +153,9 @@ class Config(metaclass=Singleton):
     def get_ci_branch(self):
         return self.data['ci']['branch']
 
+    def get_ci_suite(self):
+        return self.data['ci']['test_suite']
+
     # UTILITY METHODS
     # ---------------
 
