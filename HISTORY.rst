@@ -237,6 +237,25 @@ Documentation
 - Fixed the Logo not being displayed in the documentation version of the readme
 
 
+0.9.1 (2020-12-07)
+------------------
+
+Additions
+
+- Added a little bit of a convenience function to the ci web server: When visiting the root web site. It will display
+  a little help text now to see that the server is indeed running.
+
+Changes
+
+- Changed the route for the ci server which accepts the source control web requests from '/push' to '/push/github'
+  because this leaves open the possibility to implement the custom web hooks of other source control systems in the
+  future.
+
+Documentation
+
+- Added
+
+
 TODO
 ----
 

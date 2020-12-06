@@ -13,7 +13,12 @@ ARCHIVE_PATH = os.path.join(PATH, 'archive')
 server = Flask('UfoTest CI Server')
 
 
-@server.route('/push', methods=['POST'])
+@server.route('/', methods=['GET'])
+def home():
+    return 'Hello there! I am the CI server for the ufotest application!', 200
+
+
+@server.route('/push/github', methods=['POST'])
 def push():
     data = request.get_json()
 

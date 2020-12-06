@@ -24,6 +24,7 @@ Content Overview
    current
    usage
    tests
+   ci
    camera
    modules
    authors
