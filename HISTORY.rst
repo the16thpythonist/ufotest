@@ -237,7 +237,7 @@ Documentation
 - Fixed the Logo not being displayed in the documentation version of the readme
 
 
-0.9.1 (2020-12-07)
+0.9.1 (2020-12-06)
 ------------------
 
 Additions
@@ -253,7 +253,7 @@ Changes
 
 Documentation
 
-- Added
+- Added Documentation for the ci functions of the ufotest app
 
 
 TODO

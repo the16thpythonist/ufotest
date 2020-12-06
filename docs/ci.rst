@@ -73,6 +73,7 @@ looks like this. The comments explain which values have to be entered for all th
         # process is automatically triggered by a git webhook
         test_suite = 'mock'
 
+
 The CI command group
 --------------------
 
@@ -128,7 +129,7 @@ Configuring Github webhooks
 Currently, the server only implements the possibility to respond to Github webhooks. Specifically those webhooks which
 are triggered by a 'push' event. By the github standard it is possible to register a certain url to receive a http POST
 request whenever a new push is made for the subject repo. This url would have to be configured to look like this
-`http://{yourhostname}/push/github/`. If a push request is sent to this route, a new build process like described above
+``http://{yourhostname}/push/github/``. If a push request is sent to this route, a new build process like described above
 will be triggered.
 
 Serving archived test reports
@@ -140,7 +141,7 @@ archive of the ufotest app.
 Each execution of a test suite will create a new test report. This test report is saved as a MD file within the archive
 folder of the app '$HOME/.ufotest/archive'. The report is also saved as an HTML file within the same folder. These html
 files can then be used to view the results of the test runs remotely. The ci server will return these static read-only
-files under the route `http://{yourhostname}/archive/{testfolder}/report.html`.
+files under the route ``http://{yourhostname}/archive/{testfolder}/report.html``.
 
 
 
