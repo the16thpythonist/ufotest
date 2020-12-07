@@ -54,17 +54,21 @@ Features
 - Frame acquisition and display with matplotlib
 - Dynamic discovery of custom camera test cases
 - Automatic generation of test reports
+- standalone CI server which accepts github push event webhooks and automatically starts a new build from the remote
+  repo to then execute a test suite
 
 Credits
 -------
 
 The following software was used in the creation of the project:
 
+* Flask_: Python microframework for creating web applications with minimal effort
 * Click_: Python library for creating CLI applications
 * Jinja2_: Templating library for Python
 * Cookiecutter_: A CLI tool for project templating
 * `audreyr/cookiecutter-pypackage`_: A basic template for python package projects
 
+.. _Flask: https://github.com/pallets/flask
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
 .. _Click: https://click.palletsprojects.com/en/7.x/

@@ -32,7 +32,7 @@ from ufotest.install import (install_dependencies,
                              install_ipecamera)
 from ufotest.camera import save_frame, import_raw, set_up_camera, tear_down_camera
 from ufotest.testing import TestRunner
-from ufotest.ci.util import build_repository
+from ufotest.ci.build import BuildRunner, BuildContext, BuildReport, build_context_from_config
 from ufotest.ci.server import server
 
 
@@ -339,10 +339,10 @@ def ci():
     pass
 
 
-@click.command('run', short_help='Applies newest commit from remote repository and then executes test suite')
+@click.command('build', short_help='Applies newest commit from remote repository and then executes test suite')
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 @click.argument('suite', type=click.STRING)
-def run(verbose, suite):
+def build(verbose, suite):
     # -- ECHO CONFIGURATION
     click.secho('\n| | INTEGRATING REMOTE REPOSITORY | |', bold=True)
     click.secho('--| repository url: {}'.format(CONFIG.get_ci_repository_url()))
@@ -350,8 +350,10 @@ def run(verbose, suite):
     click.secho('--| bitfile: {}\n'.format(CONFIG.get_ci_bitfile_path()))
 
     # -- RUNNING THE PROCESS
-    build_repository(suite, verbose=verbose)
-
+    with build_context_from_config(CONFIG) as build_context:
+        build_runner = BuildRunner(build_context)
+        build_report = build_runner.build()
+        build_report.save(build_context.folder_path)
 
 
 @click.command('serve', short_help='Runs the CI server which responds to remote repository webhooks')
@@ -368,7 +370,7 @@ def serve(verbose, port):
     server.run(port=port)
 
 
-ci.add_command(run)
+ci.add_command(build)
 ci.add_command(serve)
 
 # Registering the commands within the click group

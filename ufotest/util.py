@@ -158,6 +158,7 @@ def init_install(verbose=False) -> str:
         if verbose:
             click.secho('    Created new folder: {}'.format(folder_path))
 
+    # -- CREATE CONFIG FILE
     # Then we need to copy the default template for the config file into this folder, if it is not already there
     config_path = get_config_path()
     if not os.path.exists(config_path):
@@ -165,6 +166,7 @@ def init_install(verbose=False) -> str:
         if verbose:
             click.secho('    Created default config: {}'.format(folder_path))
 
+    # -- TESTS FOLDER
     # Also we need to create the tests folder inside of this folder
     test_folder_path = os.path.join(folder_path, 'tests')
     os.mkdir(test_folder_path)
@@ -172,12 +174,21 @@ def init_install(verbose=False) -> str:
     if verbose:
         click.secho('    Created the "tests" folder for ufotest')
 
+    # -- ARCHIVE FOLDER
     # Additionally we need to create a folder for the archive of the test runs
     archive_folder_path = os.path.join(folder_path, 'archive')
     os.mkdir(archive_folder_path)
     os.chmod(folder_path, 0o777)
     if verbose:
         click.secho('    Created the "archive" folder for ufotest')
+
+    # -- BUILDS FOLDER
+    # This folder will contain the build reporst which are created when a new version of the hardware configuration
+    # is built from the source repository
+    builds_folder_path = get_builds_path()
+    os.mkdir(builds_folder_path)
+    if verbose:
+        click.secho('    Created the "builds" folder for ufotest')
 
     return folder_path
 

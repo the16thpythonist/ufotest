@@ -153,6 +153,9 @@ class MessageTestResult(AbstractTestResult):
     def to_latex(self) -> str:
         return self.message
 
+    def to_html(self) -> str:
+        return ""
+
 
 class AssertionTestResult(AbstractTestResult):
 
@@ -214,6 +217,9 @@ class AssertionTestResult(AbstractTestResult):
     def to_latex(self) -> str:
         pass
 
+    def to_html(self) -> str:
+        return ""
+
 
 class CombinedTestResult(AbstractTestResult):
 
@@ -234,6 +240,9 @@ class CombinedTestResult(AbstractTestResult):
 
     def to_latex(self) -> str:
         return '\\\\ \\\\ \n'.join(test_result.to_latex() for test_result in self.test_results)
+
+    def to_html(self) -> str:
+        return ""
 
 
 class AbstractTest(ABC):
@@ -321,6 +330,9 @@ class TestMetadata(AbstractRichOutput):
     def to_latex(self) -> str:
         return ""
 
+    def to_html(self) -> str:
+        return ""
+
 
 class TestReport(AbstractRichOutput):
 
@@ -378,3 +390,7 @@ class TestReport(AbstractRichOutput):
 
     def to_latex(self) -> str:
         return ""
+
+    def to_html(self) -> str:
+        return ""
+

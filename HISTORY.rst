@@ -256,21 +256,34 @@ Documentation
 - Added Documentation for the ci functions of the ufotest app
 
 
-0.10.0 (2020-12-06)
+0.10.0 (2020-12-08)
 -------------------
 
 Additions
 
 - A module 'ufotest.ci.email' which implements the functionality of sending emails in response to ci actions, which
-  inform the different contributors of the package about the outcome of automated buil d triggers.
+  inform the different contributors of the package about the outcome of automated build triggers.
 
 Changes
 
 - Fixed the broken code blocks in the CI part of the documentation.
 - Moved the 'get_repository_name' function from ufotest.install to ufotest.util. Seems more intuitive
+- Added the abstract method 'to_html' to the abstract base class AbstractRichOutput. Since it is now the plan that all
+  relevant generated reports etc would be able to be viewed remotely over a web server, it would make sense to also
+  generate the necessary html for this in the specific classes.
+- Renamed the 'ci run' command to 'ci build'. I am referring to the process as a 'build' in all the comments and the
+  documentation, so it is more consitent to actually also call the command itself like this
+- Completely reworked the process of how the ci build works.
+    - The ufotest installation folder now has an additional folder called 'builds' which will act as an archive for the
+      build process much like the 'archive' folder works for test run reports. Having both of these seperately now is
+      more consistent, becauses not every test run has to be part of a build, but every build contains a test run.
+      the build report now simply links to the test report.
+    - The implementation for this new process is in the module ufotest.ci.build
+- Updated readme with credits for flask web framework
 
 Documentation
 
+- Renamed all occurrances of the build process to use the new name 'build' instead of 'run'
 
 TODO
 ----
@@ -288,7 +301,4 @@ TODO
 - Auto detect the operating system?
 - I could write a "Camera" context manager object...?
 - Make "init" add the necessary stuff to the bashrc file. use jinja2?
-- EEPROM Programmierung
-- tcl Sprache
 
-- merge branches

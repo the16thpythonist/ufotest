@@ -1,0 +1,11 @@
+| | BUILD REPORT | |
+--| start time:                 {{ report.start }}
+--| end time:                   {{ report.end }}
+--| duration:                   {{ report.duration }}
+--| source repository:          {{ report.repository }}
+--| branch:                     {{ report.branch }}
+--| commit:                     {{ report.commit }}
+--| report folder:              {{ report.folder }}
+--| bitfile path:               {{ report.bitfile_path }}
+--| test suite:                 {{ report.test_suite }}
+--| test success ratio:         {{ report.test_percentage }} success out of {{ report.test_count }}

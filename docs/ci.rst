@@ -90,18 +90,18 @@ Triggering a new build process
 ------------------------------
 
 The essential functionality of this ci process is the build process for a new version of the source code. This process
-can be triggered manually by using the 'run' command:
+can be triggered manually by using the 'build' command:
 
 .. code-block:: console
 
-    $ ufotest ci run --help
+    $ ufotest ci build --help
 
 This command expects one argument, which is the string identifier of the test *suite* to be executed on the new version
 of the source:
 
 .. code-block:: console
 
-    $ ufotest ci run "mock"
+    $ ufotest ci build "mock"
 
 This command will then proceed to clone the branch / repo which was defined in the config file of the project. It will
 search for the .bit file within this repository folder and then flash it to the hardware using the 'flash' command of

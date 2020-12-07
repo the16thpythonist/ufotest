@@ -1,10 +1,12 @@
 import os
 import subprocess
+from multiprocessing import Process
 
 from flask import Flask, request, send_from_directory, jsonify
 
 from ufotest.config import Config, get_path
 from ufotest.ci.util import build_repository, is_building
+from ufotest.ci.build import BuildLock, BuildRunner, build_context_from_request
 
 
 CONFIG = Config()
@@ -28,6 +30,17 @@ def push():
         # to access the same hardware. This is why a request will be rejected if another build process is
         # currently running.
         return 'A build process is currently in progress!', 423
+
+    def build(_data):
+        with build_context_from_request(_data) as build_context:
+            build_runner = BuildRunner(build_context)
+            build_report = build_runner.build()
+            build_report.save(build_context.folder_path)
+
+    process = Process(target=build, args=(data, ))
+    process.start()
+
+    return 'New build process was initiated', 200
 
     test_suite = CONFIG.get_ci_suite()
     # Here we are using subprocess.Popen instead of the subprocess.run command as it is used in the utility function
