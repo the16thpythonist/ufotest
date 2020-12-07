@@ -256,6 +256,22 @@ Documentation
 - Added Documentation for the ci functions of the ufotest app
 
 
+0.10.0 (2020-12-06)
+-------------------
+
+Additions
+
+- A module 'ufotest.ci.email' which implements the functionality of sending emails in response to ci actions, which
+  inform the different contributors of the package about the outcome of automated buil d triggers.
+
+Changes
+
+- Fixed the broken code blocks in the CI part of the documentation.
+- Moved the 'get_repository_name' function from ufotest.install to ufotest.util. Seems more intuitive
+
+Documentation
+
+
 TODO
 ----
 

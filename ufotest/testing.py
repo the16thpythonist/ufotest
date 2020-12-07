@@ -236,7 +236,6 @@ class CombinedTestResult(AbstractTestResult):
         return '\\\\ \\\\ \n'.join(test_result.to_latex() for test_result in self.test_results)
 
 
-
 class AbstractTest(ABC):
 
     name = "abstract"

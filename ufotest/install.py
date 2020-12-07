@@ -8,7 +8,7 @@ import subprocess
 from typing import Optional, Tuple
 
 from ufotest.config import CONFIG
-from ufotest.util import execute_command
+from ufotest.util import execute_command, get_repository_name
 
 
 def git_clone(path: str, git_url: str, verbose: bool, branch: str = 'master') -> Tuple[str, str]:
@@ -39,18 +39,6 @@ def git_clone(path: str, git_url: str, verbose: bool, branch: str = 'master') ->
         click.secho('(+) Cloned repository "{}" ({})'.format(repository_name, repository_path), fg='green')
 
     return repository_name, repository_path
-
-
-def get_repository_name(repository_url: str) -> str:
-    """Returns the name of a git repository if the *repository_url* for it is given.
-
-    :param repository_url: the string url of the remote repository
-
-    :return: the string name of the repo, which does NOT include the username it is just the name of the top level
-    folder of that repo.
-    """
-    repository_name = re.findall(r'/([^/]*)\.git', repository_url)[0]
-    return repository_name
 
 
 def install_generic_cmake(path: str, git_url: str, verbose: bool, cmake_args: dict):

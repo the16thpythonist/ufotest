@@ -27,9 +27,24 @@ DEFAULT_PATH = os.path.join(HOME_PATH, '.ufotest')
 PATH_ENV = 'UFOTEST_PATH'
 
 
-def get_path():
+def get_builds_path() -> str:
+    """Returns the string path of the 'builds' folder within the ufotest installation folder.
+
+    :return: the string absolute path of the builds folder
     """
-    Returns the path of the folder, where all the global persistent assets of ufotest are being stored.
+    path = get_path()
+    return os.path.join(path, 'builds')
+
+
+def get_path() -> str:
+    """Returns the path of the installation folder of the ufotest app.
+
+    This installation folder contains for example the following things:
+    - The config file for the project. This is a toml file which manages the global config settings for ufotest
+    - The 'archive' folder which saves archives of the test reports of all the executed test runs.
+    - The 'builds' folder which saves archives of all the reports for the issued builds of the remote source repo.
+
+    :return: the string absolute path to the installation folder
     """
     if PATH_ENV in os.environ.keys():
         return os.environ[PATH_ENV]
@@ -155,6 +170,12 @@ class Config(metaclass=Singleton):
 
     def get_ci_suite(self):
         return self.data['ci']['test_suite']
+
+    def get_email_address(self):
+        return self.data['ci']['gmail_address']
+
+    def get_email_password(self):
+        return self.data['ci']['gmail_password']
 
     # UTILITY METHODS
     # ---------------

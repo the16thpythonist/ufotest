@@ -93,12 +93,14 @@ The essential functionality of this ci process is the build process for a new ve
 can be triggered manually by using the 'run' command:
 
 .. code-block:: console
+
     $ ufotest ci run --help
 
 This command expects one argument, which is the string identifier of the test *suite* to be executed on the new version
 of the source:
 
 .. code-block:: console
+
     $ ufotest ci run "mock"
 
 This command will then proceed to clone the branch / repo which was defined in the config file of the project. It will
@@ -129,7 +131,7 @@ Configuring Github webhooks
 Currently, the server only implements the possibility to respond to Github webhooks. Specifically those webhooks which
 are triggered by a 'push' event. By the github standard it is possible to register a certain url to receive a http POST
 request whenever a new push is made for the subject repo. This url would have to be configured to look like this
-``http://{yourhostname}/push/github/``. If a push request is sent to this route, a new build process like described above
+``http://{yourhostname}:2424/push/github/``. If a push request is sent to this route, a new build process like described above
 will be triggered.
 
 Serving archived test reports
@@ -141,7 +143,7 @@ archive of the ufotest app.
 Each execution of a test suite will create a new test report. This test report is saved as a MD file within the archive
 folder of the app '$HOME/.ufotest/archive'. The report is also saved as an HTML file within the same folder. These html
 files can then be used to view the results of the test runs remotely. The ci server will return these static read-only
-files under the route ``http://{yourhostname}/archive/{testfolder}/report.html``.
+files under the route ``http://{yourhostname}:2424/archive/{testfolder}/report.html``.
 
 
 

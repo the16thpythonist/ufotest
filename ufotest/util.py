@@ -4,6 +4,7 @@ A module containing various utility functions for usage in other modules.
 import string
 import click
 import random
+import re
 import subprocess
 import importlib.util
 from typing import Optional, List
@@ -20,6 +21,18 @@ VERSION_PATH = os.path.join(PATH, 'VERSION')
 
 # FUNCTIONS
 # =========
+
+def get_repository_name(repository_url: str) -> str:
+    """Returns the name of a git repository if the *repository_url* for it is given.
+
+    :param repository_url: the string url of the remote repository
+
+    :return: the string name of the repo, which does NOT include the username it is just the name of the top level
+    folder of that repo.
+    """
+    repository_name = re.findall(r'/([^/]*)\.git', repository_url)[0]
+    return repository_name
+
 
 def markdown_to_html(input_path: str, output_path: str, header_lines: List[str] = []):
     """Converts the markdown file at *input_path* to html file at *output_path*
@@ -254,6 +267,7 @@ def clean_pci_read_output(output: str):
 
     return cleaned
 
+
 # CLASSES
 # =======
 
@@ -272,4 +286,8 @@ class AbstractRichOutput(ABC):
 
     @abstractmethod
     def to_string(self) -> str:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def to_html(self) -> str:
         raise NotImplementedError()
