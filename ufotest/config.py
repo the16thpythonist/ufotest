@@ -13,6 +13,7 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 PATH = Path(__file__).parent.absolute()
 
 TEMPLATE_PATH = os.path.join(PATH, 'templates')
+STATIC_PATH = os.path.join(PATH, 'static')
 CONFIG_TEMPLATE_PATH = os.path.join(TEMPLATE_PATH, 'default.toml')
 
 # This will be the string path to the HOME folder of the user which is currently executing the script
@@ -116,7 +117,21 @@ class Config(metaclass=Singleton):
     """
 
     def __init__(self):
+        # -- LOAD THE DATA FROM FILE
         self.data = load_config()
+
+        # -- INIT CONTEXT
+        # So here is the scenario: I have noticed that I need to pass some parameters from the click command call
+        # within the terminal all the way down to the email sending sub routine. This is multiple layers and I totally
+        # do not want to modify all of them with an additional parameter.
+        # This is why I have come up with the 'context' idea. I'll just have a global object where I save the necessary
+        # values in and then I can access them in the email subroutine. And the config object is perfect since this
+        # already is a global singleton! I'll just add the additional sub dict "context" which will work exactly as
+        # I have intended
+        self.data['context'] = {
+            'hostname':         self.data['ci']['hostname'],
+            'verbose':          False
+        }
 
     # IMPLEMENTING DICT FUNCTIONALITY
     # -------------------------------

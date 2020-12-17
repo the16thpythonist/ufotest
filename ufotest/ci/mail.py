@@ -1,23 +1,27 @@
-import smtplib, ssl
+import smtplib
+import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+
+import click
 
 from ufotest.config import Config
 from ufotest.util import get_template
 from ufotest.testing import TestReport
+from ufotest.ci.build import BuildReport
 
 CONFIG = Config()
 
 
-def send_report_mail(receiver_email: str, receiver_name: str, test_report: TestReport):
+def send_report_mail(receiver_email: str, receiver_name: str, build_report: BuildReport):
     message = MIMEMultipart('alternative')
     message['Subject'] = 'UfoTest Report'
     message['To'] = receiver_email
 
     context = {
         'name': receiver_name,
-        'report': test_report,
-        'repository': CONFIG.get_ci_repository_url()
+        'report': build_report,
+        'config': CONFIG
     }
 
     text_template = get_template('report_mail.text')
@@ -31,6 +35,7 @@ def send_report_mail(receiver_email: str, receiver_name: str, test_report: TestR
     message.attach(html_mime)
 
     send_mime_multipart(receiver_email, message)
+    click.secho('(+) Sent report email to: {}'.format(receiver_email), fg='green')
 
 
 def send_mime_multipart(receiver_email: str, message: MIMEMultipart):

@@ -229,7 +229,7 @@ class BuildReport(AbstractRichOutput):
     This class implements the abstract base class AbstractRichOutput, which means that it can be converted to various
     formats, which include markdown and html. These can be saved to files to later be reviewed by a user.
     """
-    DATETIME_FORMAT = '%A, %d.%B %Y at %H:%M'
+    DATETIME_FORMAT = '%d.%m %Y, %H:%M'
 
     def __init__(self, build_context: BuildContext):
         self.context = build_context
@@ -240,10 +240,13 @@ class BuildReport(AbstractRichOutput):
         duration_time_delta = self.context.end_datetime - self.context.start_datetime
         self.duration = round(duration_time_delta.seconds / 60)
         self.repository = self.context.repository_url
+        self.repository_name = self.context.repository_name
         self.branch = self.context.branch
         self.commit = self.context.commit
         self.folder = self.context.folder_path
+        self.folder_name = os.path.basename(self.folder)
         self.bitfile_path = self.context.bitfile_path
+        self.bitfile_name = os.path.basename(self.bitfile_path)
         self.test_suite = self.context.test_suite
         self.test_count = self.context.test_report.test_count
         self.test_percentage = self.context.test_report.success_ratio
@@ -262,6 +265,8 @@ class BuildReport(AbstractRichOutput):
         html_path = os.path.join(folder_path, 'report.html')
         with open(html_path, mode='w') as html_file:
             html_file.write(self.to_html())
+
+        click.secho('(+) Build report saved to: {}'.format(folder_path), fg='green')
 
     def __str__(self):
         return self.to_string()

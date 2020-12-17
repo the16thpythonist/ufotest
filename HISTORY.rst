@@ -256,13 +256,18 @@ Documentation
 - Added Documentation for the ci functions of the ufotest app
 
 
-0.10.0 (2020-12-08)
+0.10.0 (2020-12-17)
 -------------------
 
 Additions
 
 - A module 'ufotest.ci.email' which implements the functionality of sending emails in response to ci actions, which
   inform the different contributors of the package about the outcome of automated build triggers.
+- The flask server now also serves the static html files from the 'builds' report folder
+- Added a new folder 'static' to the project, which will contain all the static assets needed for the flask CI web
+  server. These assets are mainly CSS and JS files as well as images etc. With the 'init' command this folder is being
+  copied to the installation folder of the application. This is also the place where the files are actually being
+  served. This has the advantage, that the files could be modified by the users.
 
 Changes
 
@@ -288,6 +293,7 @@ Documentation
 TODO
 ----
 
+- Rework the testing process to work basically just like the build process (It's concept is better)
 - Realize a queue for ci build processes...
 - Catch the error in init when the the folder already exists
 - I just realized that there might be an issue when converting an md file to html which contains images. would this

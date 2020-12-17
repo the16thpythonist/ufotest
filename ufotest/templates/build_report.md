@@ -13,7 +13,7 @@ found here: [UfoTest Documentation](https://ufotest.readthedocs.io/en/latest/ind
 ## Build Context
 
 The build was started at **{{ report.start }}** and ended **{{ report.end }}** with a total
-duration of **{{ report.duration }}**
+duration of **{{ report.duration }}** minutes.
 
 The build cloned the source repository at **{{ report.repository }}**. Specifically the commit **{{ report.commit }}**
 from the branch **{{ report.branch }}**.

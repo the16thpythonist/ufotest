@@ -183,12 +183,20 @@ def init_install(verbose=False) -> str:
         click.secho('    Created the "archive" folder for ufotest')
 
     # -- BUILDS FOLDER
-    # This folder will contain the build reporst which are created when a new version of the hardware configuration
+    # This folder will contain the build reports which are created when a new version of the hardware configuration
     # is built from the source repository
     builds_folder_path = get_builds_path()
     os.mkdir(builds_folder_path)
     if verbose:
         click.secho('    Created the "builds" folder for ufotest')
+
+    # -- STATIC FOLDER
+    # This folder contains all the static assets which are required for the internal CI web server. This folder already
+    # exists within the ufotest package, it simply needs to be copied into the installation folder...
+    static_path = os.path.join(folder_path, 'static')
+    shutil.copytree(STATIC_PATH, static_path)
+    if verbose:
+        click.secho('    Copied the "static" folder into ufotest installation')
 
     return folder_path
 

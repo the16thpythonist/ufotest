@@ -343,6 +343,9 @@ def ci():
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 @click.argument('suite', type=click.STRING)
 def build(verbose, suite):
+    """
+    Start a new CI build process using the test suite SUITE.
+    """
     # -- ECHO CONFIGURATION
     click.secho('\n| | INTEGRATING REMOTE REPOSITORY | |', bold=True)
     click.secho('--| repository url: {}'.format(CONFIG.get_ci_repository_url()))
@@ -360,11 +363,19 @@ def build(verbose, suite):
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 @click.argument('port', type=click.INT)
 def serve(verbose, port):
+    """
+    Start the CI server. The server listens for incoming build requests and serves the static report files.
+    """
     # -- ECHO CONFIGURATION
     click.secho('\n| | STARTING CI SERVER | |', bold=True)
     click.secho('--| repository url: {}'.format(CONFIG.get_ci_repository_url()))
     click.secho('--| repository branch: {}'.format(CONFIG.get_ci_branch()))
     click.secho('--| bitfile: {}\n'.format(CONFIG.get_ci_bitfile_path()))
+
+    # -- MODIFYING CONTEXT
+    # The port value will is stored here in the global config object, because it is needed in some subroutine of the
+    # serve process.
+    CONFIG['context']['port'] = port
 
     # -- STARTING THE SERVER
     server.run(port=port)
