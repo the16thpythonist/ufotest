@@ -119,16 +119,17 @@ server can be started with the 'serve' command
 
     $ ufotest ci serve --help
 
-This command expects two arguments: The first one is the hostname under which the server is supposed to operate and the
-second one is the port on which the server is to listen to requests. For running the server on the local machine only
-the hostname "localhost" can be used. The default port for the ufotest application is 2424.
+This command expects no arguments, however it depends strongly on the fields "ci.hostname" and "ci.value" of the
+config file. These two values define which hostname the server will run under and on which port the server will listen.
 
 .. code-block:: console
 
-    $ ufotest ci serve localhost 2424
+    $ ufotest ci serve
 
 With the previous example, the web server could be reached from within a browser by supplying the address
-``http://localhost:2424/``. This will display the home page of the web interface of the server. On this page there are
+``http://localhost:2424/``, as the default configuration for the hostname is "localhost" and the default port for
+the ufotest application is 2424.
+The browser will display the home page of the web interface of the server. On this page there are
 all necessary navigation links to both the build and test report archive.
 
 Hostname and port
@@ -136,12 +137,12 @@ Hostname and port
 
 The default port 2424 was chosen, so that the application could be run on a host machine which is already running a
 different server on the default HTTP port 80. The port 80 and any other port can of course also be used for this
-application, they simply have to be supplied to the "serve" command. Although it is important that there is no other
-application already attached to that port!
+application, the corresponding field of the config file simply has to be changed accordingly. Although it is important
+that there is no other application already attached to that port!
 
 Choosing the hostname "localhost" only makes sense when the web interface should only be viewed from the very machine
 which also runs the server. In case the web interface is also supposed to be accessible from within the local network
-or the internet, a different public hostname/ip address has to be supplied as an argument to "serve". Supplying the
+or the internet, a different public hostname/ip address has to be set in the config. Supplying the
 correct hostname is important, because internally the program uses this hostname to assemble absolute urls to use for
 the several navigation link elements in the web interface!
 

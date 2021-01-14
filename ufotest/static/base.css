@@ -30,11 +30,12 @@ div.header {
     justify-content: space-between;
     margin-right: auto;
     margin-left: auto;
-    width: 80%;
+    width: 70%;
+    font-size: 1.2em;
 }
 
 span.logo {
-    font-size: 1.3em;
+    font-size: 1.4em;
     font-family: 'Consolas', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
     margin: 15px;
     color: white;
@@ -64,7 +65,7 @@ a.nav-item:visited {
 }
 
 .content {
-    width: 80%;
+    width: 70%;
     margin-right: auto;
     margin-left: auto;
     margin-top: 60px;

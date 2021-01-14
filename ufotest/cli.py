@@ -368,9 +368,7 @@ def build(verbose, suite):
 
 @click.command('serve', short_help='Runs the CI server which responds to remote repository webhooks')
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
-@click.argument('hostname', type=click.STRING)
-@click.argument('port', type=click.INT)
-def serve(verbose, hostname, port):
+def serve(verbose):
     """
     Start the CI server. The server listens for incoming build requests and serves the static report files.
     """
@@ -380,11 +378,8 @@ def serve(verbose, hostname, port):
     click.secho('--| repository branch: {}'.format(CONFIG.get_ci_branch()))
     click.secho('--| bitfile: {}\n'.format(CONFIG.get_ci_bitfile_path()))
 
-    # -- MODIFYING CONTEXT
-    # The port value will is stored here in the global config object, because it is needed in some subroutine of the
-    # serve process.
-    CONFIG['context']['hostname'] = hostname
-    CONFIG['context']['port'] = port
+    hostname = CONFIG.get_hostname()
+    port = CONFIG.get_port()
 
     click.secho('(+) Visit the server at http://{}:{}/'.format(hostname, port), fg='green')
 

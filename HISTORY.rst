@@ -326,21 +326,38 @@ Documentation
 - Changed the documentation for the new "serve" command
 
 
+0.12.0 (2021-01-14)
+-------------------
+
+Additions
+
+- Added a test result class which allows to add images as a result.
+- Added a test result class which allows to add dicts as a result.
+- Test case which simply requests a frame from the camera and adds the image to the test report.
+- Test case which requests frame and calculates simple statistics for it.
+
+Changes
+
+- Reworked the "mock" test case to now return a combined test result of one test result object for each available
+  test result class. The mock test case thus became a way of testing test results classes.
+- Fixed an error with including the static css files within the HTML templates of the CI server.
+- Fixed the combined test result not having an html conversion.
+- Changed the "serve" command: Now it has not arguments anymore. Both the hostname and the port now have to be defined
+  in the config file. I realized that the html files for the reports are being created in separate instances of the
+  application, which are not the running server and thus do not know the hostname or the port. This has lead to
+  errors in the creation of the absolute url links within the html templates.
+
+Documentation
+
+- Changed the documentation for the "serve" command again
+
+
 TODO
 ----
 
-- Rework the testing process to work basically just like the build process (It's concept is better)
 - Realize a queue for ci build processes...
-- Catch the error in init when the the folder already exists
-- I just realized that there might be an issue when converting an md file to html which contains images. would this
-  still work with the images also being displayed in the browser.
 
 - Document camera properties "Notes"
-- Change all usages from config to singleton class
-- Write a test function, which will take a frame and check it for some properties
-    - In general I should think about how I want to deal with the tests in a broader conceptional context
-      Maybe write some base classes etc?
 - Auto detect the operating system?
-- I could write a "Camera" context manager object...?
 - Make "init" add the necessary stuff to the bashrc file. use jinja2?
 

@@ -7,7 +7,7 @@ title = "UfoTest Config"
     date_format = "%d %b %Y"
     time_format = "%H:%M:%S"
     # These fields contain the URLs to the main repository of this project and the corresponding documentation page
-    # These values should not be changed!
+    # THESE VALUES SHOULD NOT BE CHANGED!
     repository_url = "http://github.com/the16thpythonist/ufotest.git"
     documentation_url = "https://ufotest.readthedocs.io/en/latest/index.html"
 
@@ -186,6 +186,12 @@ title = "UfoTest Config"
     [tests.suites]
         mock = ['mock']
 
+        # A suite which runs a selected few of the most basic tests
+        basic = [
+            'single_frame',
+            'single_frame_statistics'
+        ]
+
         # This test suite runs all the tests
         full = [
             # Installation
@@ -219,6 +225,7 @@ title = "UfoTest Config"
     # It is possible to start a server which listens to icoming requests
     # which are created by the git repository whenever new changes are being commited.
     hostname = 'localhost'
+    port = 2424
     # This value contains the string identifier of the test suite which is
     # supposed to be executed whenever the build process is automatically triggered
     # by a git webhook

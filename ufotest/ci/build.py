@@ -240,7 +240,7 @@ class BuildReport(AbstractRichOutput):
     """This class represents a report, which is being created as the result of a build process. A build report contains
     information and metrics about the build process which are important to provide to the users.
 
-    *Rich Output*
+    **Rich Output**
 
     This class implements the abstract base class AbstractRichOutput, which means that it can be converted to various
     formats, which include markdown and html. These can be saved to files to later be reviewed by a user.
@@ -500,4 +500,14 @@ class BuildRunner(object):
         commit_name = get_command_output(hash_command, cwd=self.context.repository_path).rstrip('\n')
         self.context.commit = commit_name
 
+
+# BUILD QUEUE
+# So the problem I am seeing is that, that I cannot really access the main loop of the server... If I had a main loop
+# or something it would be fairly easy: I would simply put "if queue not empty and previous finished start next" and
+# that would be it. But I dont really have access to this main loop. Here are two ideas which I had:
+# - Somehow dynamically attach the activation call for the next build to the end of the current build
+# - Decouple the build completely from the web server: Parallel to the web server also start a new process which
+#   simply executes builds. In this separate process I would have the main loop which I wanted.
+# Thinking about this, I realized that it is probably going to be much work and I dont know if I should really do this
+# I mean, is it that important? or should I just delay this for version 1.1?
 

@@ -130,8 +130,6 @@ class Config(metaclass=Singleton):
         # already is a global singleton! I'll just add the additional sub dict "context" which will work exactly as
         # I have intended
         self.data['context'] = {
-            'hostname':         'localhost',
-            'port':             80,
             'verbose':          False
         }
 
@@ -157,6 +155,12 @@ class Config(metaclass=Singleton):
         return self.data.items()
 
     # == WRAPPER METHODS
+
+    def get_hostname(self):
+        return self.data['ci']['hostname']
+
+    def get_port(self):
+        return self.data['ci']['port']
 
     def get_repository_url(self):
         return self.data['general']['repository_url']
@@ -211,8 +215,11 @@ class Config(metaclass=Singleton):
         self.data = load_config()
 
     def url(self, *paths: str) -> str:
+        hostname = self.get_hostname()
+        port = self.get_port()
+
         return '/'.join([
-            'http://{}:{}'.format(self.data['context']['hostname'], self.data['context']['port']),
+            'http://{}:{}'.format(hostname, port),
             *paths
         ])
 

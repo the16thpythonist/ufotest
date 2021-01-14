@@ -33,6 +33,9 @@ class TestContext(AbstractContextManager):
         self.creation_datetime = datetime.datetime.now()
         self.folder_name = self.creation_datetime.strftime(self.ARCHIVE_FOLDER_FORMAT)
         self.folder_path = os.path.join(self.archive_folder_path, self.folder_name)
+        # I have added this, because I realized, that the test result objects have to access this value for
+        # correctly creating html links to additional resources saved within the test's folder.
+        self.folder_url = self.config.url('archive', self.folder_name)
         # This general information, about the platform and version on which the test was executed, was previously
         # encapsulated by the TestMetadata class. But now all of this information os combined into the context. This
         # is because the responsibility of the context essentially is to provide such "contextual" information
@@ -322,6 +325,101 @@ class AbstractTestResult(AbstractRichOutput, ABC):
         return time_delta.total_seconds()
 
 
+class ImageTestResult(AbstractTestResult):
+    """Represents an image as the result of a test case.
+
+    **Path issues**
+
+    So ultimately this object is supposed to be converted into a MARKDOWN and a HTML snippet. This creates a little bit
+    of an issue with the fact that the very purpose of this class: It relies on an external resource (the image).
+    Passing the path of this image is fine for the MD version. But for the HTML file just having the absolute file
+    system path does not solve anything. For this we would need to know the equivalent URL path.
+
+    This is why the constructor needs the additional argument "url_base". It is supposed to define the base url at
+    which this image asset can be found.
+
+    **Example**
+
+    THe most likely use case of this result type is the following: A test case generates some sort of image. This can
+    be either an info graphic or just simply the image of a camera frame. It will then save this image into the test
+    folder (which it knows from the test context). The test context then provides the base url like so:
+
+    .. code-block:: python
+        # "run" of "ExampleTest"
+
+        file_name = 'image.png'
+        file_path = os.path.join(self.context.folder_path, file_name)
+
+        result = ImageTestResult(0, file_path, self.context.folder_url)
+    """
+
+    def __init__(self, exit_code: int, file_path: str, description: str, url_base: str = '/static'):
+        AbstractTestResult.__init__(self, exit_code)
+
+        self.file_path = file_path
+        self.url_base = url_base
+        self.description = description
+        self.config = Config()
+
+        # The file name is important here because ultimately this object also has to be converted into an HTML file and
+        # within an html file the file system path is not so important. More important is the URL path. So to make this
+        # work at all.
+        self.file_name = os.path.basename(self.file_path)
+        self.file_url = os.path.join(url_base, self.file_name)
+
+    # == AbstractRichOutput
+
+    def to_string(self) -> str:
+        return 'Image "{}" ({}): {}'.format(self.file_name, self.file_path, self.description)
+
+    def to_markdown(self) -> str:
+        return '[{}]({})\n\n{}'.format(self.file_name, self.file_path, self.description)
+
+    def to_latex(self) -> str:
+        return ''
+
+    def to_html(self) -> str:
+        return '\n'.join([
+            '<div class="image-test-result">',
+            '<img src="{}" alt="{}">'.format(self.file_url, self.file_name),
+            '<p>',
+            '{}'.format(self.description),
+            '</p>',
+            '</div>'
+        ])
+
+
+class DictTestResult(AbstractTestResult):
+
+    def __init__(self, exit_code: int, data: dict):
+        AbstractTestResult.__init__(self, exit_code)
+        self.data = data
+
+    # == AbstractRichOutput
+
+    def to_string(self) -> str:
+        row_format = '{:>20}{:>20}'
+        rows = [row_format.format(str(key), str(value)) for key, value in self.data.items()]
+        return '\n'.join(rows)
+
+    def to_html(self) -> str:
+        row_format = '<div class="row"><div class="key">{}</div><div class="value">{}</div></div>'
+        rows = [row_format.format(str(key), str(value)) for key, value in self.data.items()]
+        return '\n'.join([
+            '<div class="dict-test-result">',
+            '{}'.format('\n'.join(rows)),
+            '</div>'
+        ])
+
+    def to_latex(self) -> str:
+        return ''
+
+    def to_markdown(self) -> str:
+        row_format = '- *'
+        rows = [row_format.format(str(key), str(value)) for key, value in self.data.items()]
+        return '\n'.join(rows)
+
+
 class MessageTestResult(AbstractTestResult):
 
     def __init__(self, exit_code: int, message: str):
@@ -429,7 +527,7 @@ class CombinedTestResult(AbstractTestResult):
         return '\\\\ \\\\ \n'.join(test_result.to_latex() for test_result in self.test_results)
 
     def to_html(self) -> str:
-        return ""
+        return '\n\n'.join(test_result.to_html() for test_result in self.test_results)
 
 
 class AbstractTest(ABC):
@@ -441,6 +539,7 @@ class AbstractTest(ABC):
         self.test_runner = test_runner
         self.logger = self.test_runner.logger
         self.config = self.test_runner.config
+        self.context = self.test_runner.context
 
     def execute(self) -> AbstractTestResult:
         start_datetime = datetime.datetime.now()
