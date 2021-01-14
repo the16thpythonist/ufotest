@@ -31,12 +31,13 @@ from ufotest.install import (install_dependencies,
                              install_uca_ufo,
                              install_ipecamera)
 from ufotest.camera import save_frame, import_raw, set_up_camera, tear_down_camera
-from ufotest.testing import TestRunner
+from ufotest.testing import TestRunner, TestContext, TestReport
 from ufotest.ci.build import BuildRunner, BuildContext, BuildReport, build_context_from_config
 from ufotest.ci.server import server
 
 
 CONFIG = Config()
+
 
 @click.group(invoke_without_command=True)
 @click.option('--version', '-v', is_flag=True, help='Print the version of the program')
@@ -293,10 +294,9 @@ def flash(verbose, file: str):
 
 @click.command('test', short_help="Run a camera test")
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
-@click.option('--email', '-e', type=click.STRING, help='An email address to send the final report of the test to')
 @click.option('--suite', '-s', is_flag=True, help='Execute a test SUITE with the given name')
 @click.argument('test_id', type=click.STRING)
-def test(verbose, email, suite, test_id):
+def test(verbose, suite, test_id):
     """
     Run the test "TEST_ID"
 
@@ -310,26 +310,33 @@ def test(verbose, email, suite, test_id):
     if not check_install():
         return 1
 
-    test_runner = TestRunner()
-    test_runner.load()
-    click.secho('    Tests have been loaded')
-
     try:
-        if suite:
-            click.secho('    Executing test suite "{}"...'.format(test_id), bold=True)
-            test_report = test_runner.run_suite(test_id)
-        else:
-            click.secho('    Executing test "{}"...'.format(test_id), bold=True)
-            test_report = test_runner.run_test(test_id)
+        with TestContext() as test_context:
+            # 1 -- DYNAMICALLY LOADING THE TESTS
+            test_runner = TestRunner(test_context)
+            test_runner.load()
+
+            # 2 -- EXECUTING THE TEST CASES
+            if suite:
+                click.secho('    Executing test suite: {}...'.format(test_id), bold=True)
+                test_runner.run_suite(test_id)
+            else:
+                click.secho('    Executing test: {}...'.format(test_id), bold=True)
+                test_runner.run_test(test_id)
+
+            # 3 -- SAVING THE RESULTS AS A REPORT
+            test_report = TestReport(test_context)
+            test_report.save(test_context.folder_path)
+
     except Exception as e:
-        click.secho(str(e), fg='red', bold=True)
+        click.secho('[!] {}'.format(e), fg='red', bold=True)
         return 1
 
     if verbose:
         click.secho(test_report.to_string())
 
-    click.secho('(+) Test report saved to "{}"'.format(test_runner.folder_path), fg='green', bold=True)
-    click.secho('    View the report at: http://localhost/archive/{}/report.html'.format(test_runner.name))
+    click.secho('(+) Test report saved to: {}'.format(test_context.folder_path), fg='green', bold=True)
+    click.secho('    View the report at: http://localhost/archive/{}/report.html'.format(test_context.folder_name))
 
     return 0
 
@@ -361,8 +368,9 @@ def build(verbose, suite):
 
 @click.command('serve', short_help='Runs the CI server which responds to remote repository webhooks')
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
+@click.argument('hostname', type=click.STRING)
 @click.argument('port', type=click.INT)
-def serve(verbose, port):
+def serve(verbose, hostname, port):
     """
     Start the CI server. The server listens for incoming build requests and serves the static report files.
     """
@@ -375,7 +383,10 @@ def serve(verbose, port):
     # -- MODIFYING CONTEXT
     # The port value will is stored here in the global config object, because it is needed in some subroutine of the
     # serve process.
+    CONFIG['context']['hostname'] = hostname
     CONFIG['context']['port'] = port
+
+    click.secho('(+) Visit the server at http://{}:{}/'.format(hostname, port), fg='green')
 
     # -- STARTING THE SERVER
     server.run(port=port)

@@ -6,6 +6,10 @@ title = "UfoTest Config"
     # These are the format strings for the python datetime objects, which will be used throughout the project.
     date_format = "%d %b %Y"
     time_format = "%H:%M:%S"
+    # These fields contain the URLs to the main repository of this project and the corresponding documentation page
+    # These values should not be changed!
+    repository_url = "http://github.com/the16thpythonist/ufotest.git"
+    documentation_url = "https://ufotest.readthedocs.io/en/latest/index.html"
 
 # The installation section contains all the configuration, which us used to install all the requirements for the
 # project. This includes for example information about the target operating system, the URL's to the relevant

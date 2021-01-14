@@ -3,12 +3,18 @@ import os
 import click
 import datetime
 import shutil
+import json
 from contextlib import AbstractContextManager
 from typing import Optional
 
 from ufotest.config import Config, get_path, get_builds_path
-from ufotest.util import AbstractRichOutput, get_repository_name, execute_command, get_command_output, get_template
-from ufotest.testing import TestRunner, TestReport
+from ufotest.util import (AbstractRichOutput,
+                          get_repository_name,
+                          execute_command,
+                          get_command_output,
+                          get_template,
+                          get_version)
+from ufotest.testing import TestRunner, TestReport, TestContext
 
 
 UFOTEST_PATH = get_path()
@@ -139,13 +145,17 @@ class BuildContext(AbstractContextManager):
 
     """
     def __init__(self, repository_url: str, branch_name: str, commit_name: str, test_suite: str):
+        # constructed attributes
         self.repository_url = repository_url
         self.branch = branch_name
         self.commit = commit_name
         self.test_suite = test_suite
 
+        # calculated attributes
         self.config = Config()
         self.creation_datetime = datetime.datetime.now()
+        self.version = get_version()
+        self.test_context = TestContext()
 
         # derived attributes
         self.repository_name = get_repository_name(repository_url)
@@ -196,6 +206,9 @@ class BuildContext(AbstractContextManager):
         # -- RECORDING THE START TIME
         self.start_datetime = datetime.datetime.now()
 
+        # -- ENTERING TEST CONTEXT
+        self.test_context = self.test_context.__enter__()
+
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -219,6 +232,9 @@ class BuildContext(AbstractContextManager):
         # By doing this, another build process is now able to be started again in a different process possibly
         BuildLock.release()
 
+        # -- EXIT TEST CONTEXT
+        self.test_context.__exit__(exc_type, exc_val, exc_tb)
+
 
 class BuildReport(AbstractRichOutput):
     """This class represents a report, which is being created as the result of a build process. A build report contains
@@ -229,12 +245,13 @@ class BuildReport(AbstractRichOutput):
     This class implements the abstract base class AbstractRichOutput, which means that it can be converted to various
     formats, which include markdown and html. These can be saved to files to later be reviewed by a user.
     """
-    DATETIME_FORMAT = '%d.%m %Y, %H:%M'
+    DATETIME_FORMAT = '%d.%m.%Y %H:%M'
 
     def __init__(self, build_context: BuildContext):
+        # constructed attributes
         self.context = build_context
 
-        # Derived
+        # derived attributes from context
         self.start = self.context.start_datetime.strftime(self.DATETIME_FORMAT)
         self.end = self.context.end_datetime.strftime(self.DATETIME_FORMAT)
         duration_time_delta = self.context.end_datetime - self.context.start_datetime
@@ -249,29 +266,60 @@ class BuildReport(AbstractRichOutput):
         self.bitfile_name = os.path.basename(self.bitfile_path)
         self.test_suite = self.context.test_suite
         self.test_count = self.context.test_report.test_count
+        self.test_success_count = self.context.test_report.successful_count
         self.test_percentage = self.context.test_report.success_ratio
+        self.test_folder_name = self.context.test_report.folder_name
 
     def save(self, folder_path: str):
         """Saves the both the MD and HTML version of the report into the given *folder_path*.
 
         :return: void
         """
-        # -- SAVE MARKDOWN FILE
+        # 1 -- SAVE MARKDOWN FILE
         markdown_path = os.path.join(folder_path, 'report.md')
         with open(markdown_path, mode='w') as markdown_file:
             markdown_file.write(self.to_markdown())
 
-        # -- SAVE HTML FILE
+        # 2 -- SAVE HTML FILE
         html_path = os.path.join(folder_path, 'report.html')
         with open(html_path, mode='w') as html_file:
             html_file.write(self.to_html())
+
+        # 3 -- SAVE JSON FILE
+        json_path = os.path.join(folder_path, 'report.json')
+        with open(json_path, mode='w') as json_file:
+            json_file.write(self.to_json())
 
         click.secho('(+) Build report saved to: {}'.format(folder_path), fg='green')
 
     def __str__(self):
         return self.to_string()
 
-    # IMPLEMENT 'AbstractRichOutput'
+    # == JSON SAVING
+
+    def to_dict(self) -> dict:
+        return {
+            'start':                self.start,
+            'end':                  self.end,
+            'duration':             self.duration,
+            'version':              self.context.version,
+            'test_suite':           self.test_suite,
+            'test_count':           self.test_count,
+            'test_success_count':   self.test_success_count,
+            'test_percentage':      self.test_percentage,
+            'test_folder_name':     self.test_folder_name,
+            'repository':           self.repository,
+            'repository_name':      self.repository_name,
+            'branch':               self.branch,
+            'commit':               self.commit,
+            'folder_name':          self.folder_name,
+            'bitfile_path':         self.bitfile_path,
+        }
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict())
+
+    # == AbstractRichOutput
 
     def to_markdown(self) -> str:
         template = get_template('build_report.md')
@@ -318,9 +366,10 @@ class BuildRunner(object):
     """
     def __init__(self, build_context: BuildContext):
         self.context = build_context
+        self.test_context = self.context.test_context
 
         self.config = Config()
-        self.test_runner = TestRunner()
+        self.test_runner = TestRunner(self.test_context)
 
     def build(self) -> BuildReport:
         """Actually performs the build process and returns a BuildReport object about the result.
@@ -364,9 +413,10 @@ class BuildRunner(object):
         self.test_runner.load()
         click.secho('    Tests have been loaded from memory')
 
-        test_report = self.test_runner.run_suite(self.context.test_suite)
+        self.test_runner.run_suite(self.context.test_suite)
+        test_report = TestReport(self.test_context)
         click.secho('    Executed test suite: {}'.format(self.context.test_suite))
-        click.secho('(+) Test report saved to: {}'.format(self.test_runner.folder_path), fg='green')
+        click.secho('(+) Test report saved to: {}'.format(self.test_context.folder_path), fg='green')
 
         # -- STORE THE TEST REPORT
         # The test report later also needs to be referenced to produce the build report, so it needs to be saved as

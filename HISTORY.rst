@@ -1,4 +1,4 @@
-=======
+ail=======
 History
 =======
 
@@ -289,6 +289,42 @@ Changes
 Documentation
 
 - Renamed all occurrances of the build process to use the new name 'build' instead of 'run'
+
+
+0.11.0 (2021-01-14)
+-------------------
+
+Additions
+
+- TestReport now also generates an html page, which means that an online version of the test report can also be
+  delivered using the CI server.
+- AbstractTest cases now also have a "description" property where the test can be described. This description is then
+  rendered to the test report as well
+- The test reports and the build reports now also save as JSON files. This is important for procedurally parsing the
+  information about a report later on, as it is needed for example to generate a list of all the tests/reports...
+- CI server now also has a home page
+
+
+Changes
+
+- Changed the name of the static asset "build_report.css" to just "report.css". The very same stylesheet is also being
+  used for the test report page.
+- Added the new properties "repository_url" and "documentation_url" under the "general" section of the config file.
+  These values are needed to display them in the web pages of the CI server.
+- Refactored the testing procedure: Deprecated the old implementations of TestRunner, TestReport and TestMetadata and
+  replaced them with new implementations.
+  Added the new class TestContext. The way the testing process is now implemented internally functions much the same
+  way as the build system. A new context manager has to be created for each new test run. This context is then first
+  passed to the test runner, which actually executes the tests and writes the results back to the context. This "filled"
+  context can then be passed to the test report constructor for the reporting functionality.
+- Removed the "email" option from the "test" command.
+- The jinja templates for the CI web server now use template inheritance, which was used to add a default header to
+  each web page, which can be used to navigate between the most important pages.
+
+Documentation
+
+- Changed the documentation for the new "serve" command
+
 
 TODO
 ----

@@ -10,13 +10,17 @@ import importlib.util
 from typing import Optional, List
 from abc import ABC, abstractmethod
 
-from jinja2 import Template
+from jinja2 import Template, FileSystemLoader, Environment
 
 from ufotest.config import *
 from ufotest.scripts import SCRIPTS
 
-
+# GLOBAL VARIABLES
 VERSION_PATH = os.path.join(PATH, 'VERSION')
+
+TEMPLATE_LOADER = FileSystemLoader(TEMPLATE_PATH)
+TEMPLATE_ENVIRONMENT = Environment(loader=TEMPLATE_LOADER)
+TEMPLATE_ENVIRONMENT.globals['config'] = Config()
 
 
 # FUNCTIONS
@@ -257,10 +261,15 @@ def execute_script(name: str, prefix: str = '', verbose: bool = False):
     return exit_code
 
 
-def get_template(name: str):
-    template_path = os.path.join(TEMPLATE_PATH, name)
-    with open(template_path, mode='r+') as file:
-        return Template(file.read())
+def get_template(name: str) -> Template:
+    """
+    Returns the jinja2 template with the given file name *name* within the static templates folder of this project
+
+    :param name: The file name of the template to be loaded
+
+    :returns: The template object for the specified template
+    """
+    return TEMPLATE_ENVIRONMENT.get_template(name)
 
 
 def random_string(length: int):

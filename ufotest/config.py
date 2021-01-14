@@ -4,6 +4,7 @@ Module containing the functions to access the configuration of ufotest.
 import os
 import toml
 from pathlib import Path
+from typing import List
 
 import shutil
 from jinja2 import Environment, PackageLoader, select_autoescape
@@ -129,7 +130,8 @@ class Config(metaclass=Singleton):
         # already is a global singleton! I'll just add the additional sub dict "context" which will work exactly as
         # I have intended
         self.data['context'] = {
-            'hostname':         self.data['ci']['hostname'],
+            'hostname':         'localhost',
+            'port':             80,
             'verbose':          False
         }
 
@@ -154,8 +156,13 @@ class Config(metaclass=Singleton):
     def items(self):
         return self.data.items()
 
-    # WRAPPER METHODS
-    # ---------------
+    # == WRAPPER METHODS
+
+    def get_repository_url(self):
+        return self.data['general']['repository_url']
+
+    def get_documentation_url(self):
+        return self.data['general']['documentation_url']
 
     def get_sensor_width(self):
         sensor_model = self.data['camera']['model']
@@ -173,6 +180,12 @@ class Config(metaclass=Singleton):
 
     def get_time_format(self):
         return self.data['general']['time_format']
+
+    def get_test_folder(self):
+        return self.data['tests']['folder']
+
+    def get_test_suites(self):
+        return self.data['tests']['suites']
 
     def get_ci_repository_url(self):
         return self.data['ci']['repository_url']
@@ -192,11 +205,19 @@ class Config(metaclass=Singleton):
     def get_email_password(self):
         return self.data['ci']['gmail_password']
 
-    # UTILITY METHODS
-    # ---------------
+    # == UTILITY METHODS
 
     def reload(self):
         self.data = load_config()
+
+    def url(self, *paths: str) -> str:
+        return '/'.join([
+            'http://{}:{}'.format(self.data['context']['hostname'], self.data['context']['port']),
+            *paths
+        ])
+
+    def static(self, name) -> str:
+        return self.url('static', name)
 
 
 CONFIG = Config()

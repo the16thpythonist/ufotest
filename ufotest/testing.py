@@ -1,11 +1,14 @@
+from __future__ import annotations
 import os
 import re
+import json
 import inspect
 import platform
 import datetime
 import logging
 from abc import ABC, abstractmethod
-from typing import Tuple, Dict, List, Type, Any
+from typing import Tuple, Dict, List, Type, Any, Optional
+from contextlib import AbstractContextManager
 
 from ufotest.config import PATH, Config
 from ufotest.util import (markdown_to_html,
@@ -16,7 +19,191 @@ from ufotest.util import (markdown_to_html,
                           AbstractRichOutput)
 
 
+class TestContext(AbstractContextManager):
+
+    ARCHIVE_FOLDER_FORMAT = 'test_run_%d_%m_%Y__%H_%M_%S'
+
+    def __init__(self, *test_folders):
+        # constructed attributes
+        self.additional_test_folders = test_folders
+
+        # calculated attributes
+        self.config = Config()
+        self.archive_folder_path = self.config.get_archive_path()
+        self.creation_datetime = datetime.datetime.now()
+        self.folder_name = self.creation_datetime.strftime(self.ARCHIVE_FOLDER_FORMAT)
+        self.folder_path = os.path.join(self.archive_folder_path, self.folder_name)
+        # This general information, about the platform and version on which the test was executed, was previously
+        # encapsulated by the TestMetadata class. But now all of this information os combined into the context. This
+        # is because the responsibility of the context essentially is to provide such "contextual" information
+        self.platform = platform.platform()
+        self.version = get_version()  # the version of this software
+
+        static_test_folder = os.path.join(PATH, 'tests')
+        dynamic_test_folder = self.config.get_test_folder()
+        self.test_folders = [
+            static_test_folder,
+            dynamic_test_folder,
+            *self.additional_test_folders
+        ]
+
+        # -- The logging is supposed to be saved into a file within the correct archive folder for this test execution.
+        self.logger = logging.Logger('TestContext')
+        self.logger.setLevel(logging.DEBUG)
+        self.logger_path = os.path.join(self.folder_path, 'context.log')
+
+        # Non initialized attributes
+        # So the way this context object works is that a new context object is being created for every testing process
+        # the instance of this class will ultimately be passed to the TestRunner object which actually executes the
+        # the test process. The responsibility of the context is to provide all the information which is required to
+        # specify an individual process. But the responsibility is more than that. The context will also save the
+        # results of the test runner. It does that to then later be passed to a TestReport. So for this purpose it has
+        # to have some empty properties which are only later being set by the TestRunner.
+        self.start_datetime: Optional[datetime.datetime] = None
+        self.end_datetime: Optional[datetime.datetime] = None
+        self.results = {}
+        self.tests = {}
+        self.name: Optional[str] = None
+
+    def start(self, name: str):
+        self.name = name
+        self.start_datetime = datetime.datetime.now()
+
+    def end(self, name: str):
+        self.end_datetime = datetime.datetime.now()
+
+    # == AbstractContextManager
+
+    def __enter__(self) -> TestContext:
+        # 1 -- CREATING THE ARCHIVE FOLDER
+        create_folder(self.folder_path)
+
+        # 2 -- INIT LOGGING
+        logger_handler = logging.FileHandler(self.logger_path, mode='w', encoding=None, delay=False)
+        self.logger.addHandler(logger_handler)
+
+        # 3 -- LOGGING START MESSAGE
+        self.logger.debug('Enter test context')
+
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # 1 -- LOGGING END MESSAGE
+        self.logger.debug('Exit test context')
+
+
 class TestRunner(object):
+
+    def __init__(self, test_context: TestContext):
+        # constructed attributes
+        self.context = test_context
+
+        # derived attributes from context
+        self.config = self.context.config
+        self.logger = self.context.logger
+
+        self.tests = {}
+        self.modules = {}
+
+    # == LOADING THE TESTS DYNAMICALLY
+
+    def load_modules(self):
+        for test_folder in self.context.test_folders:
+            self.load_module_from_test_folder(test_folder)
+
+    def load_module_from_test_folder(self, test_folder: str):
+        # All the modules within the test folder have to be dynamically imported to access the TestCase classes within
+        # them. This loop iterates all the python modules in the given folder path and then adds the dynamic import to
+        # the "modules" dict.
+        counter = 0
+        for root, dirs, files in os.walk(test_folder):
+            for file_name in (file_name for file_name in files if '.py' in file_name):
+                file_path = os.path.join(root, file_name)
+                module_name = file_name.replace('.py', '')
+
+                module = dynamic_import(module_name, file_path)
+                self.modules[module_name] = module
+                counter += 1
+
+            # We break here because we dont really want to iterate the whole tree structure. We really only wanted all
+            # the modules from the top most folder.
+            break
+
+        self.logger.info('loaded {} test modules from folder: {}'.format(counter, test_folder))
+
+    def load_tests(self):
+        for module_name, module in self.modules.items():
+            self.load_tests_from_module(module)
+
+        self.context.tests = self.tests
+
+    def load_tests_from_module(self, module: Any):
+        counter = 1
+        # Now we have a dynamically imported module and want to extract the classes from it in a similarly dynamic
+        # fashion. Luckily, the "inspect" module provides exactly such functionality.
+        # INFO: The second argument to of the "get_members" function takes a function, which essentially acts as a
+        # filter for which member exactly to include in the final list.
+        for name, cls in inspect.getmembers(module, inspect.isclass):
+            # We only want to use those classes, which are subclasses of the AbstractTest base class. This way we are
+            # excluding all the possible helper classes which are possibly within those test modules.
+            if issubclass(cls, AbstractTest):
+                # Now these test modules obviously have to import the abstract base class to make the actual test
+                # inherit from them. This is a problem because the previous if statement would also accept these
+                # imported duplicates of the base class itself.
+                if name != 'AbstractTest':
+                    # NOTE: here we are not using the class name as the key of the dict, but the class "property"
+                    # "name" which has to be defined by every test case.
+                    self.tests[cls.name] = cls
+                    counter += 1
+
+        self.logger.info('imported {} tests from the module: {}'.format(counter, module.__name__))
+
+    def load(self):
+        self.load_modules()
+        self.load_tests()
+
+        self.logger.info('All tests loaded')
+
+    # == TEST SUITES
+
+    def get_test_suite(self, suite_name: str):
+        suites = self.config.get_test_suites()
+        assert suite_name in suites.keys(), 'Test suite {} unknown!'.format(suite_name)
+
+        test_names = suites[suite_name]
+        suite_tests = [test for test_name, test in self.tests.items() if test_name in test_names]
+        test_suite = TestSuite(self, suite_tests, suite_name)
+
+        return test_suite
+
+    # == TEST EXECUTION
+
+    def run_test(self, test_name: str):
+        assert test_name in self.tests.keys(), 'Test {} does not exist!'.format(test_name)
+
+        self.context.start(test_name)
+        # A AbstractTest subclass can be instantiated by passing a single argument to the constructor and that is the
+        # the test runner object itself.
+        test_class = self.tests[test_name]
+        test_instance: AbstractTest = test_class(self)
+        test_result: AbstractTestResult = test_instance.execute()
+
+        self.context.results[test_name] = test_result
+        self.context.end(test_name)
+
+    def run_suite(self, suite_name: str):
+        self.context.start(suite_name)
+        test_suite = self.get_test_suite(suite_name)
+
+        results = test_suite.execute_all()
+        self.context.results.update(results)
+        self.context.end(suite_name)
+
+
+class _TestRunner(object):
+    """
+    :deprecated:
+    """
 
     # STATIC LOGGER CONFIG
 
@@ -154,7 +341,7 @@ class MessageTestResult(AbstractTestResult):
         return self.message
 
     def to_html(self) -> str:
-        return ""
+        return '<div class="message-test-result">{}</div>'.format(self.message)
 
 
 class AssertionTestResult(AbstractTestResult):
@@ -248,6 +435,7 @@ class CombinedTestResult(AbstractTestResult):
 class AbstractTest(ABC):
 
     name = "abstract"
+    description = ""
 
     def __init__(self, test_runner: TestRunner):
         self.test_runner = test_runner
@@ -295,7 +483,9 @@ class TestSuite(object):
 
 
 class TestMetadata(AbstractRichOutput):
-
+    """
+    :deprecated:
+    """
     def __init__(self, config: Config = Config()):
         self.config = config
 
@@ -336,6 +526,103 @@ class TestMetadata(AbstractRichOutput):
 
 class TestReport(AbstractRichOutput):
 
+    DATETIME_FORMAT = '%d.%m.%Y %H:%M'
+
+    def __init__(self, test_context: TestContext):
+        # constructed attributes
+        self.context = test_context
+
+        # derived attributes from context
+        self.config = self.context.config
+        self.platform = str(self.context.platform)
+        self.version = self.context.version
+        self.results = self.context.results
+        self.name = self.context.name
+        self.folder_name = self.context.folder_name
+        self.folder_path = self.context.folder_path
+        self.start = self.context.start_datetime.strftime(self.DATETIME_FORMAT)
+        self.end = self.context.end_datetime.strftime(self.DATETIME_FORMAT)
+        self.duration = int((self.context.end_datetime - self.context.start_datetime).seconds / 60)
+        self.tests = self.context.tests
+
+        # derived attributes from config
+        self.repository_url = self.config.get_repository_url()
+        self.documentation_url = self.config.get_documentation_url()
+        self.sensor = "{} x {} pixels".format(self.config.get_sensor_height(), self.config.get_sensor_width())
+
+        # calculated attributes
+        self.test_count = len(self.results)
+        self.successful_results = {test_name: result for test_name, result in self.results.items() if result.passing}
+        self.successful_count = len(self.successful_results)
+        self.error_count = self.test_count - self.successful_count
+        self.success_ratio = round(self.successful_count / self.test_count, 2)
+
+    def save(self, folder_path: str):
+        # 1 -- SAVE MARKDOWN FILE
+        markdown_path = os.path.join(folder_path, 'report.md')
+        with open(markdown_path, mode='w') as markdown_file:
+            markdown_file.write(self.to_markdown())
+
+        # 2 -- SAVE HTML FILE
+        html_path = os.path.join(folder_path, 'report.html')
+        with open(html_path, mode='w') as html_file:
+            html_file.write(self.to_html())
+
+        # 3 -- SAVE JSON FILE
+        json_path = os.path.join(folder_path, 'report.json')
+        with open(json_path, mode='w') as json_file:
+            json_file.write(self.to_json())
+
+    # == UTILITY FUNCTIONS
+
+    def get_test_description(self, test_name: str) -> str:
+        return self.tests[test_name].description
+
+    # == JSON SAVING
+
+    def to_dict(self) -> dict:
+        return {
+            'platform':             self.platform,
+            'version':              self.version,
+            'sensor':               self.sensor,
+            'name':                 self.name,
+            'folder_name':          self.folder_name,
+            'folder_path':          self.folder_path,
+            'start':                self.start,
+            'end':                  self.end,
+            'duration':             self.duration,
+            'test_count':           self.test_count,
+            'successful_count':     self.successful_count,
+            'success_ratio':        self.success_ratio
+        }
+
+    def to_json(self) -> str:
+        data = self.to_dict()
+        return json.dumps(data, sort_keys=True, indent=4)
+
+    # == ABSTRACT RICH OUTPUT
+
+    def to_html(self) -> str:
+        template = get_template('test_report.html')
+        return template.render({'report': self})
+
+    def to_markdown(self) -> str:
+        template = get_template('test_report.md')
+        return template.render({'report': self})
+
+    def to_string(self) -> str:
+        # Not important right now
+        pass
+
+    def to_latex(self) -> str:
+        # Not important right now
+        pass
+
+
+class _TestReport(AbstractRichOutput):
+    """
+    :deprecated:
+    """
     def __init__(self, test_results: Dict[str, AbstractTestResult], test_meta: TestMetadata):
         self.results = test_results
         self.meta = test_meta

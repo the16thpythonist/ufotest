@@ -86,3 +86,28 @@ h2 {
 .summary>div>div {
     width: 50%;
 }
+
+h3.test {
+    margin-top: 20px;
+    border-style: solid;
+    border-width: 0px;
+    border-left-width: 8px;
+    padding-left: 10px;
+    padding-top: 5px;
+    border-color: gray;
+    color: gray;
+}
+h3.test.passing {
+    border-color: #35e95f;
+    color: #35e95f;
+}
+h3.test.error {
+    border-color: red;
+    color: red;
+}
+
+
+div.test-description {
+    color: gray;
+    margin-bottom: 10px;
+}

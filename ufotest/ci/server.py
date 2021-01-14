@@ -1,10 +1,12 @@
 import os
+import json
 import subprocess
 from multiprocessing import Process
 
 from flask import Flask, request, send_from_directory, jsonify
 
 from ufotest.config import Config, get_path
+from ufotest.util import get_template
 from ufotest.ci.build import BuildLock, BuildRunner, build_context_from_request
 from ufotest.ci.mail import send_report_mail
 
@@ -20,7 +22,8 @@ server = Flask('UfoTest CI Server', static_folder=None)
 
 @server.route('/', methods=['GET'])
 def home():
-    return 'Hello there! I am the CI server for the ufotest application!', 200
+    template = get_template('home.html')
+    return template.render({}), 200
 
 
 @server.route('/push/github', methods=['POST'])
@@ -59,13 +62,47 @@ def push():
     return 'New build process was initiated', 200
 
 
+@server.route('/archive')
+def archive_list():
+    reports = []
+    for root, folders, files in os.walk(ARCHIVE_PATH):
+        for folder in folders:
+            folder_path = os.path.join(root, folder)
+            report_json_path = os.path.join(folder_path, 'report.json')
+            with open(report_json_path, mode='r') as report_json_file:
+                report = json.loads(report_json_file.read())
+                reports.append(report)
+
+        break
+
+    template = get_template('archive_list.html')
+    return template.render({'reports': reports}), 200
+
+
 @server.route('/archive/<path:path>')
-def archive(path):
+def archive_detail(path):
     return send_from_directory(ARCHIVE_PATH, path)
 
 
+@server.route('/builds')
+def builds_list():
+    reports = []
+    for root, folders, files in os.walk(BUILDS_PATH):
+        for folder in folders:
+            folder_path = os.path.join(root, folder)
+            report_json_path = os.path.join(folder_path, 'report.json')
+            with open(report_json_path, mode='r') as report_json_file:
+                report = json.loads(report_json_file.read())
+                reports.append(report)
+
+        break
+
+    template = get_template('builds_list.html')
+    return template.render({'reports': reports}), 200
+
+
 @server.route('/builds/<path:path>')
-def builds(path):
+def builds_detail(path):
     return send_from_directory(BUILDS_PATH, path)
 
 
