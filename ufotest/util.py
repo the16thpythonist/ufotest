@@ -168,7 +168,14 @@ def init_install(verbose=False) -> str:
     if not os.path.exists(config_path):
         shutil.copyfile(CONFIG_TEMPLATE_PATH, config_path)
         if verbose:
-            click.secho('    Created default config: {}'.format(folder_path))
+            click.secho('    Created default config: {}'.format(config_path))
+
+    # -- BUILD QUEUE FILE
+    queue_path = os.path.join(folder_path, 'build.queue')
+    with open(queue_path, mode='w') as file:
+        file.write('[]')
+        if verbose:
+            click.secho('    Created empty build queue: {}'.format(queue_path))
 
     # -- TESTS FOLDER
     # Also we need to create the tests folder inside of this folder

@@ -4,6 +4,7 @@ import click
 import datetime
 import shutil
 import json
+import time
 from contextlib import AbstractContextManager
 from typing import Optional
 
@@ -160,9 +161,13 @@ class BuildContext(AbstractContextManager):
         # derived attributes
         self.repository_name = get_repository_name(repository_url)
         self.repository_path = os.path.join(UFOTEST_PATH, self.repository_name)
-        self.folder_name = '{}__{}'.format(
+        # Adding a portion of the commit hash to the folder name has been a recent addition, because I noticed that the
+        # program crashes if there are two build triggered in the same minute. Also: Adding the commit also has the
+        # advantage of additional information.
+        self.folder_name = '{}__{}__{}'.format(
             self.repository_name,
-            self.creation_datetime.strftime('%Y_%m_%d__%H_%M')
+            self.commit[:6],
+            self.creation_datetime.strftime('%Y_%m_%d__%H_%M_%S')
         )
         self.folder_path = os.path.join(BUILDS_PATH, self.folder_name)
 
@@ -415,6 +420,7 @@ class BuildRunner(object):
 
         self.test_runner.run_suite(self.context.test_suite)
         test_report = TestReport(self.test_context)
+        test_report.save(self.test_context.folder_path)
         click.secho('    Executed test suite: {}'.format(self.context.test_suite))
         click.secho('(+) Test report saved to: {}'.format(self.test_context.folder_path), fg='green')
 
@@ -510,4 +516,36 @@ class BuildRunner(object):
 #   simply executes builds. In this separate process I would have the main loop which I wanted.
 # Thinking about this, I realized that it is probably going to be much work and I dont know if I should really do this
 # I mean, is it that important? or should I just delay this for version 1.1?
+class BuildQueue(object):
 
+    QUEUE_PATH = os.path.join(UFOTEST_PATH, 'build.queue')
+
+    @classmethod
+    def push(cls, build: dict):
+        queue = cls.read()
+        queue.append(build)
+        cls.write(queue)
+
+    @classmethod
+    def pop(cls) -> dict:
+        queue = cls.read()
+        build = queue.pop(0)
+        cls.write(queue)
+
+        return build
+
+    @classmethod
+    def is_empty(cls):
+        queue = cls.read()
+        return len(queue) == 0
+
+    @classmethod
+    def read(cls) -> list:
+        with open(cls.QUEUE_PATH, mode='r') as file:
+            data = file.read()
+            return json.loads(data)
+
+    @classmethod
+    def write(cls, data: list):
+        with open(cls.QUEUE_PATH, mode='w') as file:
+            file.write(json.dumps(data))

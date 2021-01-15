@@ -234,4 +234,4 @@ title = "UfoTest Config"
     # One function of the of the ci service is also supposed to be the automatic delivery of
     # emails after a build process has been completed. For this purpose
     gmail_address = 'ipe.ufotest@gmail.com'
-    gmail_password = 'gQ3#=VT/7$Ppzz&>'
+    gmail_password = 'enter password'

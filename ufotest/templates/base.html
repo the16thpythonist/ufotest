@@ -4,7 +4,7 @@
     {% block head %}
     <meta charset="UTF-8">
     <title>{% block title %}{% endblock %} - UfoTest</title>
-    <link rel="stylesheet" type="text/css" href="/static/base.css">
+    <link rel="stylesheet" type="text/css" href="{{ config.static('base.css') }}">
     {% endblock %}
 </head>
 <body>

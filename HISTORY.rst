@@ -352,6 +352,30 @@ Documentation
 - Changed the documentation for the "serve" command again
 
 
+1.0.0 (2021-01-15)
+------------------
+
+Additions
+
+- Created a new system for handling the builds. previously any build which was triggered while another one was still
+  running would be rejected. Now there is a build Queue. When a build is triggered, it is added to this queue, which
+  is essentially just a json file with a list. Then there is a separate process started by the "serve" command which
+  only checks this queue and executes the build requests saved within.
+
+Changes
+
+- Fixed: The stylesheet for the build report html template was not linked to correctly.
+- Fixed: There was an issue where the program would crash if two build would be triggered at the same hour and minute
+  of the day since they would attempt to create folders with the same name. Added the build commit and the second of
+  to the folder name format to fix.
+- Fixed the bug that a build would not save the test reports properly.
+- Fixed the build report url within the report email.
+
+Documentation
+
+- none
+
+
 TODO
 ----
 

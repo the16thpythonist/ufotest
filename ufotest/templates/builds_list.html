@@ -4,7 +4,7 @@
 
 {% block head %}
     {{ super() }}
-    <link rel="stylesheet" type="text/css" href="/static/list.css">
+    <link rel="stylesheet" type="text/css" href="{{ config.static('list.css') }}">
 {% endblock %}
 
 {% block content %}

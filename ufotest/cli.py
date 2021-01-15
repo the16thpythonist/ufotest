@@ -3,14 +3,12 @@ Module containing all the actual console scripts of the project.
 """
 import sys
 import os
-from pathlib import Path
+from multiprocessing import Process
 
 import click
 import matplotlib
 import numpy as np
 import shutil
-import matplotlib.pyplot as plt
-# matplotlib.use('TkAgg')
 
 from ufotest.config import PATH, get_config_path, Config
 from ufotest.scripts import SCRIPTS, SCRIPTS_PATH
@@ -32,8 +30,8 @@ from ufotest.install import (install_dependencies,
                              install_ipecamera)
 from ufotest.camera import save_frame, import_raw, set_up_camera, tear_down_camera
 from ufotest.testing import TestRunner, TestContext, TestReport
-from ufotest.ci.build import BuildRunner, BuildContext, BuildReport, build_context_from_config
-from ufotest.ci.server import server
+from ufotest.ci.build import BuildRunner, build_context_from_config
+from ufotest.ci.server import server, BuildWorker
 
 
 CONFIG = Config()
@@ -158,6 +156,9 @@ def frame(verbose, output, display):
     """
     Capture a frame from the camera and display it to the user
     """
+    import matplotlib.pyplot as plt
+    matplotlib.use('TkAgg')
+
     if not check_install():
         return 1
 
@@ -382,6 +383,11 @@ def serve(verbose):
     port = CONFIG.get_port()
 
     click.secho('(+) Visit the server at http://{}:{}/'.format(hostname, port), fg='green')
+
+    # -- STARTING BUILD WORKER
+    build_worker = BuildWorker()
+    process = Process(target=build_worker.run)
+    process.start()
 
     # -- STARTING THE SERVER
     server.run(port=port)

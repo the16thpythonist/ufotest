@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 from PIL import Image
 
@@ -44,6 +46,8 @@ class MockTest(AbstractTest):
             'key3':         'value3'
         }
         dict_test_result = DictTestResult(exit_code, table)
+
+        time.sleep(10)
 
         return CombinedTestResult(
             message_test_result,

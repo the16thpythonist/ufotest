@@ -20,7 +20,7 @@
 
             <p>
                 Check out the results of the build process here:
-                <a href="http://{{ config['context']['hostname'] }}:{{ config['context']['port'] }}/builds/{{ report.folder_name }}/report.html">Build Report</a><br>
+                <a href="http://{{ config.get_hostname() }}:{{ config.get_port() }}/builds/{{ report.folder_name }}/report.html">Build Report</a><br>
             </p>
 
             <p>

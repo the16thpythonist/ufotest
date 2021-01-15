@@ -1,13 +1,12 @@
 import os
 import json
-import subprocess
-from multiprocessing import Process
+import time
 
 from flask import Flask, request, send_from_directory, jsonify
 
 from ufotest.config import Config, get_path
 from ufotest.util import get_template
-from ufotest.ci.build import BuildLock, BuildRunner, build_context_from_request
+from ufotest.ci.build import BuildQueue, BuildLock, BuildRunner, build_context_from_request
 from ufotest.ci.mail import send_report_mail
 
 CONFIG = Config()
@@ -17,8 +16,43 @@ ARCHIVE_PATH = os.path.join(PATH, 'archive')
 BUILDS_PATH = os.path.join(PATH, 'builds')
 STATIC_PATH = os.path.join(PATH, 'static')
 
-server = Flask('UfoTest CI Server', static_folder=None)
 
+class BuildWorker(object):
+
+    def __init__(self):
+        self.running = True
+
+    def run(self):
+        while self.running:
+            time.sleep(1)
+
+            if not BuildQueue.is_empty() and not BuildLock.is_locked():
+                build = BuildQueue.pop()
+
+                self.execute_build(build)
+
+    def execute_build(self, build: dict):
+
+        # -- ACTUALLY BUILD
+        with build_context_from_request(build) as build_context:
+            build_runner = BuildRunner(build_context)
+            build_report = build_runner.build()
+            build_report.save(build_context.folder_path)
+
+        # -- SEND REPORT MAILS
+        # After the build process has terminated we want to inform the relevant people of the outcome. This is mainly
+        # Two people: The maintainer of the repository is getting an email and the person which actually issued the
+        # push is getting an email.
+        maintainer_email = build['repository']['owner']['email']
+        maintainer_name = build['repository']['owner']['name']
+        send_report_mail(maintainer_email, maintainer_name, build_report)
+
+        pusher_email = build['pusher']['email']
+        pusher_name = build['pusher']['name']
+        send_report_mail(pusher_email, pusher_name, build_report)
+
+
+server = Flask('UfoTest CI Server', static_folder=None)
 
 @server.route('/', methods=['GET'])
 def home():
@@ -30,36 +64,9 @@ def home():
 def push():
     data = request.get_json()
 
-    if BuildLock.is_locked():
-        # error code 423 represents the fact that the resource which is being requested is locked. I think this best
-        # represents what is going on. There cannot be two simultaneous processes because both of them would be trying
-        # to access the same hardware. This is why a request will be rejected if another build process is
-        # currently running.
-        return 'A build process is currently in progress!', 423
+    BuildQueue.push(data)
 
-    def build(_data):
-        # -- ACTUALLY BUILD
-        with build_context_from_request(_data) as build_context:
-            build_runner = BuildRunner(build_context)
-            build_report = build_runner.build()
-            build_report.save(build_context.folder_path)
-
-        # -- SEND REPORT MAILS
-        # After the build process has terminated we want to inform the relevant people of the outcome. This is mainly
-        # Two people: The maintainer of the repository is getting an email and the person which actually issued the
-        # push is getting an email.
-        maintainer_email = _data['repository']['owner']['email']
-        maintainer_name = _data['repository']['owner']['name']
-        send_report_mail(maintainer_email, maintainer_name, build_report)
-
-        pusher_email = _data['pusher']['email']
-        pusher_name = _data['pusher']['name']
-        send_report_mail(pusher_email, pusher_name, build_report)
-
-    process = Process(target=build, args=(data, ))
-    process.start()
-
-    return 'New build process was initiated', 200
+    return 'New build added to the queue', 200
 
 
 @server.route('/archive')
