@@ -36,11 +36,15 @@ Ultimately, the machine will be acting as a server which accepts requests from t
 change in the source code occurs. As such a server, the machine has to be in scope for the version control system to
 be able to send the requests to the correct host machine.
 
-TODO: Include tutorial of how to set up a public hostname.
-
 Lastly, the version control system will have to be configured to send the appropriate webhooks to this machine when
 new versions of the software are pushed to the remote repository. This will also be explained in more detail further
 down the page.
+
+
+Setting up a public hostname with NoIP
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+to be done.
 
 
 Configuration
@@ -48,38 +52,65 @@ Configuration
 
 An additional requirement for executing the ci functions of ufotest correctly is to enter the appropriate config values
 into the config file which is located at '$HOME/.ufotest/config.toml'. This config file contains the section 'ci' which
-looks like this. The comments explain which values have to be entered for all the variables.
+looks like this:
 
 .. code-block:: toml
 
     # This section mangages all the configuration for the CI (continuous integration) functionality of the application.
     [ci]
-        # This value is supposed to contain the string url of the repository, which contains the source code for the camera.
-        # Since the camera is based on an FPGA board this source code will most likely be the code which defines the
-        # hardware configuration of this fpga board. Most importantly, this repo has to contain the BIT file which can
-        # be used to flash the new configuration onto the hardware.
         repository_url = 'https://github.com/the16thpythonist/ufo-mock.git'
-        # This value then represents the path to the bit file which is to be used to flash the hardware. This string should
-        # contain the relative path of the bit file within the repo. The current folder for this relative path will be
-        # assumed to be the most top level folder of the repo.
         bitfile_path = 'camera.bit'
-        # This value has to contain the string name of the branch which will be used for the cloning of the repository
         branch = 'main'
-        # This value is supposed to contain the public hostname of the machine on which the application is running on. This
-        # is important for the server funtion of the app. It is possible to start a server which listens to icoming requests
-        # which are created by the git repository whenever new changes are being commited.
         hostname = 'localhost'
-        # This value contains the string identifier of the test suite which is supposed to be executed whenever the build
-        # process is automatically triggered by a git webhook
+        port = 2424
         test_suite = 'mock'
+        gmail_address = 'ipe.ufotest@gmail.com'
+        gmail_password = 'enter password'
+
+This listing explains how to configure each of the individual fields:
+
+- **repository_url**: This has to be the string of the repository, that is being used as the basis for the CI process.
+  this repository has to contain the source code and more importantly the BIT file which can be flashed onto the
+  camera. It is important, that this url directs to the ".git" file of the repository.
+- **bitfile_path**: This string defines a relative path. The basis of this path is the root folder of the above
+  source code repository. The purpose of this path is to define the location of the BIT file within the repository.
+  The ufotest application will attempt to flash the bit file at this location within the repository to the fpga board.
+- **branch**: This is supposed to be the string name of the branch to be monitored with the CI functionality. A new
+  build process will only be triggered if a commit is pushed to this branch. In this context it is advised to not use
+  the default branch to connect to the ufotest application. Too many build requests could overload the application.
+  Instead it would be good to use a separate "ci" branch, where commits are only made with the purpose of testing the
+  changes on a real setup.
+- **hostname**: This is supposed to be the hostname/web address under which the host machine running the ufotest
+  application is reachable within the internet. On default this is localhost. With this configuration the CI web
+  server only works for the local machine. It is advised to acquire a public hostname like "ufotest.com", which directs
+  to the host machine from anywhere. Note: This can also be an actual IP address.
+- **port**: This is the integer port number for the port on which the CI server is supposed to listen for incoming
+  http requests.
+- **test_suite**: This is the string name of the test suite, which is supposed to be executed for every new build.
+- **gmail_address**: The gmail address to be used to deliver the automatic email notifications about a finished build
+  process.
+- **gmail_password**: The password for the previously mentioned gmail account
+
+
+Automatic email notifications
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ufotest application offers the feature to automatically send an email notification after an automatically started
+build was terminated. These emails are only being generated when a build is automatically triggered by a github webhook.
+An email is sent to the person which has pushed the changes and the owner of the repository. The mail informs, that
+the build has finished and provides a link to the build report.
+
+To use this functionality, ufotest automatically accesses a google mail account from which it then sends these emails.
+To be able to properly use this functionality, the "gmail_address" and "gmail_password" have to be set accordingly as
+the credentials to an already existing account.
 
 
 The CI command group
 --------------------
 
-As mentioned previously, the ufotest app actually implements the necessary software to achieve the described
-functionality. This is mainly based on the 'ci' command group of the CLI. This command group contains all the necessary
-commands which will be used for these functions. A list of all available commands can be obtained like this:
+The continuous integration functionality of the ufotest application is wrapped by the *ci* command group.
+This command group contains all the necessary commands which will be used for these functions.
+A list of all available commands can be obtained like this:
 
 .. code-block:: console
 
@@ -96,7 +127,7 @@ can be triggered manually by using the 'build' command:
 
     $ ufotest ci build --help
 
-This command expects one argument, which is the string identifier of the test *suite* to be executed on the new version
+This command expects one argument, which is the string identifier of the *test suite* to be executed on the new version
 of the source:
 
 .. code-block:: console
@@ -111,7 +142,8 @@ ufotest. The specified test suite will then be run on the new version and then t
 Running the CI server
 ---------------------
 
-This build functionality however is really only useful if it can be triggered automatically for every new version.
+This build functionality can also be triggered automatically once a new commit was pushed to a target source code
+repository.
 For this purpose, the ufotest app provides the option to run a server which listens for the appropriate requests. The
 server can be started with the 'serve' command
 
@@ -133,7 +165,7 @@ The browser will display the home page of the web interface of the server. On th
 all necessary navigation links to both the build and test report archive.
 
 Hostname and port
-"""""""""""""""""
+~~~~~~~~~~~~~~~~~
 
 The default port 2424 was chosen, so that the application could be run on a host machine which is already running a
 different server on the default HTTP port 80. The port 80 and any other port can of course also be used for this
@@ -147,24 +179,29 @@ correct hostname is important, because internally the program uses this hostname
 the several navigation link elements in the web interface!
 
 Configuring Github webhooks
-"""""""""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Currently, the server only implements the possibility to respond to Github webhooks. Specifically those webhooks which
 are triggered by a 'push' event. By the github standard it is possible to register a certain url to receive a http POST
 request whenever a new push is made for the subject repo. This url would have to be configured to look like this
-``http://{yourhostname}:2424/push/github/``. If a push request is sent to this route, a new build process like described above
+``http://{hostname}:{port}/push/github/``. If a push request is sent to this route, a new build process like described above
 will be triggered.
 
-Serving archived test reports
-"""""""""""""""""""""""""""""
+CI web interface
+~~~~~~~~~~~~~~~~
 
-The ci server has yet another function: It will also respond to GET requests for the static ressources withing the
-archive of the ufotest app.
+The ci server also offers a web interface, which can be accessed via any browser. Visiting the URL
+``http://{hostname}:{port}/`` will display the home page of the server. This header element of this home page contains
+navigational links to the most important pages of the interface.
 
-Each execution of a test suite will create a new test report. This test report is saved as a MD file within the archive
-folder of the app '$HOME/.ufotest/archive'. The report is also saved as an HTML file within the same folder. These html
-files can then be used to view the results of the test runs remotely. The ci server will return these static read-only
-files under the route ``http://{yourhostname}:2424/archive/{testfolder}/report.html``.
+The URL ``http://{hostname}:{port}/archive/`` directs to the list view of all archived test reports. For each test
+report, some basic information is listed there. This information included for example the name of the executed test
+suite, the amount of test cases run and the start and end time of the process. Each individual test report can be
+accessed by using the corresponding web link.
+
+The URL ``http://{hostname}:{port}/archive/`` directs to the list view of all archived build reports. For each
+triggered build, some basic information is listed. The items of this list view also act as web links to direct to the
+detailed page of each individual build report.
 
 
 

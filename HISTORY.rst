@@ -1,4 +1,4 @@
-ail=======
+=======
 History
 =======
 
@@ -373,7 +373,7 @@ Changes
 
 Documentation
 
-- none
+- Updated the section about continuous integration.
 
 
 TODO

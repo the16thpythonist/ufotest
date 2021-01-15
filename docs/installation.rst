@@ -11,6 +11,7 @@ The projects needs python tkinter as one of it's dependencies. This will not be 
 be installed with the operating systems project manager instead.
 
 .. code-block:: console
+
     # Ubuntu/Debian
     $ sudo apt-get -y install python3-tk
     # OpenSUSE
@@ -82,23 +83,6 @@ this line to the bashrc file:
 
 .. _Github repo: https://github.com/the16thpythonist/ufotest
 
-Running Unittest (Recommended)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-It is recommended to run the unittests of the project, if there are any problems with the project. This should provide
-some insight into which kind of problem has occurred.
-
-To run the unittests first navigate to the folder of the repository and then type:
-
-.. code-block:: console
-
-    $ sudo pytest tests/
-
-Adding the script to PATH
--------------------------
-
-
-
 
 Installing dependencies manually
 --------------------------------
@@ -119,7 +103,7 @@ assumed at that specific time of the installation process. These paths will most
 so please adjust the absolute part of the path to match the installation directory you have chosen.
 
 1. Installing system packages
-"""""""""""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The first thing to do is to install a series of system packages, which are needed for the following steps. Since
 package names and package manager programs differ between linux distributions, this section will contain information
@@ -142,7 +126,7 @@ for all the tested plaforms.
 
 
 2. Creating the install folder
-""""""""""""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Next create a folder, into which all of the dependencies are being installed:
 
@@ -154,7 +138,7 @@ Next create a folder, into which all of the dependencies are being installed:
     $ ls
 
 3. Install fastwriter
-"""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~~
 
 `fastwriter` is a dependency for the ufo camera and can be installed with CMAKE.
 
@@ -168,7 +152,7 @@ Next create a folder, into which all of the dependencies are being installed:
     $ sudo make install
 
 4. Install pictool
-""""""""""""""""""
+~~~~~~~~~~~~~~~~~~
 
 `pcitool` is a dependency for the ufo camera and can be installed with CMAKE.
 
@@ -197,7 +181,7 @@ To then actually activate the driver you'll also need to run the following comma
     $ sudo depmod -a
 
 5. Install libufodecode
-"""""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~~~~
 
 `libufodecode` is a dependency for the ufo camera and can be installed with CMAKE.
 
@@ -220,7 +204,7 @@ For this installation there are two important details:
     $ sudo make install
 
 6. Install libuca
-"""""""""""""""""
+~~~~~~~~~~~~~~~~~
 
 `libuca` is a dependency for the ufo camera and can be installed with CMAKE.
 
@@ -246,7 +230,7 @@ is important to pass the sensor width *and* height to the build process
     $ sudo make install
 
 7. Install ipecamera
-""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~
 
 `ipecamera` is a dependency for the ufo camera and can be installed with CMAKE.
 
