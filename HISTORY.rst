@@ -390,8 +390,6 @@ Changes
 TODO
 ----
 
-- Realize a queue for ci build processes...
-
 - Document camera properties "Notes"
 - Auto detect the operating system?
 - Make "init" add the necessary stuff to the bashrc file. use jinja2?
