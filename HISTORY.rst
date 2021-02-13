@@ -2,12 +2,12 @@
 History
 =======
 
-0.1.0 (2020-08-13)
+0.1.0 (13.08.2020)
 ------------------
 
 - First release on PyPI.
 
-0.2.0 (2020-08-23)
+0.2.0 (23.08.2020)
 ------------------
 
 - First actual release with content
@@ -15,7 +15,7 @@ History
     - "config" command to edit global configuration file
     - "frame" command to acquire and display a single frame
 
-0.3.0 (2020-08-24)
+0.3.0 (24.08.2020)
 ------------------
 
 - Added additional package for SUSE which installs c++ compiler
@@ -24,13 +24,13 @@ History
 - fixed readme
 - Added "init" command, which will setup the installation folder and the config file
 
-0.3.1 (2020-08-25)
+0.3.1 (25.08.2020)
 ------------------
 
 - Small adjustments to the documentation
 - Added "status.sh" and "reset.sh" scripts from michele to the main code folder.
 
-0.4.0 (2020-08-27)
+0.4.0 (27.08.2020)
 ------------------
 
 - Added installation packages for OpenSUSE to the documentation
@@ -46,12 +46,12 @@ History
     - Execute them in "frame" command
 - Added an option to "config" which allows to specify the editor
 
-0.4.1 (2020-08-27)
+0.4.1 (27.08.2020)
 ------------------
 
 - Fixed the MANIFEST.in file, which did not include the bash scripts in the distribution package
 
-0.4.2 (2020-09-01)
+0.4.2 (01.09.2020)
 ------------------
 
 - Removed the setup and teardown process from the "frame" command, because as of right now,
@@ -63,7 +63,7 @@ History
   able to overwrite like this
 - Fixed the image display using matplotlib
 
-0.5.0 (2020-09-01)
+0.5.0 (01.09.2020)
 ------------------
 
 - Moved the code to import a number N of raw images from a file to it's own function in camera.py
@@ -81,27 +81,27 @@ History
 - Added the necessary scripts for the flashing of the fpga
 - changed "execute_script" so that changes folder to the script folder first
 
-0.5.1 (2020-09-01)
+0.5.1 (01.09.2020)
 ------------------
 
 - Enabled Sphinx autodoc
 - The "frame" command now removes the prior frame buffer file before saving the new one
 - Updated the "usage" section of the documentation
 
-0.5.2 (2020-09-10)
+0.5.2 (10.09.2020)
 ------------------
 
 - Added the file "VERSION" which will be used to set the current version of the project. This file will also be read
   used for the setup.py. The reasoning to create this is that it can also be used for a --version option for the CLI
 - Added the option "--version" to the cli group
 
-0.5.3 (2020-09-10)
+0.5.3 (10.09.2020)
 ------------------
 
 - Fixed the inclusion of the VERSION file into the code package
 
 
-0.6.0 (2020-09-10)
+0.6.0 (10.09.2020)
 ------------------
 
 - Changed the config names "camera_height" and "camera_width" to "sensor_height" and "sensor_width"
@@ -112,7 +112,7 @@ History
 - extended the "usage" section of the documentation with the new flash command
 
 
-0.7.0 (2020-09-18)
+0.7.0 (18.09.2020)
 ------------------
 
 - Added the new "test" command, which will execute a camera test procedure
@@ -133,7 +133,7 @@ History
   it
 
 
-0.8.0 (2020-09-23)
+0.8.0 (23.09.2020)
 ------------------
 
 - Fixes
@@ -159,7 +159,7 @@ History
   saved in an archive
 - Added pytest to the requirements.txt
 
-0.8.1 (2020-09-23)
+0.8.1 (23.09.2020)
 ------------------
 
 - Fixes
@@ -171,7 +171,7 @@ History
 - Added a "debian" option as operating system in the config file
 
 
-0.8.2 (2020-09-30)
+0.8.2 (30.09.2020)
 ------------------
 
 - Fixes
@@ -189,17 +189,20 @@ History
     - Extended "usage" with how to use the "test" command
     - Added additional section "tests", which explains how to write a custom test class.
 
-0.8.3 (2020-09-30)
+0.8.3 (30.09.2020)
 ------------------
 
-- Fixes
-    - Fixed the access to the config values of the camera dimensions in the function which acquires
-      a frame.
-    - fixed the install command
-- Changes
-    - Updated the readme
+Fixes
 
-0.9.0 (2020-12-05)
+- Fixed the access to the config values of the camera dimensions in the function which acquires
+  a frame.
+- fixed the install command
+
+Changes
+
+- Updated the readme
+
+0.9.0 (05.12.2020)
 ------------------
 
 Additions
@@ -237,7 +240,7 @@ Documentation
 - Fixed the Logo not being displayed in the documentation version of the readme
 
 
-0.9.1 (2020-12-06)
+0.9.1 (06.12.2020)
 ------------------
 
 Additions
@@ -256,7 +259,7 @@ Documentation
 - Added Documentation for the ci functions of the ufotest app
 
 
-0.10.0 (2020-12-17)
+0.10.0 (17.12.2020)
 -------------------
 
 Additions
@@ -291,7 +294,7 @@ Documentation
 - Renamed all occurrances of the build process to use the new name 'build' instead of 'run'
 
 
-0.11.0 (2021-01-14)
+0.11.0 (14.01.2021)
 -------------------
 
 Additions
@@ -326,7 +329,7 @@ Documentation
 - Changed the documentation for the new "serve" command
 
 
-0.12.0 (2021-01-14)
+0.12.0 (14.01.2021)
 -------------------
 
 Additions
@@ -352,7 +355,7 @@ Documentation
 - Changed the documentation for the "serve" command again
 
 
-1.0.0 (2021-01-15)
+1.0.0 (15.01.2021)
 ------------------
 
 Additions
@@ -374,6 +377,14 @@ Changes
 Documentation
 
 - Updated the section about continuous integration.
+
+1.0.1 (13.02.2021)
+------------
+
+Changes
+
+- Changed the date format in the HISTORY.rst file
+- Changed the default port from 2424 to 8030
 
 
 TODO

@@ -225,7 +225,7 @@ title = "UfoTest Config"
     # It is possible to start a server which listens to icoming requests
     # which are created by the git repository whenever new changes are being commited.
     hostname = 'localhost'
-    port = 2424
+    port = 8030
     # This value contains the string identifier of the test suite which is
     # supposed to be executed whenever the build process is automatically triggered
     # by a git webhook

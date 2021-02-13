@@ -377,7 +377,7 @@ def serve(verbose):
     click.secho('\n| | STARTING CI SERVER | |', bold=True)
     click.secho('--| repository url: {}'.format(CONFIG.get_ci_repository_url()))
     click.secho('--| repository branch: {}'.format(CONFIG.get_ci_branch()))
-    click.secho('--| bitfile: {}\n'.format(CONFIG.get_ci_bitfile_path()))
+    click.secho('--| bitfile path: {}\n'.format(CONFIG.get_ci_bitfile_path()))
 
     hostname = CONFIG.get_hostname()
     port = CONFIG.get_port()
