@@ -240,6 +240,16 @@ class BuildContext(AbstractContextManager):
         # -- EXIT TEST CONTEXT
         self.test_context.__exit__(exc_type, exc_val, exc_tb)
 
+    @classmethod
+    def create_empty(cls) -> BuildContext:
+        build_context = cls('empty.git', '', '', '')
+        build_context.bitfile_path = ''
+        build_context.start_datetime = datetime.datetime.now()
+        build_context.end_datetime = datetime.datetime.now()
+        build_context.test_report = TestReport(build_context.test_context)
+
+        return build_context
+
 
 class BuildReport(AbstractRichOutput):
     """This class represents a report, which is being created as the result of a build process. A build report contains

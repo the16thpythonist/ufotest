@@ -390,7 +390,7 @@ def serve(verbose):
     process.start()
 
     # -- STARTING THE SERVER
-    server.run(port=port)
+    server.run(port=port, host='0.0.0.0')
 
 
 ci.add_command(build)

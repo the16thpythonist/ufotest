@@ -379,13 +379,25 @@ Documentation
 - Updated the section about continuous integration.
 
 1.0.1 (13.02.2021)
-------------
+------------------
 
 Changes
 
 - Changed the date format in the HISTORY.rst file
 - Changed the default port from 2424 to 8030
 
+1.0.2 (14.02.2021)
+------------------
+
+Changes
+
+- The flask server now binds to "0.0.0.0" which is required to access it from an outside scope
+- TODO: Add an option to the "serve" command so that this can be overwritten
+
+Additions
+
+- An API route for gitlab push webhooks
+- An adapter class to format the data from the gitlab webhook correctly
 
 TODO
 ----

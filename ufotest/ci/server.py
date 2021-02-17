@@ -2,6 +2,7 @@ import os
 import json
 import time
 
+import click
 from flask import Flask, request, send_from_directory, jsonify
 
 from ufotest.config import Config, get_path
@@ -17,8 +18,66 @@ BUILDS_PATH = os.path.join(PATH, 'builds')
 STATIC_PATH = os.path.join(PATH, 'static')
 
 
-class BuildWorker(object):
+class BuildAdapterGitlab(object):
 
+    def __init__(self, data: dict):
+        self.data = data
+
+    def get(self):
+        build = {
+            'repository': {
+                'name': self.data['repository']['name'],
+                'clone_url': self.data['repository']['git_http_url'],
+                'owner': {
+                    'name': self.data['user_name'],
+                    'email': self.data['user_email']
+                }
+            },
+            'ref': self.data['ref'],
+            'pusher': self.get_pusher(),
+            'commits': self.get_commits()
+        }
+
+        return build
+
+    def get_pusher(self) -> dict:
+        last_commit_data = self.data['commits'][-1]
+        return last_commit_data['author']
+
+    def get_commits(self) -> list:
+        return [commit_data['id'] for commit_data in self.data['commits'][::-1]]
+
+
+class BuildWorker(object):
+    """
+    This class wraps the main loop which is responsible for actually executing the build jobs.
+
+    This class was designed so that it's run method could essentially be used as the main loop of an entirely different
+    subprocess. Its main loop periodically checks the build queue for the case that new build jobs have arrived over
+    the web server.
+
+    **The build data**
+
+    So the basic way the build queue works is that the web server receives a new build job in the form of a json data
+    structure. This data structure is then put into the build queue until it is popped out again by this worker process.
+    To understand the build process it is important to understand how this json data from the build queue is structured.
+    The most important parts are explained here:
+
+    - repository
+        - owner
+            - *email*: The string email address of the owner of the repository. This will be used to send a report mail
+              to the owner whenever a build has finished.
+            - *name*: The string name of the owner of the repo. This is used to correctly address the person in the mail
+        - *clone_url*: The string url with which the repository can be cloned. This is then used to actually clone the
+          repository to flash the most recent changes to the camera.
+    - pusher
+        - *email*: The string email address of the person which caused the most recent push to the repository.
+        - *name*: The string name of the pusher
+    - *ref*: A string with the branch name to which the commit was issued. For the ufotest application only a certain
+      branch is being monitored. This will be used to check if the changes have actually occurred on the relevant branch
+    - *commits*: A list of strings, where each string is the string identifier for one of the commits for the
+      repository. The last one will be used as the string to checkout and use as the basis for the tests.
+    """
     def __init__(self):
         self.running = True
 
@@ -54,6 +113,7 @@ class BuildWorker(object):
 
 server = Flask('UfoTest CI Server', static_folder=None)
 
+
 @server.route('/', methods=['GET'])
 def home():
     template = get_template('home.html')
@@ -61,10 +121,24 @@ def home():
 
 
 @server.route('/push/github', methods=['POST'])
-def push():
+def push_github():
     data = request.get_json()
 
     BuildQueue.push(data)
+
+    return 'New build added to the queue', 200
+
+
+@server.route('/push/gitlab', methods=['POST'])
+def push_gitlab():
+    data = request.get_json()
+
+    try:
+        adapter = BuildAdapterGitlab(data)
+        BuildQueue.push(adapter.get())
+    except Exception as e:
+        msg = '[!] An error occurred while pushing a gitlab request into the build queue: {}'.format(str(e))
+        click.secho(msg, fg='red')
 
     return 'New build added to the queue', 200
 
