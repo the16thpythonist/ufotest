@@ -402,9 +402,19 @@ Additions
 1.0.3 (24.02.2021)
 ------------------
 
-Changes
+Fixes
 
 - Now actually using the config.static in the jinja templates, which enables the assets to be loaded correctly.
+
+1.0.4 (xx.xx.2021)
+------------------
+
+Fixes
+
+- Now only importing matplotlib exactly before the frame is actually to be displayed, because previously the "frame"
+  command would break in a headless SSH session, even if the frame was not even intended to be displayed...
+- The "ci build" command now actually uses the test suite which is passed as the argument. Previously it would always
+  use the default option defined within the config file.
 
 TODO
 ----
@@ -412,4 +422,16 @@ TODO
 - Document camera properties "Notes"
 - Auto detect the operating system?
 - Make "init" add the necessary stuff to the bashrc file. use jinja2?
+- **Templating of the actual report files is done at compile time and not during the actual web request**. This means
+  that essentially all test reports become unusable when changing the hostname or generally anything within the config
+  which is relevant for the test report. One workaround to this would be to introduce a "recompile" command, which
+  generates all test reports from scratch. This means that every test report would also have to be saved as a "loadable"
+  format such as JSON. But that would generally be a good idea for machine processing...
+- helpful error message when forgetting the ".git" for any repository url
+- helpful error message when the wrong branch is specified for the CI repo or generally an error when the clone
+  process fails!
+- In case of an error during the build process, always remove the lock file!
+- Sort the list pages by the time.
+- Add information about the test suite to the builds list page.
+
 

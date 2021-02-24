@@ -156,8 +156,6 @@ def frame(verbose, output, display):
     """
     Capture a frame from the camera and display it to the user
     """
-    import matplotlib.pyplot as plt
-    matplotlib.use('TkAgg')
 
     if not check_install():
         return 1
@@ -180,6 +178,9 @@ def frame(verbose, output, display):
             sensor_height=CONFIG.get_sensor_height(),
             sensor_width=CONFIG.get_sensor_width()
         )
+
+        import matplotlib.pyplot as plt
+        matplotlib.use('TkAgg')
 
         plt.imshow(images[0])
         plt.show()
@@ -356,12 +357,18 @@ def build(verbose, suite):
     """
     # -- ECHO CONFIGURATION
     click.secho('\n| | INTEGRATING REMOTE REPOSITORY | |', bold=True)
-    click.secho('--| repository url: {}'.format(CONFIG.get_ci_repository_url()))
-    click.secho('--| repository branch: {}'.format(CONFIG.get_ci_branch()))
-    click.secho('--| bitfile: {}\n'.format(CONFIG.get_ci_bitfile_path()))
+    click.secho('--| Repository url: {}'.format(CONFIG.get_ci_repository_url()))
+    click.secho('--| Repository branch: {}'.format(CONFIG.get_ci_branch()))
+    click.secho('--| Bitfile relative path: {}'.format(CONFIG.get_ci_bitfile_path()))
+    click.secho('--| Test suite: {}\n'.format(suite))
 
     # -- RUNNING THE PROCESS
     with build_context_from_config(CONFIG) as build_context:
+        # The "build_context_from_config" function builds the context object entirely on the basis of the configuration
+        # file, which means, that it also uses the default test suite defined there. Since the build function is meant
+        # to be able to pass the test suite as a parameter, we will have to overwrite this piece of config manually.
+        build_context.test_suite = suite
+
         build_runner = BuildRunner(build_context)
         build_report = build_runner.build()
         build_report.save(build_context.folder_path)
@@ -393,6 +400,8 @@ def serve(verbose):
     server.run(port=port, host='0.0.0.0')
 
 
+# Registering the commands within the "ci" group. The ci group is a sub command group which contains the commands
+# relating to the "continuous integration" functionality.
 ci.add_command(build)
 ci.add_command(serve)
 
