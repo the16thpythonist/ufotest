@@ -10,7 +10,7 @@
 {% block content %}
     <h2>Archived Build Reports</h2>
     {% for report in reports %}
-    <a class='test-report' href="/builds/{{ report['folder_name'] }}/report.html">
+    <a class='test-report' href="{{ config.url('builds', report['folder_name'], 'report.html') }}">
         <div class="item test-report">
             <h3>{{ report['repository_name'] }}</h3>
             <div class="time-container">

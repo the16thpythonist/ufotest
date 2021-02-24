@@ -399,6 +399,13 @@ Additions
 - An API route for gitlab push webhooks
 - An adapter class to format the data from the gitlab webhook correctly
 
+1.0.3 (24.02.2021)
+------------------
+
+Changes
+
+- Now actually using the config.static in the jinja templates, which enables the assets to be loaded correctly.
+
 TODO
 ----
 

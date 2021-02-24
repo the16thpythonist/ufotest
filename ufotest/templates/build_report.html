@@ -72,7 +72,7 @@
 
     <p class="test-link">
         The online version of the test report can be found here:
-        <a href="/archive/{{ report.test_folder_name }}/report.html">Test Report</a>
+        <a href="{{ config.url('archive', report.test_folder_name, 'report.html') }}">Test Report</a>
     </p>
 
     <!-- PRESENTING THE SUMMARY -->
