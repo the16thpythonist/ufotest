@@ -20,15 +20,39 @@ from ufotest.util import (markdown_to_html,
 
 
 class TestContext(AbstractContextManager):
+    """
+    Represents the context for the execution of a test run.
 
+    This is the reasoning behind the design choice: The original system was that there was a test runner which would
+    then produce a test report. Now the problem is, that the construction of a test report needed *a lot* of parameters.
+    Too many parameters to funnel through the constructor. So the alternative would have been to use a wrapper object
+    which contains all the important data. That is what this class does. But it does more: In fact this test context
+    class wraps all the information which is required by the test runner. During the tests, the test runner writes
+    all the relevant results into the context object. Afterwards it gets passed to the constructor of the test report.
+
+    **EXAMPLE**
+
+    Since this is a context manager, it should be used with the "with" syntax, where both the test runner and the
+    test report are handled within the context:
+
+    .. code-block:: python
+
+        with TestContext() as test_context:
+            test_runner = TestRunner(test_context)
+            # Run the tests.
+            test_report = TestReport(test_context)
+
+    :ivar results:  A dictionary whose keys are the string (unique) names of the individual test cases and the values
+                    are the test result objects, which those tests have produced as results.
+    """
     ARCHIVE_FOLDER_FORMAT = 'test_run_%d_%m_%Y__%H_%M_%S'
 
-    def __init__(self, *test_folders):
+    def __init__(self, *additional_test_folders, config=Config()):
         # constructed attributes
-        self.additional_test_folders = test_folders
+        self.additional_test_folders = additional_test_folders
 
         # calculated attributes
-        self.config = Config()
+        self.config = config
         self.archive_folder_path = self.config.get_archive_path()
         self.creation_datetime = datetime.datetime.now()
         self.folder_name = self.creation_datetime.strftime(self.ARCHIVE_FOLDER_FORMAT)
@@ -64,15 +88,21 @@ class TestContext(AbstractContextManager):
         # to have some empty properties which are only later being set by the TestRunner.
         self.start_datetime: Optional[datetime.datetime] = None
         self.end_datetime: Optional[datetime.datetime] = None
-        self.results = {}
+        self.results: Dict[str, AbstractTestResult] = {}
         self.tests = {}
         self.name: Optional[str] = None
 
     def start(self, name: str):
+        """
+        Sets the start time for the test run.
+        """
         self.name = name
         self.start_datetime = datetime.datetime.now()
 
     def end(self, name: str):
+        """
+        Sets the end time for the test run
+        """
         self.end_datetime = datetime.datetime.now()
 
     # == AbstractContextManager
@@ -628,6 +658,15 @@ class TestReport(AbstractRichOutput):
     DATETIME_FORMAT = '%d.%m.%Y %H:%M'
 
     def __init__(self, test_context: TestContext):
+        assert test_context.start_datetime is not None, \
+            "The test context has to have been started before attempting to construct a test report from it"
+
+        assert test_context.end_datetime is not None, \
+            "The test context has to have been ended before attempting to construct a test report from it"
+
+        assert len(test_context.results) > 0, \
+            "The test context has to have at least on test (!= 0) to construct a test report from it"
+
         # constructed attributes
         self.context = test_context
 

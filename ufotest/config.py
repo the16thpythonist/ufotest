@@ -38,7 +38,7 @@ def get_builds_path() -> str:
     return os.path.join(path, 'builds')
 
 
-def get_path() -> str:
+def get_path(*sub_paths) -> str:
     """Returns the path of the installation folder of the ufotest app.
 
     This installation folder contains for example the following things:
@@ -49,9 +49,9 @@ def get_path() -> str:
     :return: the string absolute path to the installation folder
     """
     if PATH_ENV in os.environ.keys():
-        return os.environ[PATH_ENV]
+        return os.path.join(os.environ[PATH_ENV], *sub_paths)
     else:
-        return DEFAULT_PATH
+        return os.path.join(DEFAULT_PATH, *sub_paths)
 
 
 def get_config_path():

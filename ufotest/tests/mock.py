@@ -47,8 +47,6 @@ class MockTest(AbstractTest):
         }
         dict_test_result = DictTestResult(exit_code, table)
 
-        time.sleep(10)
-
         return CombinedTestResult(
             message_test_result,
             image_test_result,

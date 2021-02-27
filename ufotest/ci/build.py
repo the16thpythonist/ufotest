@@ -88,7 +88,7 @@ class BuildLock(object):
     these a indicator file 'build.locked' is saved to the installation folder of the ufotest installation. As long as
     this file exists, this locks status will be blocking. The release method simply removes this file again.
     """
-    LOCK_PATH = os.path.join(UFOTEST_PATH, 'build.locked')
+    LOCK_FILE_NAME = 'build.locked'
 
     @classmethod
     def acquire(cls):
@@ -101,16 +101,21 @@ class BuildLock(object):
         if cls.is_locked():
             raise PermissionError('Another build process is currently already running')
         else:
-            with open(cls.LOCK_PATH, mode='w') as lock_file:
+            with open(cls.get_lock_path(), mode='w') as lock_file:
                 lock_file.write('True')
 
     @classmethod
     def release(cls):
         """Releases the locK again, so that other processes can start build processes in the future.
 
+        :raises FileNotFoundError: If the lock is not even locked in the first place
+
         :return: void
         """
-        os.remove(cls.LOCK_PATH)
+        if cls.is_locked():
+            os.remove(cls.get_lock_path())
+        else:
+            raise FileNotFoundError('You cannot release the build lock if it is not locked in the first place')
 
     @classmethod
     def is_locked(cls) -> bool:
@@ -120,7 +125,15 @@ class BuildLock(object):
 
         :return: a boolean
         """
-        return os.path.exists(cls.LOCK_PATH)
+        return os.path.exists(cls.get_lock_path())
+
+    @classmethod
+    def get_lock_path(cls) -> str:
+        """Returns the path of the lock file.
+
+        :return: The string path of the file which is used as the build lock
+        """
+        return os.path.join(get_path(), cls.LOCK_FILE_NAME)
 
 
 class BuildContext(AbstractContextManager):
@@ -145,7 +158,12 @@ class BuildContext(AbstractContextManager):
             # only here the context should actually be used!
 
     """
-    def __init__(self, repository_url: str, branch_name: str, commit_name: str, test_suite: str):
+    def __init__(self,
+                 repository_url: str,
+                 branch_name: str,
+                 commit_name: str,
+                 test_suite: str,
+                 config: Config = Config()):
         # constructed attributes
         self.repository_url = repository_url
         self.branch = branch_name
@@ -153,7 +171,7 @@ class BuildContext(AbstractContextManager):
         self.test_suite = test_suite
 
         # calculated attributes
-        self.config = Config()
+        self.config = config
         self.creation_datetime = datetime.datetime.now()
         self.version = get_version()
         self.test_context = TestContext()

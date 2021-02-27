@@ -374,30 +374,42 @@ def build(verbose, suite):
         build_report.save(build_context.folder_path)
 
 
-@click.command('serve', short_help='Runs the CI server which responds to remote repository webhooks')
+@click.command('serve', short_help='Runs the CI server which serves the web interface and accepts build requests')
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
-def serve(verbose):
+@click.option('--host', '-h', type=click.STRING, default='0.0.0.0', help='the host address for the server')
+def serve(verbose, host):
     """
-    Start the CI server. The server listens for incoming build requests and serves the static report files.
+    Starts the CI web server. This web server serves the web interface for the application. Additionally it exposes an
+    API, which automatically starts a new build process when a remote repository with the ufo source code registers a
+    new push event.
     """
     # -- ECHO CONFIGURATION
     click.secho('\n| | STARTING CI SERVER | |', bold=True)
     click.secho('--| repository url: {}'.format(CONFIG.get_ci_repository_url()))
     click.secho('--| repository branch: {}'.format(CONFIG.get_ci_branch()))
-    click.secho('--| bitfile path: {}\n'.format(CONFIG.get_ci_bitfile_path()))
+    click.secho('--| bitfile path: {}'.format(CONFIG.get_ci_bitfile_path()))
+    click.secho('--| host address: {}\n'.format(host))
 
+    # So this might be confusing: Here we get the 'hostname', but the command also has an option called 'host'. The
+    # 'host' option is an IP address. This IP address is the one, which the flask server will be bound to. It has to
+    # be the IP address of the PC in the target *local* network, where it will receive the requests from a possibly
+    # port-forwarded router. The 'hostname' is the domain name under which the server is addressed from the *outside*
     hostname = CONFIG.get_hostname()
     port = CONFIG.get_port()
 
     click.secho('(+) Visit the server at http://{}:{}/'.format(hostname, port), fg='green')
 
     # -- STARTING BUILD WORKER
+    # The flask server does not actually process the actual builds. It simply accepts the requests and based on the
+    # information within these requests it schedules a new build by putting the information into a queue. The actual
+    # build will then be started by this separate build worker process. This is because builds can take a very long
+    # time and they should not block the web server from handling other requests.
     build_worker = BuildWorker()
     process = Process(target=build_worker.run)
     process.start()
 
     # -- STARTING THE SERVER
-    server.run(port=port, host='0.0.0.0')
+    server.run(port=port, host=host)
 
 
 # Registering the commands within the "ci" group. The ci group is a sub command group which contains the commands

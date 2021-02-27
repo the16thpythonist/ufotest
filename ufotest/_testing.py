@@ -1,3 +1,7 @@
+"""
+This file contains utility code, which is used for the unit testing of the actual ufotest code. It is not concerned
+with the testing functionality implemented *for* ufotest.
+"""
 import tempfile
 import os
 
@@ -11,21 +15,25 @@ class UfotestTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        # So here I somehow have to setup a new config file etc. I guess I would do this with a temp folder?
+        # So the main problem with testing the ufotest application is that the test cases are obviously not meant to
+        # modify the already existing installation on the PC, which is why a new installation has to be created for
+        # just for testing. The "tempfile" module is perfect for this.
         cls.temp_folder = tempfile.TemporaryDirectory()
-        cls.folder_path = cls.temp_folder.name
+        cls.folder_path = os.path.join(cls.temp_folder.name, '.ufotest')
 
-        # Now we need to set a custom path for the installation folder of ufotest, which is inside this temporary
-        # folder.
+        # The installation path for the project can be controlled by using the content
         os.environ['UFOTEST_PATH'] = cls.folder_path
-        # After that we can install ufotest into this folder
         init_install()
+
         # After the installation we also need to reload the config dictionary for the whole system
         cls.config = Config()
         cls.config.reload()
 
     @classmethod
     def tearDownClass(cls) -> None:
+        # Cleaning up the modification of environmental variables.
+        del os.environ['UFOTEST_PATH']
+
         # We need to properly close the temporary folder here
         cls.temp_folder.cleanup()
 

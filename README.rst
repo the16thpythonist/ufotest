@@ -73,3 +73,16 @@ The following software was used in the creation of the project:
 .. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
 .. _Click: https://click.palletsprojects.com/en/7.x/
 .. _Jinja2: https://jinja.palletsprojects.com/en/2.11.x/
+
+
+ToDo
+----
+
+- [] Fix the crashes during the build process. No error should cause the program to crash
+- [] Fix the crash whenever a git repository url is formatted incorrectly
+- [] Document the current setup within the documentation
+- [] Automatic generation of a datasheet with the camera properties (as a single test case?)
+- [] Redesign the loading of tests cases so that positional parameters can be encoded in the name
+- [] Make the server process automatically start on boot for the test PC in the DAQ lab
+- [] Test case for x number of executions of the setup script. How many were successful?
+- [] Test case for x number of frame acquisitions. How many were successful?

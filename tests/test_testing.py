@@ -1,8 +1,17 @@
+"""
+Unittests for the testing functionality of ufotest.
+"""
 import inspect
 
 from ufotest._testing import UfotestTestCase
 from ufotest.util import random_string
-from ufotest.testing import TestRunner, AbstractTest, TestReport, MessageTestResult, TestMetadata, AssertionTestResult
+from ufotest.testing import (TestRunner,
+                             TestContext,
+                             AbstractTest,
+                             TestReport,
+                             MessageTestResult,
+                             TestMetadata,
+                             AssertionTestResult)
 
 
 # HELPER FUNCTIONS
@@ -24,59 +33,69 @@ class TestTestRunner(UfotestTestCase):
         """
         Simply tests if the construction of a new instance does not produce errors
         """
-        test_runner = TestRunner(config=self.config)
-        self.assertIsInstance(test_runner, TestRunner)
+        # self.config is a special config object, which was especially constructed for the test. It makes sure that the
+        # test cases run within their own "testing" environment and do not use the global environment, which may or may
+        # may not be already installed on the PC.
+        with TestContext(config=self.config) as test_context:
+            test_runner = TestRunner(test_context)
+            self.assertIsInstance(test_runner, TestRunner)
 
     def test_module_loading_working_at_all(self):
         """
         Tests if the dynamic loading of the modules from the test folder works at all. That does not imply that it
         tests for the correct amount of tests.
         """
-        test_runner = TestRunner(config=self.config)
-        test_runner.load()
+        with TestContext(config=self.config) as test_context:
+            test_runner = TestRunner(test_context)
+            test_runner.load()
 
-        self.assertNotEqual(0, len(test_runner.modules))
-        for module in test_runner.modules.values():
-            self.assertTrue(inspect.ismodule(module))
+            self.assertNotEqual(0, len(test_runner.modules))
+            for module in test_runner.modules.values():
+                self.assertTrue(inspect.ismodule(module))
 
     def test_test_loading_working_at_all(self):
         """
         Tests if any tests have been loaded from the test modules and also tests if these are only valid subclasses
         of the AbstractTest base class.
         """
-        test_runner = TestRunner(config=self.config)
-        test_runner.load()
+        with TestContext(config=self.config) as test_context:
+            test_runner = TestRunner(test_context)
+            test_runner.load()
 
-        self.assertNotEqual(0, len(test_runner.tests))
-        for test in test_runner.tests.values():
-            self.assertTrue(inspect.isclass(test))
-            self.assertTrue(issubclass(test, AbstractTest))
+            self.assertNotEqual(0, len(test_runner.tests))
+            for test in test_runner.tests.values():
+                self.assertTrue(inspect.isclass(test))
+                self.assertTrue(issubclass(test, AbstractTest))
 
     def test_run_mock_test(self):
         """
         Tests if the "mock" test is being run correctly
         """
-        test_runner = TestRunner(config=self.config)
-        test_runner.load()
+        with TestContext(config=self.config) as test_context:
+            test_runner = TestRunner(test_context)
+            test_runner.load()
 
-        test_results = test_runner.run_test('mock')
-        self.assertIsInstance(test_results, TestReport)
-        self.assertEqual(1, test_results.test_count)
-        self.assertEqual(1, test_results.passing_count)
-        self.assertEqual(0, test_results.error_count)
+            test_runner.run_test('mock')
+            test_report = TestReport(test_context)
+            self.assertIsInstance(test_report, TestReport)
+            self.assertEqual(1, test_report.test_count)
+            self.assertEqual(1, test_report.successful_count)
+            self.assertEqual(0, test_report.error_count)
 
     def test_run_mock_suite(self):
         """
         Tests if the "mock" test suite is being run correctly
         """
-        test_runner = TestRunner(config=self.config)
-        test_runner.load()
+        with TestContext(config=self.config) as test_context:
+            test_runner = TestRunner(test_context)
+            test_runner.load()
 
-        test_results = test_runner.run_suite('mock')
-        self.assertIsInstance(test_results, TestReport)
-        self.assertEqual(1, test_results.test_count)
-        self.assertEqual(1, test_results.passing_count)
-        self.assertEqual(0, test_results.error_count)
+            test_runner.run_suite('mock')
+            test_report = TestReport(test_context)
+            self.assertIsInstance(test_report, TestReport)
+            self.assertEqual(1, test_report.test_count)
+            self.assertEqual(1, test_report.successful_count)
+            self.assertEqual(0, test_report.error_count)
 
 
 class TestTestReport(UfotestTestCase):
@@ -85,21 +104,23 @@ class TestTestReport(UfotestTestCase):
         """
         If an instance can be constructed without errors
         """
-        test_report = TestReport({'test': get_message_test_result()}, TestMetadata())
-        self.assertIsInstance(test_report, TestReport)
+        with TestContext(config=self.config) as test_context:
+            # To be able to actually construct a test report, we first need to actually run at least one test!
+            test_runner = TestRunner(test_context)
+            test_runner.load()
+            test_runner.run_test('mock')
 
-    def test_markdown_conversion_rough(self):
+            test_report = TestReport(test_context)
+            self.assertIsInstance(test_report, TestReport)
+
+    def test_construction_with_unfinished_context(self):
         """
-        If the markdown conversion works at all
+        The test context cannot be passed to the test report right away, it usually first needs to run some actual
+        tests, which will set some important properties that are needed by the test context.
         """
-        results = {}
-        for i in range(5):
-            results['test {}'.format(i)] = get_message_test_result()
-
-        test_report = TestReport(results, TestMetadata())
-        markdown_string = test_report.to_markdown()
-
-        self.assertIn('# Test Report', markdown_string)
+        with TestContext(config=self.config) as test_context:
+            with self.assertRaises(AssertionError):
+                test_report = TestReport(test_context)
 
 
 class TestAssertionTestResult(UfotestTestCase):

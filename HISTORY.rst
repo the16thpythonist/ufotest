@@ -406,15 +406,31 @@ Fixes
 
 - Now actually using the config.static in the jinja templates, which enables the assets to be loaded correctly.
 
-1.0.4 (xx.xx.2021)
+1.1.0 (xx.xx.2021)
 ------------------
+
+Added
+
+- unittests in "tests/test_build.py", which are concerned with testing the build process.
+- unittests in "tests/test_config.py", which are concerned with testing the functionality exposed by the config module
+
+Changes
+
+- The "serve" command now has the option "host" which enables the specification of a different host IP address to bind
+  the web server to.
+- The joining of paths is now integrated into the "get_path" function within the config module.
 
 Fixes
 
+- Fixed the ufotest unittests to work with the new system of using the TestContext to construct the TestRunner
 - Now only importing matplotlib exactly before the frame is actually to be displayed, because previously the "frame"
   command would break in a headless SSH session, even if the frame was not even intended to be displayed...
 - The "ci build" command now actually uses the test suite which is passed as the argument. Previously it would always
   use the default option defined within the config file.
+- Attempting to release the build lock when it is not locked not raises the appropriate exception.
+- Attempting to construct a test report from a test context without an actual test run being executed before now raises
+  the appropriate exceptions
+- The build lock is now uses the correct folder which can be changed at runtime.
 
 TODO
 ----
@@ -433,5 +449,12 @@ TODO
 - In case of an error during the build process, always remove the lock file!
 - Sort the list pages by the time.
 - Add information about the test suite to the builds list page.
-
-
+- Better output in the test report. Better output for the commands in general
+- **MORE TEST CASES**
+    - Record a single frame from the camera and put the result into the test report.
+- The "single_frame" test case saves a single image. I should probably work on putting in compression for this, because
+  holy moly, the one file had ~40MB... That cant be served by a little flask server...
+- Better output for the "flash" command.
+- Parameter for test cases encoded in their names. Could do it by colon separation or smth.
+- Current documentation of status
+- Automatic generation of "datasheet" with some special characteristics...
