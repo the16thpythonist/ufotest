@@ -3,10 +3,11 @@
 """Tests for `ufotest` package."""
 
 import pytest
+from unittest import TestCase
 
 from click.testing import CliRunner
 
-from ufotest import cli
+from ufotest.cli import cli, flash
 
 
 @pytest.fixture
@@ -36,3 +37,10 @@ def command_line_interface():
     help_result = runner.invoke(cli.main, ['--help'])
     assert help_result.exit_code == 0
     assert '--help  Show this message and exit.' in help_result.output
+
+
+# == UNITTEST CLASSES ==
+
+class TestFlash(TestCase):
+
+    pass

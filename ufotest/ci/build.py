@@ -9,9 +9,11 @@ from contextlib import AbstractContextManager
 from typing import Optional
 
 from ufotest.config import Config, get_path, get_builds_path
+from ufotest.exceptions import raise_if, IncompleteBuildError, BuildError
 from ufotest.util import (AbstractRichOutput,
                           get_repository_name,
                           execute_command,
+                          run_command,
                           get_command_output,
                           get_template,
                           get_version)
@@ -133,7 +135,7 @@ class BuildLock(object):
 
         :return: The string path of the file which is used as the build lock
         """
-        return os.path.join(get_path(), cls.LOCK_FILE_NAME)
+        return get_path(cls.LOCK_FILE_NAME)
 
 
 class BuildContext(AbstractContextManager):
@@ -157,6 +159,10 @@ class BuildContext(AbstractContextManager):
         with BuildContext(*args) as context:
             # only here the context should actually be used!
 
+    :ivar completed: boolean flag, which signifies that the context object indeed contains all the information about
+        a valid build process. This is for example used by the BuildReport constructor if it is possible to construct
+        a report from the given context. This flag has to be set by the test runner after it is done with the build.
+
     """
     def __init__(self,
                  repository_url: str,
@@ -178,7 +184,7 @@ class BuildContext(AbstractContextManager):
 
         # derived attributes
         self.repository_name = get_repository_name(repository_url)
-        self.repository_path = os.path.join(UFOTEST_PATH, self.repository_name)
+        self.repository_path = get_path(self.repository_name)
         # Adding a portion of the commit hash to the folder name has been a recent addition, because I noticed that the
         # program crashes if there are two build triggered in the same minute. Also: Adding the commit also has the
         # advantage of additional information.
@@ -187,7 +193,7 @@ class BuildContext(AbstractContextManager):
             self.commit[:6],
             self.creation_datetime.strftime('%Y_%m_%d__%H_%M_%S')
         )
-        self.folder_path = os.path.join(BUILDS_PATH, self.folder_name)
+        self.folder_path = get_path('builds', self.folder_name)
 
         # non initialized attributes
         # These are the attributes, which have to be declared, but which cannot be initialized in the constructor.
@@ -198,6 +204,16 @@ class BuildContext(AbstractContextManager):
         self.end_datetime: Optional[datetime.datetime] = None
         self.bitfile_path = None
         self.test_report: Optional[TestReport] = None
+
+        # This is a flag, which is supposed to be set by the build runner, after the build process is over. This would
+        # signify that the build context indeed contains information about a valid build process.
+        self.completed = False
+
+    def complete(self):
+        """Flags the build as completed.
+        """
+        self.end_datetime = datetime.datetime.now()
+        self.completed = True
 
     # IMPLEMENT 'AbstractContextManger'
 
@@ -234,7 +250,7 @@ class BuildContext(AbstractContextManager):
 
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb) -> bool:
         """Magic method which gets called whenever the context is left again.
 
         This method gets called whenever the context is being closed. It manages two important responsibilities for
@@ -244,29 +260,40 @@ class BuildContext(AbstractContextManager):
         - It deletes the folder of the cloned repository, so that the next process can perform an entirely new clone
           process.
 
+        :raises BuildError: In case anything goes wrong during the build process. Every possible exception during the
+            build process is wrapped as a BuildError. The type of the original error will be encoded within the
+            error message.
+
         :return: void
         """
-        # -- DELETING THE CLONED REPOSITORY
+        # ~ DELETING THE CLONED REPOSITORY
         # another important thing to do to be able to have another build process be able to run again is to delete the
         # folder which was used for the cloning process.
-        shutil.rmtree(self.repository_path)
+        if os.path.exists(self.repository_path):
+            shutil.rmtree(self.repository_path)
 
-        # -- RELEASING THE LOCK
+        # ~ RELEASING THE LOCK
         # By doing this, another build process is now able to be started again in a different process possibly
         BuildLock.release()
 
-        # -- EXIT TEST CONTEXT
+        # ~ EXIT TEST CONTEXT
         self.test_context.__exit__(exc_type, exc_val, exc_tb)
 
-    @classmethod
-    def create_empty(cls) -> BuildContext:
-        build_context = cls('empty.git', '', '', '')
-        build_context.bitfile_path = ''
-        build_context.start_datetime = datetime.datetime.now()
-        build_context.end_datetime = datetime.datetime.now()
-        build_context.test_report = TestReport(build_context.test_context)
+        # ~ ERROR HANDLING
+        # In case there is any error within the build context, we will simply convert this error to one unifying
+        # custom error type "BuildError". This way, the higher code instance only has to check for this error. The
+        # type of the original error is encoded within the message and
+        # NOTE: It is also important that in the case of an error we delete the build folder completely. The web
+        # interface uses the folder structure to list the available builds. If a build folder does not contain a valid
+        # report this will then cause errors.
+        if exc_type:
+            shutil.rmtree(self.folder_path)
+            raise BuildError(f'{exc_type.__name__}: {exc_val}')
 
-        return build_context
+        # Returning False for the __exit__ method of a context manager implies, that the exception (if one has
+        # occurred within the context) should be raised again in the outer scope. It passes on the responsibility
+        # to outside of the context.
+        return False
 
 
 class BuildReport(AbstractRichOutput):
@@ -281,6 +308,9 @@ class BuildReport(AbstractRichOutput):
     DATETIME_FORMAT = '%d.%m.%Y %H:%M'
 
     def __init__(self, build_context: BuildContext):
+        raise_if(not build_context.completed, IncompleteBuildError,
+                 'A build process needs to be completed first before creating a build report from this context!')
+
         # constructed attributes
         self.context = build_context
 
@@ -296,12 +326,13 @@ class BuildReport(AbstractRichOutput):
         self.folder = self.context.folder_path
         self.folder_name = os.path.basename(self.folder)
         self.bitfile_path = self.context.bitfile_path
-        self.bitfile_name = os.path.basename(self.bitfile_path)
         self.test_suite = self.context.test_suite
         self.test_count = self.context.test_report.test_count
         self.test_success_count = self.context.test_report.successful_count
         self.test_percentage = self.context.test_report.success_ratio
         self.test_folder_name = self.context.test_report.folder_name
+        self.bitfile_name = os.path.basename(self.bitfile_path)
+
 
     def save(self, folder_path: str):
         """Saves the both the MD and HTML version of the report into the given *folder_path*.
@@ -401,11 +432,11 @@ class BuildRunner(object):
         self.context = build_context
         self.test_context = self.context.test_context
 
-        self.config = Config()
+        self.config = self.context.config
         self.test_runner = TestRunner(self.test_context)
 
-    def build(self) -> BuildReport:
-        """Actually performs the build process and returns a BuildReport object about the result.
+    def build(self) -> None:
+        """Actually performs the build process.
 
         This build process involves the following individual steps:
 
@@ -413,6 +444,8 @@ class BuildRunner(object):
         - The actual bit file is extracted from this repo.
         - This bit file is being used to flash the new configuration to the fpga board.
         - Finally the desired test suite is being run with this new hardware version.
+
+        :deprecated:
 
         :return: A BuildReport object which contains all the informations and metrics about the build process which are
         important for the user.
@@ -432,10 +465,30 @@ class BuildRunner(object):
             # -- SETTING THE END TIME
             self.context.end_datetime = datetime.datetime.now()
 
-        except Exception as e:
-            click.secho('[!] Build Exception: {}'.format(str(e)), fg='red')
-        finally:
-            return BuildReport(self.context)
+        except ZeroDivisionError as e:
+            pass
+
+    def run(self, test_only: bool = False) -> None:
+        """Actually performs the build process.
+
+        This build process involves the following individual steps:
+
+        - The remote git repository is cloned to the local system and checked out to the desired branch/commit.
+        - The actual bit file is extracted from this repo.
+        - This bit file is being used to flash the new configuration to the fpga board.
+        - Finally the desired test suite is being run with this new hardware version.
+
+        :param test_only: A boolean flag, which can be used to skip the clone and flash steps of the build process.
+            If this flag is set, only the test step of the build process will be executed. This is mainly intended
+            for testing and mock executions. Defaults to False.
+        """
+        if not test_only:
+            self.clone()
+            self.copy_bitfile()
+            self.flash()
+
+        self.test()
+        self.context.complete()
 
     def test(self):
         """Executes the test suite with the new hardware version
@@ -462,16 +515,17 @@ class BuildRunner(object):
         """Flashes the bit file to the fpga board.
 
         NOTE: For this method to work properly, the attribute 'bitfile_path' of the context object has to be set
-        correctly already. This is not being done in this method
+        correctly already. This is not being done in this method.
+
+        :raises BuildError: In case the flash command exits with an exit code which is not 0
 
         :return: void
         """
         # For the flashing process there already exists an CLI command within this very application. So the simplest
         # thing is to just invoke this command to do the flashing process here.
-        exit_code = execute_command('ufotest flash {}'.format(self.context.bitfile_path), True)
+        exit_code, output = run_command('ufotest flash {}'.format(self.context.bitfile_path))
         if exit_code:
-            # TODO: there seems to be a problem where the flash command does not reurn exit code 1 even with an error.
-            click.secho('[!] There was a problem flashing the bitfile!', fg='red')
+            raise BuildError('The hardware could not be properly flashed')
         click.secho('(+) New bitfile flashed to the hardware', fg='green')
 
     def copy_bitfile(self):

@@ -138,8 +138,6 @@ class TestRunner(object):
         self.tests = {}
         self.modules = {}
 
-    # == LOADING THE TESTS DYNAMICALLY
-
     def load_modules(self):
         for test_folder in self.context.test_folders:
             self.load_module_from_test_folder(test_folder)
@@ -197,8 +195,6 @@ class TestRunner(object):
 
         self.logger.info('All tests loaded')
 
-    # == TEST SUITES
-
     def get_test_suite(self, suite_name: str):
         suites = self.config.get_test_suites()
         assert suite_name in suites.keys(), 'Test suite {} unknown!'.format(suite_name)
@@ -208,8 +204,6 @@ class TestRunner(object):
         test_suite = TestSuite(self, suite_tests, suite_name)
 
         return test_suite
-
-    # == TEST EXECUTION
 
     def run_test(self, test_name: str):
         assert test_name in self.tests.keys(), 'Test {} does not exist!'.format(test_name)

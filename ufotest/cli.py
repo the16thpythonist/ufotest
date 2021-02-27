@@ -11,8 +11,10 @@ import numpy as np
 import shutil
 
 from ufotest.config import PATH, get_config_path, Config
+from ufotest.exceptions import IncompleteBuildError, BuildError
 from ufotest.scripts import SCRIPTS, SCRIPTS_PATH
 from ufotest.util import (execute_command,
+                          run_command,
                           setup_environment,
                           init_install,
                           check_install,
@@ -21,6 +23,7 @@ from ufotest.util import (execute_command,
                           get_path,
                           check_vivado,
                           check_path)
+from ufotest.util import cerror, cprogress, ctitle, cprint
 from ufotest.install import (install_dependencies,
                              install_fastwriter,
                              install_pcitools,
@@ -30,12 +33,16 @@ from ufotest.install import (install_dependencies,
                              install_ipecamera)
 from ufotest.camera import save_frame, import_raw, set_up_camera, tear_down_camera
 from ufotest.testing import TestRunner, TestContext, TestReport
-from ufotest.ci.build import BuildRunner, build_context_from_config
+from ufotest.ci.build import BuildRunner, BuildReport, BuildLock, build_context_from_config
 from ufotest.ci.server import server, BuildWorker
 
 
 CONFIG = Config()
 
+# == UTILITY FUNCTIONS ==
+
+
+# == COMMANDS ==
 
 @click.group(invoke_without_command=True)
 @click.option('--version', '-v', is_flag=True, help='Print the version of the program')
@@ -241,57 +248,58 @@ def teardown(verbose):
 @click.command('flash', short_help='Flash a new .BIT file to the FPGA memory')
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 @click.argument('file', type=click.STRING)
-def flash(verbose, file: str):
+def flash(verbose, file: str) -> None:
     """
-    Flashes a given ".bit" FILE to the internal memory of the fpga
+    Flashes a given ".bit" FILE to the internal memory of the connected FPGA board
 
-    FILE will be the string path of the file to be used for the flashing process
+    FILE will be the string path of the file to be used for the flashing process.
     """
-    if not check_install():
-        return 1
+    CONFIG['context']['verbose'] = verbose
 
     # -- ECHO CONFIGURATION
-    click.secho('\n| | FLASHING THE FPGA MEMORY | |', bold=True)
-    click.secho('--| bitfile: {}\n'.format(file))
+    ctitle('FLASHING BITFILE TO FPGA')
+    click.secho('--| bitfile path: {}\n'.format(file))
 
-    # -- CHECKING IF THE GIVEN FILE EVEN EXISTS
+    # ~ CHECKING IF THE GIVEN FILE EVEN EXISTS
     file_path = os.path.abspath(file)
     file_exists = check_path(file_path, is_dir=False)
     if not file_exists:
-        click.secho('[!] The given path does not exist!', fg='red')
-        return 1
+        cerror('The given path for the bitfile does not exist')
+        sys.exit(1)
 
-    # -- CHECKING IF THE FILE EVEN IS A BIT FILE
+    # ~ CHECKING IF THE FILE EVEN IS A BIT FILE
     file_extension = file_path.split('.')[-1].lower()
     is_bit_file = file_extension == 'bit'
     if not is_bit_file:
-        click.secho('[!] The given file is not a .BIT file', fg='red')
-        return 1
+        cerror('The given path does not refer to file of the type ".bit"')
+        sys.exit(1)
 
-    # -- CHECKING IF VIVADO IS INSTALLED
+    # ~ CHECKING IF VIVADO IS INSTALLED
     vivado_installed = check_vivado()
     if not vivado_installed:
-        click.secho('[!] Vivado is not installed, please install Vivado to be able to flash the fpga!', fg='red')
-        return 1
-    elif verbose:
-        click.secho('    Vivado installation found')
+        cerror('Vivado is not installed, please install Vivado to be able to flash the fpga!')
+        sys.exit(1)
+    if CONFIG.verbose():
+        cprint('Vivado installation found')
 
-    # -- STARTING VIVADO SETTINGS
+    # ~ STARTING VIVADO SETTINGS
     vivado_command = CONFIG['install']['vivado_settings']
-    execute_command(vivado_command, verbose, cwd=os.getcwd())
-    click.secho('    Finished setup of vivado environment')
+    run_command(vivado_command, cwd=os.getcwd())
+    if CONFIG.verbose():
+        cprint('Vivado setup completed')
 
-    # -- FLASHING THE BIT FILE
+    # ~ FLASHING THE BIT FILE
     flash_command = "{command} -nolog -nojournal -mode batch -source fpga_conf_bitprog.tcl -tclargs {file}".format(
         command=CONFIG['install']['vivado_command'],
         file=file_path
     )
-    exit_code = execute_command(flash_command, verbose, cwd=SCRIPTS_PATH)
+    exit_code = run_command(flash_command, cwd=SCRIPTS_PATH)
     if not exit_code:
-        click.secho('(+) Flashed FPGA with: {}'.format(file_path), fg='green', bold=True)
-        return 0
+        cprogress('Flashed FPGA with: {}'.format(file_path))
+        sys.exit(0)
     else:
-        return 1
+        cerror('There was an error during the flashing of the FPGA')
+        sys.exit(1)
 
 
 @click.command('test', short_help="Run a camera test")
@@ -350,28 +358,37 @@ def ci():
 
 @click.command('build', short_help='Applies newest commit from remote repository and then executes test suite')
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
+@click.option('--skip', '-s', is_flag=True, help='skip the cloning of the repository and flashing of the new bitfile')
 @click.argument('suite', type=click.STRING)
-def build(verbose, suite):
+def build(verbose, suite, skip) -> None:
     """
     Start a new CI build process using the test suite SUITE.
     """
-    # -- ECHO CONFIGURATION
-    click.secho('\n| | INTEGRATING REMOTE REPOSITORY | |', bold=True)
+    # ~ PRINT CONFIGURATION
+    ctitle('BUILDING FROM REMOTE REPOSITORY')
     click.secho('--| Repository url: {}'.format(CONFIG.get_ci_repository_url()))
     click.secho('--| Repository branch: {}'.format(CONFIG.get_ci_branch()))
     click.secho('--| Bitfile relative path: {}'.format(CONFIG.get_ci_bitfile_path()))
     click.secho('--| Test suite: {}\n'.format(suite))
 
-    # -- RUNNING THE PROCESS
-    with build_context_from_config(CONFIG) as build_context:
-        # The "build_context_from_config" function builds the context object entirely on the basis of the configuration
-        # file, which means, that it also uses the default test suite defined there. Since the build function is meant
-        # to be able to pass the test suite as a parameter, we will have to overwrite this piece of config manually.
-        build_context.test_suite = suite
+    # ~ RUNNING THE BUILD PROCESS
+    try:
+        with build_context_from_config(CONFIG) as build_context:
+            # The "build_context_from_config" function builds the context object entirely on the basis of the
+            # configuration file, which means, that it also uses the default test suite defined there. Since the build
+            # function is meant to be able to pass the test suite as a parameter, we will have to overwrite this piece
+            # of config manually.
+            build_context.test_suite = suite
 
-        build_runner = BuildRunner(build_context)
-        build_report = build_runner.build()
-        build_report.save(build_context.folder_path)
+            build_runner = BuildRunner(build_context)
+            build_runner.run(test_only=skip)
+            build_report = BuildReport(build_context)
+            build_report.save(build_context.folder_path)
+            sys.exit(0)
+
+    except BuildError as e:
+        cerror(f'An error has occurred during the build process...\n    {str(e)}')
+        sys.exit(1)
 
 
 @click.command('serve', short_help='Runs the CI server which serves the web interface and accepts build requests')

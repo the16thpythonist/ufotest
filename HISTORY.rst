@@ -419,6 +419,10 @@ Changes
 - The "serve" command now has the option "host" which enables the specification of a different host IP address to bind
   the web server to.
 - The joining of paths is now integrated into the "get_path" function within the config module.
+- The "flash" command now provides more output and the command produces an accurate return code in the case of an error
+- Renamed the main method of the BuildRunner from "build" to "run". Added the option to skip the clone and flash steps
+  (for testing purposes). Furhtermore the method does not return a build report anymore, it has to be seperately
+  constructed.
 
 Fixes
 
@@ -431,6 +435,7 @@ Fixes
 - Attempting to construct a test report from a test context without an actual test run being executed before now raises
   the appropriate exceptions
 - The build lock is now uses the correct folder which can be changed at runtime.
+- The build process now properly fails when the flash command fails.
 
 TODO
 ----

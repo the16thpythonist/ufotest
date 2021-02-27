@@ -86,3 +86,4 @@ ToDo
 - [] Make the server process automatically start on boot for the test PC in the DAQ lab
 - [] Test case for x number of executions of the setup script. How many were successful?
 - [] Test case for x number of frame acquisitions. How many were successful?
+- [] Make all commands have a valid return code

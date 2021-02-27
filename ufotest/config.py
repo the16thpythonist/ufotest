@@ -156,6 +156,9 @@ class Config(metaclass=Singleton):
 
     # == WRAPPER METHODS
 
+    def verbose(self):
+        return self.data['context']['verbose']
+
     def get_hostname(self):
         return self.data['ci']['hostname']
 

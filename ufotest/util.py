@@ -7,7 +7,7 @@ import random
 import re
 import subprocess
 import importlib.util
-from typing import Optional, List
+from typing import Optional, Tuple
 from abc import ABC, abstractmethod
 
 from jinja2 import Template, FileSystemLoader, Environment
@@ -25,6 +25,38 @@ TEMPLATE_ENVIRONMENT.globals['config'] = Config()
 
 # FUNCTIONS
 # =========
+
+def cerror(message: str) -> None:
+    """Outputs the *message* as an error to the console.
+
+    :param message: The message to be printed
+    """
+    click.secho(f'[!] {message}', fg='red')
+
+
+def cprogress(message: str) -> None:
+    """Outputs the *message* as progress to the console
+
+    :param message: The message to be printed
+    """
+    click.secho(f'(+) {message}', fg='green')
+
+
+def ctitle(message: str) -> None:
+    """Outputs the *message* as a title to the console
+
+    :param message: The message to be printed
+    """
+    click.secho(f'\n| | {message.upper()} | |', bold=True)
+
+
+def cprint(message: str) -> None:
+    """Outputs the *message* to the console
+
+    :param message: The message to be printed
+    """
+    click.secho(f'... {message}')
+
 
 def get_repository_name(repository_url: str) -> str:
     """Returns the name of a git repository if the *repository_url* for it is given.
@@ -115,6 +147,8 @@ def execute_command(command: str, verbose: bool, cwd: Optional[str] = None, fore
     The "verbose" flag controls whether or not the output of the command is written to stdout or not. With the "cwd"
     string a path can be passed, which is supposed to be used as the current working directory from which the command
     is to be executed.
+
+    :deprecated:
     """
     output = None if verbose else subprocess.DEVNULL
     completed_process = subprocess.run(
@@ -126,6 +160,33 @@ def execute_command(command: str, verbose: bool, cwd: Optional[str] = None, fore
         close_fds=not foreground
     )
     return completed_process.returncode
+
+
+def run_command(command: str, cwd: Optional[str] = None) -> Tuple[int, str]:
+    """Runs a terminal command and returns it's exit code and console output
+
+    :param command: The command string to execute
+    :param cwd: Optionally a string path, which is to be used as the current working directory for the execution of the
+        command.
+    :return: A tuple, where the first value ist the int exit code of the command execution and the second value is the
+        string of all the output the command produced on the stdout pipe.
+    """
+    completed_process = subprocess.run(
+        command,
+        cwd=cwd,
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+
+    output = completed_process.stdout.decode()
+    exit_code = completed_process.returncode
+
+    if CONFIG.verbose():
+        click.secho(f'[#] {command}', fg='cyan')
+        click.secho(output, fg='cyan')
+
+    return exit_code, output
 
 
 def setup_environment():
