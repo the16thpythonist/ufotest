@@ -11,7 +11,7 @@ import numpy as np
 import shutil
 
 from ufotest.config import PATH, get_config_path, Config
-from ufotest.exceptions import IncompleteBuildError, BuildError
+from ufotest.exceptions import IncompleteBuildError, BuildError, PciError, FrameDecodingError
 from ufotest.scripts import SCRIPTS, SCRIPTS_PATH
 from ufotest.util import (execute_command,
                           run_command,
@@ -23,7 +23,7 @@ from ufotest.util import (execute_command,
                           get_path,
                           check_vivado,
                           check_path)
-from ufotest.util import cerror, cprogress, ctitle, cprint
+from ufotest.util import cerror, cresult, ctitle, csubtitle, cprint, cparams
 from ufotest.install import (install_dependencies,
                              install_fastwriter,
                              install_pcitools,
@@ -31,7 +31,7 @@ from ufotest.install import (install_dependencies,
                              install_libuca,
                              install_uca_ufo,
                              install_ipecamera)
-from ufotest.camera import save_frame, import_raw, set_up_camera, tear_down_camera
+from ufotest.camera import save_frame, import_raw, set_up_camera, tear_down_camera, get_frame
 from ufotest.testing import TestRunner, TestContext, TestReport
 from ufotest.ci.build import BuildRunner, BuildReport, BuildLock, build_context_from_config
 from ufotest.ci.server import server, BuildWorker
@@ -49,9 +49,8 @@ CONFIG = Config()
 def cli(version):
     if version:
         version = get_version()
-        click.secho('UFOTEST VERSION')
         click.secho(version, bold=True)
-        return 0
+        sys.exit(0)
 
 
 @click.command('install', short_help='Install the project and its dependencies')
@@ -64,50 +63,50 @@ def install(path, verbose, no_dependencies, no_libuca, no_vivado):
     """
     Installing the Project into PATH
 
-    PATH will be the system path, which will then contain subfolders with all the required repositories and
-    dependencies
+    PATH has to be the path to an existing folder. The command installs all the required repostories into this folder.
+    Apart from the repositories, the command also installs the required system packages for the operation of the
+    UFO camera. For this it relies on the package installation method and operation system defined within the
+    ufotest config file.
     """
-    if not check_install():
-        return 1
-
+    CONFIG['context']['verbose'] = verbose
     path = os.path.realpath(path)
 
     operating_system = CONFIG['install']['os']
-    click.secho('\n| | STARTING INSTALLATION | |', bold=True)
-    click.secho('--| Configured OS: {}'.format(operating_system))
-    click.secho('--| Configured package install: {}'.format(CONFIG['install'][operating_system]['package_install']))
-    click.secho('--| Camera dimensions: {} x {}'.format(
-        CONFIG.get_sensor_width(),
-        CONFIG.get_sensor_height()
-    ))
+    ctitle('INSTALLING NECESSARY REQUIREMENTS')
+    cparams({
+        'operating system': operating_system,
+        'package install command': CONFIG['install'][operating_system]['package_install'],
+        'camera dimensions:': f'{CONFIG.get_sensor_width()} x {CONFIG.get_sensor_height()}'
+    })
 
     if not no_dependencies:
-        click.secho('\n=====| Installing System Packages |=====', bold=True)
+        csubtitle('System Packages')
         install_dependencies(verbose=verbose)
     else:
-        click.secho('\n=====| Skipping Dependencies |=====', bold=True)
+        cprint('Skipping system packages')
 
-    click.secho('\n=====| Installing fastwriter |=====', bold=True)
+    csubtitle('Installing fastwriter')
     install_fastwriter(path, verbose=verbose)
 
-    click.secho('\n=====| Installing pcitools |=====', bold=True)
+    csubtitle('Installing pcitool')
     install_pcitools(path, verbose=verbose)
 
-    click.secho('\n=====| Installing libufodecode |=====', bold=True)
+    csubtitle('Installing libufodecode')
     install_libufodecode(path, verbose=verbose)
 
     if not no_libuca:
-        click.secho('\n=====| Installing Libuca |=====', bold=True)
+        csubtitle('Installing libuca')
         install_libuca(path, verbose=verbose)
 
-        click.secho('\n=====| Installing uca-ufo |=====', bold=True)
+        csubtitle('Installing uca-ufo')
         install_uca_ufo(path, verbose=verbose)
 
-        click.secho('\n=====| Installing ipecamera plugin |=====', bold=True)
+        csubtitle('Installing ipecamera')
         install_ipecamera(path, verbose)
     else:
-        click.secho('\n=====| Skipping Libuca |=====', bold=True)
-    return 0
+        cprint('Skipping Libuca')
+
+    sys.exit(0)
 
 
 @click.command('init', short_help='Initializes the installation folder and config file for the app')
@@ -118,40 +117,38 @@ def init(verbose, force):
     This init includes the creation of the necessary folder structure for the archive and the tests, as well as the
     creation of the config file from a default template.
     """
+    CONFIG['context']['verbose'] = verbose
+
     installation_path = get_path()
-    click.secho('\n| | INITIALIZING UFOTEST INSTALLATION | |', bold=True)
-    click.secho('--| installation path: {}'.format(installation_path))
+    ctitle('INITIALIZING UFOTEST INSTALLATION')
+    cparams({'installation path': installation_path})
 
     if check_path(installation_path, is_dir=True):
         if force:
             shutil.rmtree(get_path())
-            click.secho('(+) Deleted old installation folder!', fg='green')
+            cprint('Deleted old installation folder')
         else:
-            click.secho('[!] An installation folder already exists!', fg='red')
-            click.secho('    Please use the --force flag if you wish to replace the existing installation')
+            cerror('An installation folder already exists at the given path!')
+            cerror('Please use the --force flag if you wish to forcefully replace the existing installation')
             sys.exit(1)
     else:
         click.secho('    Installation folder does not yet exist')
 
     init_install(verbose=verbose)
-    click.secho('(+) UfoTest app is initialized!', bold=True, fg='green')
-
+    cresult('UfoTest successfully initialized, use the --help option for further commands')
     sys.exit(0)
 
 
-@click.command('config', short_help='Edit the config for ufotest')
-@click.option('--editor', '-e', type=click.STRING, help='Specify the editor command to be used to open the config file')
+@click.command('config', short_help='Edit the ufotest configuration file')
+@click.option('--editor', '-e', type=click.STRING, help='Specify the editor command used to open the config file')
 def config(editor):
     """
-    Edit the configuration file for this project
+    Edit the ufotest configuration file
     """
-    if not check_install():
-        return 1
-
     config_path = get_config_path()
     click.edit(filename=config_path, editor=editor)
 
-    return 0
+    sys.exit(0)
 
 
 @click.command('frame', short_help='Acquire and display a frame from the camera')
@@ -161,38 +158,56 @@ def config(editor):
 @click.option('--display', '-d', is_flag=True, help='display the frame in seperate window')
 def frame(verbose, output, display):
     """
-    Capture a frame from the camera and display it to the user
+    Capture a single frame from the camera, save it as a file and optionally display it to the user
     """
+    CONFIG['context']['verbose'] = verbose
 
-    if not check_install():
-        return 1
+    ctitle('CAPTURING FRAME')
+    cparams({
+        'output path': output,
+        'display frame': display,
+        'sensor_dimensions': f'{CONFIG.get_sensor_width()} x {CONFIG.get_sensor_height()}'
+    })
 
     # Setup all the important environment variables and stuff
     setup_environment()
+    exit_code, _ = run_command('rm /tmp/frame*')
+    if not exit_code:
+        cprint('Removed previous frame buffer')
 
-    execute_command('rm /tmp/frame*', verbose)
-    if verbose:
-        click.secho('Removed the previous frame buffer', fg='green')
+    # ~ GET THE FRAME FROM THE CAMERA
+    # "get_frame" handles the whole communication process with the camera, it requests the frame, saves the raw data,
+    # decodes it into an image and then returns the string path of the final image file.
+    try:
+        frame_path = get_frame()
+        shutil.copy(frame_path, output)
+    except PciError as error:
+        cerror('PCI communication with the camera failed!')
+        cerror(f'PciError: {str(error)}')
+        sys.exit(1)
+    except FrameDecodingError as error:
+        cerror('Decoding of the frame failed!')
+        cerror(f'FrameDecodingError: {str(error)}')
 
-    # Call the necessary pci commands
-    save_frame(output, verbose=verbose)
+    images = import_raw(
+        path=output,
+        n=1,
+        sensor_height=CONFIG.get_sensor_height(),
+        sensor_width=CONFIG.get_sensor_width()
+    )
 
-    # Display the file using matplot lib
     if display:
-        images = import_raw(
-            path=output,
-            n=1,
-            sensor_height=CONFIG.get_sensor_height(),
-            sensor_width=CONFIG.get_sensor_width()
-        )
-
+        # An interesting thing is that matplotlib is imported in-time here and not at the top of the file. This actually
+        # had to be changed due to a bug. When using ufotest in a headless environment such as a SSH terminal session
+        # it would crash immediately, because a headless session does not work with the graphical matplotlib. Since
+        # it really only is needed for this small section here, it makes more sense to just import it in-time.
         import matplotlib.pyplot as plt
         matplotlib.use('TkAgg')
 
         plt.imshow(images[0])
         plt.show()
 
-    return 0
+    sys.exit(0)
 
 
 @click.command('script', short_help="Execute one of the known (bash) scripts")
@@ -201,14 +216,15 @@ def frame(verbose, output, display):
 def script(name, verbose):
     """Executes a registered script with the given NAME
     """
-    if not check_install():
-        return 1
+    CONFIG['context']['verbose'] = verbose
 
     exit_code = execute_script(name, verbose=verbose)
     if not exit_code:
         click.secho('Script "{}" succeeded'.format(name), bold=True, fg='green')
+        cresult(f'Script "{name}" exited without errors')
     else:
-        click.secho('Script "{}" failed'.format(name), bold=True, fg='red')
+        cerror(f'Script "{name}" failed!')
+        sys.exit(1)
 
 
 @click.command('list-scripts', short_help='List all available scripts')
@@ -295,7 +311,7 @@ def flash(verbose, file: str) -> None:
     )
     exit_code = run_command(flash_command, cwd=SCRIPTS_PATH)
     if not exit_code:
-        cprogress('Flashed FPGA with: {}'.format(file_path))
+        cresult('Flashed FPGA with: {}'.format(file_path))
         sys.exit(0)
     else:
         cerror('There was an error during the flashing of the FPGA')
@@ -363,13 +379,22 @@ def ci():
 def build(verbose, suite, skip) -> None:
     """
     Start a new CI build process using the test suite SUITE.
+
+    A build process first clones the target repository, which was specified within the "ci" section of the config file.
+    Specifically, it checks out the branch, which is also defined in the config, and uses the most recent commit to
+    that branch. After the repository has been cloned, the bit file within is used to flash a new configuration onto
+    the FPGA hardware. Finally, the given test suite is executed and the results are being saved to the archive.
     """
+    CONFIG['context']['verbose'] = verbose
+
     # ~ PRINT CONFIGURATION
     ctitle('BUILDING FROM REMOTE REPOSITORY')
-    click.secho('--| Repository url: {}'.format(CONFIG.get_ci_repository_url()))
-    click.secho('--| Repository branch: {}'.format(CONFIG.get_ci_branch()))
-    click.secho('--| Bitfile relative path: {}'.format(CONFIG.get_ci_bitfile_path()))
-    click.secho('--| Test suite: {}\n'.format(suite))
+    cparams({
+        'repository url': CONFIG.get_ci_repository_url(),
+        'repository branch': CONFIG.get_ci_branch(),
+        'bitfile relative path': CONFIG.get_ci_bitfile_path(),
+        'test suite': suite
+    })
 
     # ~ RUNNING THE BUILD PROCESS
     try:

@@ -4,7 +4,7 @@ import click
 import datetime
 import shutil
 import json
-import time
+import traceback
 from contextlib import AbstractContextManager
 from typing import Optional
 
@@ -17,6 +17,7 @@ from ufotest.util import (AbstractRichOutput,
                           get_command_output,
                           get_template,
                           get_version)
+from ufotest.util import cprint, cresult
 from ufotest.testing import TestRunner, TestReport, TestContext
 
 
@@ -286,7 +287,7 @@ class BuildContext(AbstractContextManager):
         # NOTE: It is also important that in the case of an error we delete the build folder completely. The web
         # interface uses the folder structure to list the available builds. If a build folder does not contain a valid
         # report this will then cause errors.
-        if exc_type:
+        if exc_type and exc_type is not SystemExit:
             shutil.rmtree(self.folder_path)
             raise BuildError(f'{exc_type.__name__}: {exc_val}')
 
@@ -332,7 +333,6 @@ class BuildReport(AbstractRichOutput):
         self.test_percentage = self.context.test_report.success_ratio
         self.test_folder_name = self.context.test_report.folder_name
         self.bitfile_name = os.path.basename(self.bitfile_path)
-
 
     def save(self, folder_path: str):
         """Saves the both the MD and HTML version of the report into the given *folder_path*.
@@ -486,29 +486,37 @@ class BuildRunner(object):
             self.clone()
             self.copy_bitfile()
             self.flash()
+        else:
+            # TODO: make this better
+            self.context.bitfile_path = ''
 
         self.test()
         self.context.complete()
 
-    def test(self):
+    def test(self) -> None:
         """Executes the test suite with the new hardware version
 
         :return: void
         """
-        # -- RUN THE TESTS
+        # ~ LOAD THE TESTS
+        # The test first have to be dynamically loaded and imported from their respective files. That is exactly
+        # what the "load" method does. It always has to be called first before attempting to execute a test.
         self.test_runner.load()
-        click.secho('    Tests have been loaded from memory')
+        if self.config.verbose():
+            cprint('Tests have been loaded from memory')
 
+        # ~ EXECUTING THE TESTS
         self.test_runner.run_suite(self.context.test_suite)
         test_report = TestReport(self.test_context)
         test_report.save(self.test_context.folder_path)
-        click.secho('    Executed test suite: {}'.format(self.context.test_suite))
-        click.secho('(+) Test report saved to: {}'.format(self.test_context.folder_path), fg='green')
+        if self.config.verbose():
+            cprint(f'Finished test suite: {self.context.test_suite}')
+            cprint(f'Test report saved to: {self.test_context.folder_path}')
 
-        # -- STORE THE TEST REPORT
+        # ~ STORE THE TEST REPORT
         # The test report later also needs to be referenced to produce the build report, so it needs to be saved as
         # part of the build context object as well. The context object already has the attribute 'test_report', which
-        # was initialized to none in the constructor.
+        # was initialized to none in the constructor. Now we supply the actual value
         self.context.test_report = test_report
 
     def flash(self):

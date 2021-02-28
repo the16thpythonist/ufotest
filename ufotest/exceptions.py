@@ -28,3 +28,13 @@ class BuildError(Exception):
     """When something goes wrong during the build process, this is the error that is being passed out.
     """
     pass
+
+
+class PciError(Exception):
+    """When something goes wrong during the PCI communication with the camera.
+    """
+
+
+class FrameDecodingError(Exception):
+    """When something goes wrong during the decoding of the frame
+    """

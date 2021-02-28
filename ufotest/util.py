@@ -7,7 +7,7 @@ import random
 import re
 import subprocess
 import importlib.util
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict
 from abc import ABC, abstractmethod
 
 from jinja2 import Template, FileSystemLoader, Environment
@@ -34,7 +34,7 @@ def cerror(message: str) -> None:
     click.secho(f'[!] {message}', fg='red')
 
 
-def cprogress(message: str) -> None:
+def cresult(message: str) -> None:
     """Outputs the *message* as progress to the console
 
     :param message: The message to be printed
@@ -48,6 +48,24 @@ def ctitle(message: str) -> None:
     :param message: The message to be printed
     """
     click.secho(f'\n| | {message.upper()} | |', bold=True)
+
+
+def csubtitle(message: str) -> None:
+    """Outputs the *message* as a subtitle to the console
+
+    :param message: The message to be printed
+    """
+    click.secho(f'\n==| {message} |==', bold=True)
+
+
+def cparams(parameters: Dict[str, str]) -> None:
+    """Outputs a dictionary of parameters as key value pairs to the console
+
+    :param parameters: A dict of string keys and string values.
+    """
+    for key, value in parameters.items():
+        click.secho(f'--| {key}: {value}')
+    click.secho('')
 
 
 def cprint(message: str) -> None:
@@ -184,7 +202,8 @@ def run_command(command: str, cwd: Optional[str] = None) -> Tuple[int, str]:
 
     if CONFIG.verbose():
         click.secho(f'[#] {command}', fg='cyan')
-        click.secho(output, fg='cyan')
+        if output:
+            click.secho(f' >  {output}', fg='cyan')
 
     return exit_code, output
 

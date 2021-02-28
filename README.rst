@@ -87,3 +87,6 @@ ToDo
 - [] Test case for x number of executions of the setup script. How many were successful?
 - [] Test case for x number of frame acquisitions. How many were successful?
 - [] Make all commands have a valid return code
+- [] Installation functions refactor to use the new "run_command" and new verbosity system
+- **[x]** Fix the ugly error message of the frame command
+- [] Add a '--png' option or smth. to the frame command, where the image is automatically converted to png
