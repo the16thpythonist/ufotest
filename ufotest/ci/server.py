@@ -1,13 +1,16 @@
 import os
 import json
 import time
+import smtplib
 
 import click
 from flask import Flask, request, send_from_directory, jsonify
 
 from ufotest.config import Config, get_path
 from ufotest.util import get_template
-from ufotest.ci.build import BuildQueue, BuildLock, BuildRunner, build_context_from_request
+from ufotest.util import cerror, cprint
+from ufotest.exceptions import BuildError
+from ufotest.ci.build import BuildQueue, BuildLock, BuildRunner, BuildReport, build_context_from_request
 from ufotest.ci.mail import send_report_mail
 
 CONFIG = Config()
@@ -82,32 +85,70 @@ class BuildWorker(object):
         self.running = True
 
     def run(self):
-        while self.running:
-            time.sleep(1)
+        try:
+            while self.running:
+                time.sleep(1)
 
-            if not BuildQueue.is_empty() and not BuildLock.is_locked():
-                build = BuildQueue.pop()
+                if not BuildQueue.is_empty() and not BuildLock.is_locked():
+                    build_request = BuildQueue.pop()
 
-                self.execute_build(build)
+                    try:
+                        # ~ RUN THE BUILD PROCESS
+                        build_report = self.run_build(build_request)  # raises: BuildError
 
-    def execute_build(self, build: dict):
+                        # ~ SEND REPORT MAILS
+                        # After the build process has terminated we want to inform the relevant people of the outcome.
+                        # This is mainly Two people: The maintainer of the repository is getting an email and pusher
+                        self.send_report_mails(build_request, build_report)
 
-        # -- ACTUALLY BUILD
-        with build_context_from_request(build) as build_context:
+                    except BuildError as error:
+                        cerror('The build process was terminated due to a build error!')
+                        cerror(str(error))
+
+                    except smtplib.SMTPAuthenticationError as error:
+                        cerror('The email credentials provided in the config file were not accepted by the server!')
+                        cerror(str(error))
+
+                    except OSError as error:
+                        cerror('Report mails could not be sent because there is no network connection')
+                        cerror(str(error))
+
+        except KeyboardInterrupt:
+            cprint("Stopping BuildWorker")
+
+    def run_build(self, build_request: dict) -> BuildReport:
+        """Actually runs the build process based on the information in *build_request* and returns the build report.
+
+        :param build_request: A dict, which specifies the request, that triggered the build.
+
+        :raises BuildError: If there is an error during the build process. All kinds of exceptions are wrapped as
+            this kind of error, so this is the only thing, one has to worry about
+        """
+        # ~ ACTUALLY BUILD
+        with build_context_from_request(build_request) as build_context:  # raises: BuildError
             build_runner = BuildRunner(build_context)
-            build_report = build_runner.build()
+            build_runner.run(test_only=True)
+            build_report = BuildReport(build_context)
             build_report.save(build_context.folder_path)
 
-        # -- SEND REPORT MAILS
-        # After the build process has terminated we want to inform the relevant people of the outcome. This is mainly
-        # Two people: The maintainer of the repository is getting an email and the person which actually issued the
-        # push is getting an email.
-        maintainer_email = build['repository']['owner']['email']
-        maintainer_name = build['repository']['owner']['name']
+            return build_report
+
+    def send_report_mails(self, build_request: dict, build_report: BuildReport) -> None:
+        """Sends the report mails with the results of *build_report* to recipients based on the *build_request*
+
+        :param build_request: A dict, which specifies the request, that triggered the build.
+        :param build_report: The BuildReport which was generated from the build process.
+
+        :raises smtplib.SMTPAuthenticationError: If the username and password configured within the config file are not
+            accepted by the SMTPServer
+        :raises OSError: If there is no connection to the mail server.
+        """
+        maintainer_email = build_request['repository']['owner']['email']
+        maintainer_name = build_request['repository']['owner']['name']
         send_report_mail(maintainer_email, maintainer_name, build_report)
 
-        pusher_email = build['pusher']['email']
-        pusher_name = build['pusher']['name']
+        pusher_email = build_request['pusher']['email']
+        pusher_name = build_request['pusher']['name']
         send_report_mail(pusher_email, pusher_name, build_report)
 
 

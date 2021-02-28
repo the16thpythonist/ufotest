@@ -436,6 +436,8 @@ Fixes
   the appropriate exceptions
 - The build lock is now uses the correct folder which can be changed at runtime.
 - The build process now properly fails when the flash command fails.
+- BuildWorker process now does not crash when a KeyboardInterrupt is received.
+- BuildWorker process does not crash when the build process fails and also not when the email sending fails.
 
 TODO
 ----
