@@ -8,7 +8,7 @@ from flask import Flask, request, send_from_directory, jsonify
 
 from ufotest.config import Config, get_path
 from ufotest.util import get_template
-from ufotest.util import cerror, cprint
+from ufotest.util import cerror, cprint, cresult
 from ufotest.exceptions import BuildError
 from ufotest.ci.build import BuildQueue, BuildLock, BuildRunner, BuildReport, build_context_from_request
 from ufotest.ci.mail import send_report_mail
@@ -114,7 +114,7 @@ class BuildWorker(object):
                         cerror(str(error))
 
         except KeyboardInterrupt:
-            cprint("Stopping BuildWorker")
+            cprint('\n...Stopping BuildWorker')
 
     def run_build(self, build_request: dict) -> BuildReport:
         """Actually runs the build process based on the information in *build_request* and returns the build report.

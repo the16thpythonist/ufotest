@@ -359,8 +359,8 @@ def get_template(name: str) -> Template:
     return TEMPLATE_ENVIRONMENT.get_template(name)
 
 
-def random_string(length: int):
-    letters = string.ascii_letters + ' '
+def random_string(length: int, additional_letters: str = ' '):
+    letters = string.ascii_letters + additional_letters
     return ''.join(random.choice(letters) for i in range(length))
 
 

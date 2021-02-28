@@ -413,6 +413,7 @@ Added
 
 - unittests in "tests/test_build.py", which are concerned with testing the build process.
 - unittests in "tests/test_config.py", which are concerned with testing the functionality exposed by the config module
+- Added "FigureTestResult" which allows to add a matplotlib figure directly as the result of a test.
 
 Changes
 

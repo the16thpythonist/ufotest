@@ -10,13 +10,16 @@ from abc import ABC, abstractmethod
 from typing import Tuple, Dict, List, Type, Any, Optional
 from contextlib import AbstractContextManager
 
-from ufotest.config import PATH, Config
+import matplotlib.pyplot as plt
+
+from ufotest.config import PATH, Config, get_path
 from ufotest.util import (markdown_to_html,
                           dynamic_import,
                           create_folder,
                           get_template,
                           get_version,
-                          AbstractRichOutput)
+                          AbstractRichOutput,
+                          random_string)
 
 
 class TestContext(AbstractContextManager):
@@ -42,8 +45,8 @@ class TestContext(AbstractContextManager):
             # Run the tests.
             test_report = TestReport(test_context)
 
-    :ivar results:  A dictionary whose keys are the string (unique) names of the individual test cases and the values
-                    are the test result objects, which those tests have produced as results.
+    :ivar results: A dictionary whose keys are the string (unique) names of the individual test cases and the values
+        are the test result objects, which those tests have produced as results.
     """
     ARCHIVE_FOLDER_FORMAT = 'test_run_%d_%m_%Y__%H_%M_%S'
 
@@ -59,7 +62,8 @@ class TestContext(AbstractContextManager):
         self.folder_path = os.path.join(self.archive_folder_path, self.folder_name)
         # I have added this, because I realized, that the test result objects have to access this value for
         # correctly creating html links to additional resources saved within the test's folder.
-        self.folder_url = self.config.url('archive', self.folder_name)
+        self.relative_url = os.path.join('archive', self.folder_name)
+        self.folder_url = self.config.url(self.relative_url)
         # This general information, about the platform and version on which the test was executed, was previously
         # encapsulated by the TestMetadata class. But now all of this information os combined into the context. This
         # is because the responsibility of the context essentially is to provide such "contextual" information
@@ -105,23 +109,26 @@ class TestContext(AbstractContextManager):
         """
         self.end_datetime = datetime.datetime.now()
 
-    # == AbstractContextManager
+    def get_path(self, *sub_paths):
+        return get_path('archive', self.folder_name, *sub_paths)
+
+    # -- AbstractContextManager --
 
     def __enter__(self) -> TestContext:
-        # 1 -- CREATING THE ARCHIVE FOLDER
+        # ~ CREATING THE ARCHIVE FOLDER
         create_folder(self.folder_path)
 
-        # 2 -- INIT LOGGING
+        # ~ INIT LOGGING
         logger_handler = logging.FileHandler(self.logger_path, mode='w', encoding=None, delay=False)
         self.logger.addHandler(logger_handler)
 
-        # 3 -- LOGGING START MESSAGE
+        # ~ LOGGING START MESSAGE
         self.logger.debug('Enter test context')
 
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        # 1 -- LOGGING END MESSAGE
+        # ~ LOGGING END MESSAGE
         self.logger.debug('Exit test context')
 
 
@@ -411,6 +418,19 @@ class ImageTestResult(AbstractTestResult):
             '</p>',
             '</div>'
         ])
+
+
+class FigureTestResult(ImageTestResult):
+
+    def __init__(self, exit_code: int, test_context: TestContext, figure: plt.Figure, description: str):
+        self.test_context = test_context
+
+        # ~ SAVE IMAGE INTO TEST FOLDER
+        self.figure_name = f'{random_string(10, additional_letters="")}.png'
+        self.figure_path = self.test_context.get_path(self.figure_name)
+        figure.savefig(self.figure_path)
+
+        ImageTestResult.__init__(self, exit_code, self.figure_path, description, url_base=self.test_context.folder_url)
 
 
 class DictTestResult(AbstractTestResult):
