@@ -80,6 +80,8 @@ class BuildWorker(object):
       branch is being monitored. This will be used to check if the changes have actually occurred on the relevant branch
     - *commits*: A list of strings, where each string is the string identifier for one of the commits for the
       repository. The last one will be used as the string to checkout and use as the basis for the tests.
+
+    This should have been committed
     """
     def __init__(self):
         self.running = True
