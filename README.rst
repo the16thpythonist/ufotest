@@ -79,6 +79,7 @@ ToDo
 ----
 
 - **[x]** Fix the crashes during the build process. No error should cause the program to crash
+- **[x]** Fix the crash when terminating the "serve" command
 - [ ] Fix the crash whenever a git repository url is formatted incorrectly
 - [ ] Document the current setup within the documentation
 - [ ] Automatic generation of a datasheet with the camera properties (as a single test case?)
@@ -86,7 +87,7 @@ ToDo
 - **[x]** Make the server process automatically start on boot for the test PC in the DAQ lab
 - [ ] Test case for x number of executions of the setup script. How many were successful?
 - [ ] Test case for x number of frame acquisitions. How many were successful?
-- [ ] Make all commands have a valid return code
+- **[x]** Make all commands have a valid return code
 - [ ] Installation functions refactor to use the new "run_command" and new verbosity system
 - **[x]** Fix the ugly error message of the frame command
 - [ ] Add a '--png' option or smth. to the frame command, where the image is automatically converted to png
