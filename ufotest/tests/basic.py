@@ -164,12 +164,16 @@ class RepeatedFrameTest(AbstractTest):
                 self.counters['PCI Error'] += 1
             except FrameDecodingError:
                 self.counters['Decoding Error'] += 1
+            except Exception:
+                pass
 
         exit_code = self.counters['PCI Error'] > 0 or self.counters['Decoding Error'] > 0
 
         # ~ Creating the figure
         fig = self.create_figure()
         figure_result = FigureTestResult(exit_code, self.context, fig, 'some description')
+
+        return figure_result
 
     def create_figure(self) -> plt.Figure:
         fig, ax = plt.subplots(nrows=1, ncols=1)
