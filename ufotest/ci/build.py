@@ -364,7 +364,9 @@ class BuildReport(AbstractRichOutput):
     def to_dict(self) -> dict:
         return {
             'start':                self.start,
+            'start_iso':            self.context.start_datetime.isoformat(),
             'end':                  self.end,
+            'end_iso':              self.context.end_datetime.isoformat(),
             'duration':             self.duration,
             'version':              self.context.version,
             'test_suite':           self.test_suite,

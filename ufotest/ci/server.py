@@ -2,6 +2,7 @@ import os
 import json
 import time
 import smtplib
+import datetime
 
 import click
 from flask import Flask, request, send_from_directory, jsonify
@@ -193,14 +194,24 @@ def archive_list():
         for folder in folders:
             folder_path = os.path.join(root, folder)
             report_json_path = os.path.join(folder_path, 'report.json')
-            with open(report_json_path, mode='r') as report_json_file:
-                report = json.loads(report_json_file.read())
-                reports.append(report)
+
+            # We really need to check for the existence here because of the following case: A test run has been started
+            # but is not yet complete. In this case the test folder already exists, but the report does not. In this
+            # case attempting to open the file would cause an exception!
+            if os.path.exists(report_json_path):
+                with open(report_json_path, mode='r') as report_json_file:
+                    report = json.loads(report_json_file.read())
+                    reports.append(report)
 
         break
 
+    sorted_reports = sorted(
+        reports,
+        key=lambda r: datetime.datetime.fromisoformat(r['start_iso'])
+    )
+
     template = get_template('archive_list.html')
-    return template.render({'reports': reports}), 200
+    return template.render({'reports': sorted_reports}), 200
 
 
 @server.route('/archive/<path:path>')
@@ -215,14 +226,21 @@ def builds_list():
         for folder in folders:
             folder_path = os.path.join(root, folder)
             report_json_path = os.path.join(folder_path, 'report.json')
-            with open(report_json_path, mode='r') as report_json_file:
-                report = json.loads(report_json_file.read())
-                reports.append(report)
+
+            if os.path.exists(report_json_path):
+                with open(report_json_path, mode='r') as report_json_file:
+                    report = json.loads(report_json_file.read())
+                    reports.append(report)
 
         break
 
+    sorted_reports = sorted(
+        reports,
+        key=lambda r: datetime.datetime.fromisoformat(r['start_iso'])
+    )
+
     template = get_template('builds_list.html')
-    return template.render({'reports': reports}), 200
+    return template.render({'reports': sorted_reports}, 200)
 
 
 @server.route('/builds/<path:path>')

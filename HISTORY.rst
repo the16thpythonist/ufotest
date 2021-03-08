@@ -445,6 +445,14 @@ Fixes
 TODO
 ----
 
+Bugs:
+
+- If test suite is currently processing, one cannot access the test archive list in the web interface
+  presumably because the test folder already exists but no reports have been saved to it. The best course for
+  fixing this would be to prevent a crash for an empty test folder alltogether.
+
+Features:
+
 - Document camera properties "Notes"
 - Auto detect the operating system?
 - **Templating of the actual report files is done at compile time and not during the actual web request**. This means

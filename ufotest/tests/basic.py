@@ -121,12 +121,14 @@ class RepeatedResetTest(AbstractTest):
         ax.set_title('Register errors for each repetition')
         ax.set_ylabel('error count')
         ax.set_xlabel('repetition index')
+        ax.set_xlim(left=0, right=count + 1)
+        ax.set_ylim(bottom=0, top=maximum_errors + 1)
 
         x = list(range(1, count + 1))
         heights = error_counts
         color = ['red' if state_error else 'blue' for state_error in state_errors]
         ax.bar(x=x, height=heights, color=color)
 
-        ax.plot([0, count + 1], [10, 10], color='gray')
+        ax.plot([0, count + 1], [maximum_errors, maximum_errors], color='gray')
 
         return fig
