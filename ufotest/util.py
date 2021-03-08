@@ -329,6 +329,40 @@ def check_vivado():
     return vivado_folder_exists and vivado_settings_exists
 
 
+def run_script(script_name: str, prefix: str = '') -> Tuple[int, str]:
+    """Runs the script which is identified by *script_name*.
+
+    :param script_name: The string name, which identifies the script within the ufotest application.
+    :param prefix: A string which is prepended to the command string for the execution of the script. This mainly
+        exists to possibly supply the "sudo" prefix to the execution of a script, if it needs it. Default is empty str.
+
+    :raises FileNotFoundError: If the given script name does not refer to a valid script, which is registered with
+        the ufotest application.
+
+    :returns: A tuple, where the first element is the integer exit code of the script command and the second the str
+        of the output, which the command generated on stdout.
+    """
+    if script_name not in SCRIPTS.keys():
+        raise FileNotFoundError(f'The script "{script_name}" is not known to the application')
+
+    script_data = SCRIPTS[script_name]
+    script_folder = os.path.dirname(script_data['path'])
+    script_command = prefix + script_data['path']
+
+    # This perhaps needs explanation: The script command in itself would work fine. Since it contains the absolute path
+    # to an executable file, that is fine. But we set the current working dir to the script folder anyways since some
+    # of the scripts call other scripts and the way they call them, they expect them to be in the cwd...
+    exit_code, stdout = run_command(script_command, cwd=script_folder)
+    if CONFIG.verbose():
+        if exit_code:
+            cerror(f'The script "{script_name}" terminated with exit code 1')
+            cerror(stdout)
+        else:
+            cerror(f'The script "{script_name}" terminated successfully')
+
+    return exit_code, stdout
+
+
 def execute_script(name: str, prefix: str = '', verbose: bool = False):
 
     if name not in SCRIPTS.keys():

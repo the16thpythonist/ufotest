@@ -188,6 +188,9 @@ title = "UfoTest Config"
 
         # A suite which runs a selected few of the most basic tests
         basic = [
+            # Basic setup stuff
+            'repeated_reset',
+            # Basic frame analysis
             'single_frame',
             'single_frame_statistics'
         ]
