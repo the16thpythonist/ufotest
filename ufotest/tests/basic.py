@@ -5,8 +5,10 @@ from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ufotest.testing import AbstractTest, FigureTestResult, MessageTestResult, AssertionTestResult, TestRunner
+from ufotest.testing import AbstractTest, FigureTestResult, MessageTestResult, CombinedTestResult, TestRunner
+from ufotest.camera import get_frame
 from ufotest.util import run_script
+from ufotest.exceptions import PciError, FrameDecodingError
 
 
 class RepeatedResetTest(AbstractTest):
@@ -132,3 +134,54 @@ class RepeatedResetTest(AbstractTest):
         ax.plot([0, count + 1], [maximum_errors, maximum_errors], color='gray')
 
         return fig
+
+
+class RepeatedFrameTest(AbstractTest):
+
+    REPETITIONS = 5
+
+    name = 'repeated_frames'
+    description = (
+        f'Attempts to capture a frame {REPETITIONS} times.'
+    )
+
+    def __init__(self, test_runner: TestRunner):
+        super(RepeatedFrameTest, self).__init__(test_runner)
+        self.counters = {
+            'Success': 0,
+            'PCI Error': 0,
+            'Decoding Error': 0
+        }
+
+    def run(self):
+
+        for i in range(self.REPETITIONS):
+            try:
+                frame_path = get_frame()
+                self.counters['Success'] += 1
+                time.sleep(1)
+            except PciError:
+                self.counters['PCI Error'] += 1
+            except FrameDecodingError:
+                self.counters['Decoding Error'] += 1
+
+        exit_code = self.counters['PCI Error'] > 0 or self.counters['Decoding Error'] > 0
+
+        # ~ Creating the figure
+        fig = self.create_figure()
+        figure_result = FigureTestResult(exit_code, self.context, fig, 'some description')
+
+    def create_figure(self) -> plt.Figure:
+        fig, ax = plt.subplots(nrows=1, ncols=1)
+        ax: plt.Axes = ax
+
+        ax.set_title('Bar chart: Errors during repeated execution of "frame" script')
+        ax.set_ylabel('')
+        ax.set_yticks(self.counters.keys())
+        ax.set_xlabel('Number of occurrences over all repetitions')
+
+        ax.barh([1, 2, 3], self.counters.items(), color=['green', 'red', 'red'])
+
+        return fig
+
+

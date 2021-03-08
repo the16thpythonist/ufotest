@@ -190,6 +190,7 @@ title = "UfoTest Config"
         basic = [
             # Basic setup stuff
             'repeated_reset',
+            'repeated_frames',
             # Basic frame analysis
             'single_frame',
             'single_frame_statistics'
