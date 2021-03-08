@@ -445,7 +445,6 @@ TODO
 
 - Document camera properties "Notes"
 - Auto detect the operating system?
-- Make "init" add the necessary stuff to the bashrc file. use jinja2?
 - **Templating of the actual report files is done at compile time and not during the actual web request**. This means
   that essentially all test reports become unusable when changing the hostname or generally anything within the config
   which is relevant for the test report. One workaround to this would be to introduce a "recompile" command, which
@@ -454,7 +453,6 @@ TODO
 - helpful error message when forgetting the ".git" for any repository url
 - helpful error message when the wrong branch is specified for the CI repo or generally an error when the clone
   process fails!
-- In case of an error during the build process, always remove the lock file!
 - Sort the list pages by the time.
 - Add information about the test suite to the builds list page.
 - Better output in the test report. Better output for the commands in general
@@ -464,5 +462,5 @@ TODO
   holy moly, the one file had ~40MB... That cant be served by a little flask server...
 - Better output for the "flash" command.
 - Parameter for test cases encoded in their names. Could do it by colon separation or smth.
-- Current documentation of status
+- Current documentation of status network setup etc. in DAQ lab
 - Automatic generation of "datasheet" with some special characteristics...
