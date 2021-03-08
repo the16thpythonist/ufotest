@@ -207,7 +207,8 @@ def archive_list():
 
     sorted_reports = sorted(
         reports,
-        key=lambda r: datetime.datetime.fromisoformat(r['start_iso'])
+        key=lambda r: datetime.datetime.fromisoformat(r['start_iso']),
+        reverse=True
     )
 
     template = get_template('archive_list.html')
@@ -236,7 +237,8 @@ def builds_list():
 
     sorted_reports = sorted(
         reports,
-        key=lambda r: datetime.datetime.fromisoformat(r['start_iso'])
+        key=lambda r: datetime.datetime.fromisoformat(r['start_iso']),
+        reverse=True
     )
 
     template = get_template('builds_list.html')

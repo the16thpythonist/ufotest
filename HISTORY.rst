@@ -441,15 +441,17 @@ Fixes
 - The build process now properly fails when the flash command fails.
 - BuildWorker process now does not crash when a KeyboardInterrupt is received.
 - BuildWorker process does not crash when the build process fails and also not when the email sending fails.
+- If test suite is currently processing, one cannot access the test archive list in the web interface
+  presumably because the test folder already exists but no reports have been saved to it. The best course for
+  fixing this would be to prevent a crash for an empty test folder alltogether.
+- Build and test reports are now properly sorted by start date within the web interface
 
 TODO
 ----
 
 Bugs:
 
-- If test suite is currently processing, one cannot access the test archive list in the web interface
-  presumably because the test folder already exists but no reports have been saved to it. The best course for
-  fixing this would be to prevent a crash for an empty test folder alltogether.
+
 
 Features:
 
