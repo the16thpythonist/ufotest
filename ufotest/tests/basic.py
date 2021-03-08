@@ -20,18 +20,37 @@ class RepeatedResetTest(AbstractTest):
     how often the camera is left with errors.
     """
 
-    name = 'repeated_reset'
-    description = (
-        'this is a description'
+    REPETITIONS = 5
+    FIGURE_DESCRIPTION = (
+        'This figure shows the amount of register errors for each repetition. The horizontal axis shows the index of '
+        'each new repetition of the reset script. The vertical axis shows the amount of register errors which have '
+        'occurred for that run of the reset script. The color blue indicates, that the final state register contained '
+        'the expected bits which indicate an operational state, while the color red indicates that the final state '
+        'register deviated from what it should be.'
     )
 
-    REPETITIONS = 5
+    name = 'repeated_reset'
+    description = (
+        f'In essence, this test runs the "reset" script {REPETITIONS} consecutive times. For each execution of the '
+        'script, the test checks the output which is produced. The output of the script contains the status readouts '
+        'of some registers which are manipulated in the process of resetting the camera. The classification of whether '
+        'these register readouts imply a problem with the setup process or not is based on a heuristical rul given by '
+        'Michele: If the third position of the 9010 register is an "f" that indicates an error, whereas a "b" '
+        'indicates a success. For each repetition of the reset script, the test keeps track of how many such errors '
+        'occurred in the output of the 9010 registers. An additional factor which is also considered by this test '
+        'is the state of the 9050 register which is printed at the very end of the reset script. The evaluation of '
+        'this is based on another heuristical rule given by Michele. If the status register looks something like this: '
+        '"xxxxffff  xxxxxxx     xxxx1111  xxxxxxxx", it indicates that the camera is ready for communication and '
+        'frame transmission. If this is not the case there may be an error with the camera. This test fails if even '
+        'one of the repetitions does not match the before mentioned format of the 9050 register.'
+    )
 
     def __init__(self, test_runner: TestRunner):
         super(RepeatedResetTest, self).__init__(test_runner)
 
         self.register_error_counts: List[int] = []
         self.state_errors: List[bool] = []
+        self.register_data = {}
 
     def run(self):
 
@@ -40,9 +59,9 @@ class RepeatedResetTest(AbstractTest):
             exit_code, stdout = run_script('reset')
 
             lines = self.clean_reset_output(stdout)
-            register_data = self.segment_reset_output(lines)
-            error_count = sum(self.register_contains_error(value) for value in register_data['9010'])
-            state_error = self.state_contains_error(register_data['9050'][0])
+            self.register_data = self.segment_reset_output(lines)
+            error_count = sum(self.register_contains_error(value) for value in self.register_data['9010'])
+            state_error = self.state_contains_error(self.register_data['9050'][0])
 
             self.register_error_counts.append(error_count)
             self.state_errors.append(state_error)
@@ -52,8 +71,8 @@ class RepeatedResetTest(AbstractTest):
         exit_code = any(self.state_errors)
 
         # ~ Creating the plot for visualization
-        fig = self.create_figure(self.register_error_counts, self.state_errors)
-        figure_result = FigureTestResult(exit_code, self.context, fig, 'This is the descr.')
+        fig = self.create_figure(self.register_error_counts, self.state_errors, len(self.register_data['9010']))
+        figure_result = FigureTestResult(exit_code, self.context, fig, self.FIGURE_DESCRIPTION)
 
         return figure_result
 
@@ -95,17 +114,19 @@ class RepeatedResetTest(AbstractTest):
         return not (state_first == 'ffff' and state_third == '1111')
 
     @classmethod
-    def create_figure(cls, error_counts: List[int], state_errors: List[bool]) -> plt.Figure:
+    def create_figure(cls, error_counts: List[int], state_errors: List[bool], maximum_errors: int) -> plt.Figure:
+        count = len(error_counts)
         fig, ax = plt.subplots(ncols=1, nrows=1)
         ax: plt.Axes = ax
         ax.set_title('Register errors for each repetition')
         ax.set_ylabel('error count')
         ax.set_xlabel('repetition index')
 
-        x = list(range(1, len(error_counts) + 1))
+        x = list(range(1, count + 1))
         heights = error_counts
         color = ['red' if state_error else 'blue' for state_error in state_errors]
-
         ax.bar(x=x, height=heights, color=color)
+
+        ax.plot([0, count + 1], [10, 10], color='gray')
 
         return fig
