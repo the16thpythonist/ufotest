@@ -1,6 +1,7 @@
 from unittest import TestCase
+import matplotlib.pyplot as plt
 
-from ufotest.tests.basic import RepeatedResetTest
+from ufotest.tests.basic import RepeatedResetTest, RepeatedFrameTest
 
 
 # == MOCK DATA ==
@@ -160,4 +161,29 @@ class TestRepeatedResetTest(TestCase):
 
         fig = RepeatedResetTest.create_figure(error_counts, state_errors)
         # fig.show()
-        self.assertTrue(True)
+        self.assertIsInstance(fig, plt.Figure)
+
+
+class TestRepeatedFrameTest(TestCase):
+
+    def test_create_figure(self):
+        counters = {
+            'success': {
+                'name': 'Success',
+                'color': 'green',
+                'count': 2
+            },
+            'pci_error': {
+                'name': 'PCI Err',
+                'color': 'red',
+                'count': 5
+            },
+            'decoding_error': {
+                'name': 'Dec. Err',
+                'color': 'red',
+                'count': 4
+            }
+        }
+        fig = RepeatedFrameTest.create_figure(counters)
+        # fig.show()
+        self.assertIsInstance(fig, plt.Figure)

@@ -1,5 +1,5 @@
 import time
-from typing import List, Dict
+from typing import List, Dict, Any
 from collections import defaultdict
 
 import numpy as np
@@ -120,7 +120,7 @@ class RepeatedResetTest(AbstractTest):
         count = len(error_counts)
         fig, ax = plt.subplots(ncols=1, nrows=1)
         ax: plt.Axes = ax
-        ax.set_title('Register errors for each repetition')
+        ax.set_title('Bar Chart: Register errors for each repetition')
         ax.set_ylabel('error count')
         ax.set_xlabel('repetition index')
         ax.set_xlim(left=0, right=count + 1)
@@ -148,9 +148,21 @@ class RepeatedFrameTest(AbstractTest):
     def __init__(self, test_runner: TestRunner):
         super(RepeatedFrameTest, self).__init__(test_runner)
         self.counters = {
-            'Success': 0,
-            'PCI Error': 0,
-            'Decoding Error': 0
+            'success': {
+                'name': 'Success',
+                'color': 'green',
+                'count': 0
+            },
+            'pci_error': {
+                'name': 'PCI Err',
+                'color': 'red',
+                'count': 0
+            },
+            'decoding_error': {
+                'name': 'Dec. Err',
+                'color': 'red',
+                'count': 0
+            }
         }
 
     def run(self):
@@ -158,34 +170,38 @@ class RepeatedFrameTest(AbstractTest):
         for i in range(self.REPETITIONS):
             try:
                 frame_path = get_frame()
-                self.counters['Success'] += 1
+                self.counters['success']['count'] += 1
                 time.sleep(1)
             except PciError:
-                self.counters['PCI Error'] += 1
+                self.counters['pci_error']['count'] += 1
             except FrameDecodingError:
-                self.counters['Decoding Error'] += 1
-            except Exception:
-                pass
+                self.counters['decoding_error']['count'] += 1
 
-        exit_code = self.counters['PCI Error'] > 0 or self.counters['Decoding Error'] > 0
+        exit_code = self.counters['pci_error']['count'] > 0 or self.counters['decoding_error']['count'] > 0
 
         # ~ Creating the figure
-        fig = self.create_figure()
+        fig = self.create_figure(self.counters)
         figure_result = FigureTestResult(exit_code, self.context, fig, 'some description')
 
         return figure_result
 
-    def create_figure(self) -> plt.Figure:
+    @classmethod
+    def create_figure(cls, counters: Dict[str, Dict[str, Any]]) -> plt.Figure:
         fig, ax = plt.subplots(nrows=1, ncols=1)
         ax: plt.Axes = ax
 
+        count = len(counters)
         ax.set_title('Bar chart: Errors during repeated execution of "frame" script')
         ax.set_ylabel('')
-        ax.set_yticks([1, 2, 3])
-        ax.set_yticklabels(list(self.counters.keys()))
+        ax.set_yticks(list(range(1, count + 1)))
+        ax.set_ylim(0, count + 1)
+        ax.set_yticklabels([data['name'] for data in counters.values()])
         ax.set_xlabel('Number of occurrences over all repetitions')
 
-        # ax.barh([1, 2, 3], list(self.counters.items()), color=['green', 'red', 'red'])
+        ax.barh(
+            y=list(range(1, count + 1)),
+            width=[data['count'] for data in counters.values()],
+            color=[data['color'] for data in counters.values()])
 
         return fig
 
