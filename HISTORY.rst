@@ -426,6 +426,7 @@ Changes
   (for testing purposes). Furhtermore the method does not return a build report anymore, it has to be seperately
   constructed.
 - Deprecated "execute_script" with new version "run_script"
+- The "test" command now has better console output and actually returns a meaningful error code
 
 Fixes
 

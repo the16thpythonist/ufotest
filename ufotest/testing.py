@@ -20,6 +20,7 @@ from ufotest.util import (markdown_to_html,
                           get_version,
                           AbstractRichOutput,
                           random_string)
+from ufotest.util import csubtitle
 
 
 class TestContext(AbstractContextManager):
@@ -611,12 +612,15 @@ class TestSuite(object):
         self.test_runner = test_runner
         self.tests = tests
         self.suite_name = name
+        self.config = Config()
 
         self.results = {}
 
     def execute_all(self):
         for test_class in self.tests:
             test = test_class(self.test_runner)
+            if self.config.verbose():
+                csubtitle(f'TEST: {test.name}')
             self.results[test.name] = test.execute()
 
         return self.results

@@ -333,8 +333,13 @@ def test(verbose, suite, test_id):
     The results of these tests will generate a test report. This test report will be saved into the archive of all
     test reports as a markdown and html file.
     """
-    if not check_install():
-        return 1
+    CONFIG['context']['verbose'] = verbose
+    ctitle(f'RUNNING TEST{" SUITE" if suite else ""}')
+    cparams({
+        'test identifier': test_id,
+        'is test suite': suite,
+        'verbose': verbose
+    })
 
     try:
         with TestContext() as test_context:
@@ -356,7 +361,7 @@ def test(verbose, suite, test_id):
 
     except Exception as e:
         click.secho('[!] {}'.format(e), fg='red', bold=True)
-        return 1
+        sys.exit(1)
 
     if verbose:
         click.secho(test_report.to_string())
@@ -364,7 +369,7 @@ def test(verbose, suite, test_id):
     click.secho('(+) Test report saved to: {}'.format(test_context.folder_path), fg='green', bold=True)
     click.secho('    View the report at: http://localhost/archive/{}/report.html'.format(test_context.folder_name))
 
-    return 0
+    sys.exit(0)
 
 
 @click.group('ci', short_help='continuous integration related commands')

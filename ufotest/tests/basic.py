@@ -177,10 +177,11 @@ class RepeatedFrameTest(AbstractTest):
 
         ax.set_title('Bar chart: Errors during repeated execution of "frame" script')
         ax.set_ylabel('')
-        ax.set_yticks(self.counters.keys())
+        ax.set_yticks([1, 2, 3])
+        ax.set_yticklabels(list(self.counters.keys()))
         ax.set_xlabel('Number of occurrences over all repetitions')
 
-        ax.barh([1, 2, 3], self.counters.items(), color=['green', 'red', 'red'])
+        ax.barh([1, 2, 3], list(self.counters.items()), color=['green', 'red', 'red'])
 
         return fig
 
