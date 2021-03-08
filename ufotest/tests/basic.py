@@ -53,7 +53,7 @@ class RepeatedResetTest(AbstractTest):
 
         # ~ Creating the plot for visualization
         fig = self.create_figure(self.register_error_counts, self.state_errors)
-        figure_result = FigureTestResult(exit_code, self.context, fig)
+        figure_result = FigureTestResult(exit_code, self.context, fig, 'This is the descr.')
 
         return figure_result
 

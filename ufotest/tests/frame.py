@@ -47,7 +47,7 @@ class AcquireSingleFrame(AbstractTest):
         setup_environment()
 
         # -- REQUESTING FRAME FROM CAMERA
-        save_frame(self.frame_path, verbose=False)
+        save_frame(self.frame_path)
 
         creation_datetime = datetime.datetime.now()
         description = 'Frame taken from the camera @ {}'.format(creation_datetime.strftime('%d.%m.%Y, %H:%M'))
@@ -85,7 +85,7 @@ class SingleFrameStatistics(AbstractTest):
         setup_environment()
 
         # -- ACQUIRE FRAME AS MATRIX
-        save_frame(self.file_path, verbose=False)
+        save_frame(self.file_path)
         frame = import_raw(self.file_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())
 
         statistics_result = self.calc_statistics_result(frame)

@@ -414,6 +414,7 @@ Added
 - unittests in "tests/test_build.py", which are concerned with testing the build process.
 - unittests in "tests/test_config.py", which are concerned with testing the functionality exposed by the config module
 - Added "FigureTestResult" which allows to add a matplotlib figure directly as the result of a test.
+- Added camera test "RepeatedResetTest"
 
 Changes
 
@@ -424,6 +425,7 @@ Changes
 - Renamed the main method of the BuildRunner from "build" to "run". Added the option to skip the clone and flash steps
   (for testing purposes). Furhtermore the method does not return a build report anymore, it has to be seperately
   constructed.
+- Deprecated "execute_script" with new version "run_script"
 
 Fixes
 
