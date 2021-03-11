@@ -417,6 +417,7 @@ Added
 - Added camera test "RepeatedResetTest"
 - Added camera test "RepeatedFrameTest"
 - Added camera test "CalculatePairNoiseTest"
+- Added camera test "RepeatedCalculatePairNoiseTest"
 
 Changes
 
@@ -449,15 +450,16 @@ Fixes
   fixing this would be to prevent a crash for an empty test folder alltogether.
 - Build and test reports are now properly sorted by start date within the web interface
 - FIXED: The test are not executed in the order in which they are specified in the config file
+- FIXED: Not necessarily a bug with this code but with the way the camera works: I feel like there is a problem with how the
+  decoding of the images works. I feel like all the images accumulate within the internal buffer of the camera and they
+  are ALL being read out with each call to ipedecode?
 
 TODO
 ----
 
 Bugs:
 
-- Not necessarily a bug with this code but with the way the camera works: I feel like there is a problem with how the
-  decoding of the images works. I feel like all the images accumulate within the internal buffer of the camera and they
-  are ALL being read out with each call to ipedecode?
+
 
 Features:
 
@@ -471,7 +473,6 @@ Features:
 - helpful error message when forgetting the ".git" for any repository url
 - helpful error message when the wrong branch is specified for the CI repo or generally an error when the clone
   process fails!
-- Sort the list pages by the time.
 - Add information about the test suite to the builds list page.
 - Better output in the test report. Better output for the commands in general
 - **MORE TEST CASES**

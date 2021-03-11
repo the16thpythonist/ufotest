@@ -1,6 +1,7 @@
 import os
 import math
 import datetime
+import statistics
 from typing import Optional
 
 import numpy as np
@@ -88,18 +89,12 @@ class SingleFrameStatistics(AbstractTest):
     def __init__(self, test_runner: TestRunner):
         AbstractTest.__init__(self, test_runner)
 
-        self.file_name = random_string(16)
-        self.file_path = '/tmp/{}.raw'.format(self.file_name)
-
-        self.histogram_name = 'single_frame_statistics.png'
-        self.histogram_path = os.path.join(self.context.folder_path, self.histogram_name)
-
     def run(self):
         setup_environment()
 
         # -- ACQUIRE FRAME AS MATRIX
-        save_frame(self.file_path)
-        frames = import_raw(self.file_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())
+        file_path = get_frame()
+        frames = import_raw(file_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())
         frame = frames[0]
 
         stats = self.create_frame_statistics(frame)
@@ -147,6 +142,17 @@ class CalculatePairNoiseTest(AbstractTest):
 
     def run(self):
 
+        variance = self.get_pair_variance()
+        standard_deviation = math.sqrt(variance)
+
+        dict_result = DictTestResult(0, {
+            'variance (=noise)': round(variance, ndigits=self.NDIGITS),
+            'standard deviation': round(standard_deviation, ndigits=self.NDIGITS)
+        })
+
+        return dict_result
+
+    def get_pair_variance(self):
         frame1_path = get_frame()
         frame1 = import_raw(frame1_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())[0]
         frame1_mean = np.mean(frame1)
@@ -160,15 +166,35 @@ class CalculatePairNoiseTest(AbstractTest):
         squared_sum = 0
         for i in range(row_count):
             for j in range(column_count):
-                squared_sum += ((frame1[i][j] - frame1_mean) - (frame2[i][j] - frame2_mean))**2
+                squared_sum += ((frame1[i][j] - frame1_mean) - (frame2[i][j] - frame2_mean)) ** 2
 
         variance = squared_sum / (2 * row_count * column_count)
-        standard_deviation = math.sqrt(variance)
+        return round(variance, ndigits=self.NDIGITS)
 
-        dict_result = DictTestResult(0, {
-            'variance': round(variance, ndigits=self.NDIGITS),
-            'standard deviation': round(standard_deviation, ndigits=self.NDIGITS)
-        })
+
+class RepeatedCalculatePairNoise(CalculatePairNoiseTest):
+
+    REPETITIONS = 5
+
+    name = 'repeated_calculate_pair_noise'
+    description = (
+        'something else'
+    )
+
+    def __init__(self, test_runner: TestRunner):
+        CalculatePairNoiseTest.__init__(self, test_runner)
+
+    def run(self):
+        variances = []
+        for i in range(self.REPETITIONS):
+            variance = self.get_pair_variance()
+            variances.append(variance)
+
+        stats = {
+            'mean variance': round(statistics.mean(variances), ndigits=self.NDIGITS),
+            'stdev variance': round(statistics.stdev(variances), ndigits=self.NDIGITS)
+        }
+        dict_result = DictTestResult(0, stats)
 
         return dict_result
 
@@ -183,3 +209,5 @@ class CalculateSeriesNoiseTest(AbstractTest):
 
     def run(self):
         pass
+
+
