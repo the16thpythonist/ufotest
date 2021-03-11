@@ -120,14 +120,14 @@ class SingleFrameStatistics(AbstractTest):
         return DictTestResult(0, statistics)
 
     def calc_histogram_result(self, frame: np.ndarray) -> ImageTestResult:
-        image_hist = np.empty(shape=(2048,))
+        image_hist = np.empty(shape=(4096,))
         for row in frame:
             for value in row:
                 image_hist[value] += 1
         plt.hist(image_hist)
         plt.title('Histogram of grayscale values')
         plt.ylabel('grayscale values')
-        plt.imsave(self.histogram_path, dpi=100)
+        plt.imsave(self.histogram_path)
         result = ImageTestResult(
             0,
             self.histogram_path,
@@ -156,11 +156,11 @@ class CalculatePairNoiseTest(AbstractTest):
     def run(self):
 
         frame1_path = get_frame()
-        frame1 = import_raw(frame1_path, 2, self.config.get_sensor_width(), self.config.get_sensor_height())[0]
+        frame1 = import_raw(frame1_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())[0]
         frame1_mean = np.mean(frame1)
 
         frame2_path = get_frame()
-        frame2 = import_raw(frame2_path, 2, self.config.get_sensor_width(), self.config.get_sensor_height())[0]
+        frame2 = import_raw(frame2_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())[0]
         frame2_mean = np.mean(frame2)
 
         row_count = len(frame1)
