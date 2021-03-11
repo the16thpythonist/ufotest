@@ -117,5 +117,6 @@ div.dict-test-result>div.row {
 }
 
 div.dict-test-result>div.row>div {
-    margin-right: auto;
+    width: 50%;
+    flex-grow: 1;
 }

@@ -74,8 +74,9 @@ class SingleFrameStatistics(AbstractTest):
     displayed in the test report.
     """
 
-    name = 'single_frame_statistics'
+    NDIGITS = 3
 
+    name = 'single_frame_statistics'
     description = (
         'Requests a single frame from the camera. This frame is then used to compute some simple statistical '
         'properties. These are the mean grayscale value, the min value, the max value, the variance and the '
@@ -101,23 +102,39 @@ class SingleFrameStatistics(AbstractTest):
         frames = import_raw(self.file_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())
         frame = frames[0]
 
-        statistics_result = self.calc_statistics_result(frame)
-        histogram_result = self.calc_histogram_result(frame)
+        stats = self.create_frame_statistics(frame)
+        dict_result = DictTestResult(0, stats)
+        fig = self.create_histogram_figure(frame)
+        figure_result = FigureTestResult(0, self.context, fig, description='')
 
         return CombinedTestResult(
-            statistics_result,
-            histogram_result
+            dict_result,
+            figure_result
         )
 
     def calc_statistics_result(self, frame: np.ndarray) -> DictTestResult:
-        statistics = {
-            'average':                      round(float(np.mean(frame)), 4),
-            'variance':                     round(float(np.var(frame)), 4),
-            'standard deviation':           round(float(np.std(frame)), 4),
+        statistics =
+        return DictTestResult(0, statistics)
+
+    def create_frame_statistics(self, frame: np.ndarry) -> dict:
+        return {
+            'average':                      round(float(np.mean(frame)), ndigits=self.NDIGITS),
+            'variance':                     round(float(np.var(frame)), ndigits=self.NDIGITS),
+            'standard deviation':           round(float(np.std(frame)), ndigits=self.NDIGITS),
             'min value':                    np.min(frame),
             'max value':                    np.max(frame)
         }
-        return DictTestResult(0, statistics)
+
+    @classmethod
+    def create_histogram_figure(cls, frame: np.ndarray) -> plt.Figure:
+        fig, ax = plt.subplots(nrows=1, ncols=1)
+        frame_data = frame.flatten()
+        ax.hist(frame_data, bins=list(range(0, 4096)))
+        ax.set_title('Histogram of frame values')
+        ax.set_xlabel('Pixel value')
+        ax.set_ylabel('Number of occurrences')
+
+        return fig
 
     def calc_histogram_result(self, frame: np.ndarray) -> ImageTestResult:
         image_hist = np.empty(shape=(4096,))
@@ -141,6 +158,8 @@ class SingleFrameStatistics(AbstractTest):
 
 
 class CalculatePairNoiseTest(AbstractTest):
+
+    NDIGITS = 3
 
     name = 'calculate_pair_noise'
     description = (
@@ -174,8 +193,8 @@ class CalculatePairNoiseTest(AbstractTest):
         standard_deviation = math.sqrt(variance)
 
         dict_result = DictTestResult(0, {
-            'variance': variance,
-            'standard deviation': standard_deviation
+            'variance': round(variance, ndigits=self.NDIGITS),
+            'standard deviation': round(standard_deviation, ndigits=self.NDIGITS)
         })
 
         return dict_result
