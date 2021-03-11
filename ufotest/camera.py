@@ -117,6 +117,11 @@ def get_frame(tmp_path: str = '/tmp') -> str:
 
     # ~ RECEIVING FRAME DATA
     data_path = os.path.join(tmp_path, 'frame.out')
+    # We explicitly remove the temporary file here for the following reason: It turns out that the pci read command
+    # which is used in "receive_frame" does not overwrite but append to the end! But we really want to replace temporary
+    # file so that it always just contains the data for a single frame.
+    if os.path.exists(data_path):
+        os.remove(data_path)
     receive_frame(data_path)  # raises: PciError
 
     # ~ DECODING FRAME DATA

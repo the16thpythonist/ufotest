@@ -54,7 +54,6 @@ class AcquireSingleFrame(AbstractTest):
         setup_environment()
 
         # -- REQUESTING FRAME FROM CAMERA
-        #save_frame(self.frame_path)
         frame_path = get_frame()
         frames = import_raw(frame_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())
 
@@ -99,7 +98,8 @@ class SingleFrameStatistics(AbstractTest):
 
         # -- ACQUIRE FRAME AS MATRIX
         save_frame(self.file_path)
-        frame = import_raw(self.file_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())
+        frames = import_raw(self.file_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())
+        frame = frames[0]
 
         statistics_result = self.calc_statistics_result(frame)
         histogram_result = self.calc_histogram_result(frame)
@@ -156,11 +156,11 @@ class CalculatePairNoiseTest(AbstractTest):
     def run(self):
 
         frame1_path = get_frame()
-        frame1 = import_raw(frame1_path, 2, self.config.get_sensor_width(), self.config.get_sensor_height())
+        frame1 = import_raw(frame1_path, 2, self.config.get_sensor_width(), self.config.get_sensor_height())[0]
         frame1_mean = np.mean(frame1)
 
         frame2_path = get_frame()
-        frame2 = import_raw(frame2_path, 2, self.config.get_sensor_width(), self.config.get_sensor_height())
+        frame2 = import_raw(frame2_path, 2, self.config.get_sensor_width(), self.config.get_sensor_height())[0]
         frame2_mean = np.mean(frame2)
 
         row_count = len(frame1)
