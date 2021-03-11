@@ -168,3 +168,15 @@ class CalculatePairNoiseTest(AbstractTest):
         })
 
         return dict_result
+
+
+class CalculateSeriesNoiseTest(AbstractTest):
+
+    name = 'calculate_series_noise'
+    description = 'Calculates the camera noise from a series of images'
+
+    def __init__(self, test_runner: TestRunner):
+        AbstractTest.__init__(self, test_runner)
+
+    def run(self):
+        pass

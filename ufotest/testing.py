@@ -208,7 +208,8 @@ class TestRunner(object):
         assert suite_name in suites.keys(), 'Test suite {} unknown!'.format(suite_name)
 
         test_names = suites[suite_name]
-        suite_tests = [test for test_name, test in self.tests.items() if test_name in test_names]
+        # suite_tests = [test for test_name, test in self.tests.items() if test_name in test_names]
+        suite_tests = [self.tests[test_name] for test_name in test_names]
         test_suite = TestSuite(self, suite_tests, suite_name)
 
         return test_suite

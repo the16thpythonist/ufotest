@@ -454,7 +454,7 @@ TODO
 
 Bugs:
 
-
+- The test are not executed in the order in which they are specified in the config file
 
 Features:
 
