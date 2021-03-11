@@ -112,10 +112,6 @@ class SingleFrameStatistics(AbstractTest):
             figure_result
         )
 
-    def calc_statistics_result(self, frame: np.ndarray) -> DictTestResult:
-        statistics =
-        return DictTestResult(0, statistics)
-
     def create_frame_statistics(self, frame: np.ndarry) -> dict:
         return {
             'average':                      round(float(np.mean(frame)), ndigits=self.NDIGITS),
@@ -135,26 +131,6 @@ class SingleFrameStatistics(AbstractTest):
         ax.set_ylabel('Number of occurrences')
 
         return fig
-
-    def calc_histogram_result(self, frame: np.ndarray) -> ImageTestResult:
-        image_hist = np.empty(shape=(4096,))
-        for row in frame:
-            for value in row:
-                image_hist[value] += 1
-        plt.hist(image_hist)
-        plt.title('Histogram of grayscale values')
-        plt.ylabel('grayscale values')
-        plt.imsave(self.histogram_path)
-        result = ImageTestResult(
-            0,
-            self.histogram_path,
-            'A histogram of the frame.',
-            url_base=self.context.folder_url
-        )
-
-        plt.clf()
-
-        return result
 
 
 class CalculatePairNoiseTest(AbstractTest):
