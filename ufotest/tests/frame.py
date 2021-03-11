@@ -112,7 +112,7 @@ class SingleFrameStatistics(AbstractTest):
             figure_result
         )
 
-    def create_frame_statistics(self, frame: np.ndarry) -> dict:
+    def create_frame_statistics(self, frame: np.ndarray) -> dict:
         return {
             'average':                      round(float(np.mean(frame)), ndigits=self.NDIGITS),
             'variance':                     round(float(np.var(frame)), ndigits=self.NDIGITS),
@@ -144,9 +144,6 @@ class CalculatePairNoiseTest(AbstractTest):
 
     def __init__(self, test_runner):
         AbstractTest.__init__(self, test_runner)
-        self.frame1: Optional[np.ndarry] = None
-        self.frame2: Optional[np.ndarry] = None
-        self.frame_diff: Optional[np.ndarry] = None
 
     def run(self):
 
