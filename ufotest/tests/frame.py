@@ -56,7 +56,7 @@ class AcquireSingleFrame(AbstractTest):
         # -- REQUESTING FRAME FROM CAMERA
         #save_frame(self.frame_path)
         frame_path = get_frame()
-        frames = import_raw(frame_path, 2, self.config.get_sensor_width(), self.config.get_sensor_height())
+        frames = import_raw(frame_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())
 
         creation_datetime = datetime.datetime.now()
         description = 'Frame taken from the camera @ {}'.format(creation_datetime.strftime('%d.%m.%Y, %H:%M'))

@@ -28,7 +28,7 @@ def pci_read(addr: str, size):
 
 
 def import_raw(path: str, n: int, sensor_width: int, sensor_height: int):
-    image = np.fromfile(path, dtype=np.uint16, count=2 * sensor_width * sensor_height * n)
+    image = np.fromfile(path, dtype=np.uint16, count=sensor_width * sensor_height * n)
     image = image.reshape((n, sensor_height, sensor_width))
     return image
 

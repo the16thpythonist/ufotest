@@ -455,7 +455,9 @@ TODO
 
 Bugs:
 
-
+- Not necessarily a bug with this code but with the way the camera works: I feel like there is a problem with how the
+  decoding of the images works. I feel like all the images accumulate within the internal buffer of the camera and they
+  are ALL being read out with each call to ipedecode?
 
 Features:
 
