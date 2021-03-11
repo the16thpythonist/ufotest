@@ -1,11 +1,13 @@
 import os
+import math
 import datetime
+from typing import Optional
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 from ufotest.util import setup_environment, random_string
-from ufotest.camera import save_frame, import_raw
+from ufotest.camera import save_frame, import_raw, get_frame
 
 from ufotest.testing import AbstractTest, TestRunner, ImageTestResult, CombinedTestResult, DictTestResult
 from ufotest.testing import MessageTestResult
@@ -125,3 +127,44 @@ class SingleFrameStatistics(AbstractTest):
         plt.clf()
 
         return result
+
+
+class CalculatePairNoiseTest(AbstractTest):
+
+    name = 'calculate_pair_noise'
+    description = (
+        'Calculates the noise for a pair of frames.'
+    )
+
+    def __init__(self, test_runner):
+        AbstractTest.__init__(self, test_runner)
+        self.frame1: Optional[np.ndarry] = None
+        self.frame2: Optional[np.ndarry] = None
+        self.frame_diff: Optional[np.ndarry] = None
+
+    def run(self):
+
+        frame1_path = get_frame()
+        frame1 = import_raw(frame1_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())
+        frame1_mean = np.mean(frame1)
+
+        frame2_path = get_frame()
+        frame2 = import_raw(frame2_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())
+        frame2_mean = np.mean(frame2)
+
+        row_count = len(frame1)
+        column_count = len(frame1[0])
+        squared_sum = 0
+        for i in range(row_count):
+            for j in range(column_count):
+                squared_sum += ((frame1[i][j] - frame1_mean) - (frame2[i][j] - frame2_mean))**2
+
+        variance = squared_sum / (2 * row_count * column_count)
+        standard_deviation = math.sqrt(variance)
+
+        dict_result = DictTestResult(0, {
+            'variance': variance,
+            'standard deviation': standard_deviation
+        })
+
+        return dict_result

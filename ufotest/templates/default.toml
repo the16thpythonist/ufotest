@@ -193,7 +193,8 @@ title = "UfoTest Config"
             'repeated_frames',
             # Basic frame analysis
             'single_frame',
-            'single_frame_statistics'
+            'single_frame_statistics',
+            'calculate_pair_noise'
         ]
 
         # This test suite runs all the tests

@@ -436,9 +436,10 @@ class FigureTestResult(ImageTestResult):
 
 class DictTestResult(AbstractTestResult):
 
-    def __init__(self, exit_code: int, data: dict):
+    def __init__(self, exit_code: int, data: dict, message: str = ''):
         AbstractTestResult.__init__(self, exit_code)
         self.data = data
+        self.message = message
 
     # == AbstractRichOutput
 
