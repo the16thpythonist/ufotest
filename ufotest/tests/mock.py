@@ -74,3 +74,5 @@ class MockTest(AbstractTest):
             dict_test_result,
             figure_test_result,
         )
+
+

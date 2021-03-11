@@ -448,13 +448,14 @@ Fixes
   presumably because the test folder already exists but no reports have been saved to it. The best course for
   fixing this would be to prevent a crash for an empty test folder alltogether.
 - Build and test reports are now properly sorted by start date within the web interface
+- FIXED: The test are not executed in the order in which they are specified in the config file
 
 TODO
 ----
 
 Bugs:
 
-- The test are not executed in the order in which they are specified in the config file
+
 
 Features:
 

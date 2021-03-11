@@ -15,90 +15,92 @@
         </p>
     </div>
 
-    <!-- EXPLANATION OF WHAT THIS DOCUMENT EVEN IS -->
-    <h2>Explanation</h2>
+    <div class="report-container">
+        <!-- EXPLANATION OF WHAT THIS DOCUMENT EVEN IS -->
+        <h2>Explanation</h2>
 
-    <p class="explanation">
-        This is an automatically generated document, which contains information about an ufotest test run. One such
-        test run describes the execution of a one or more test cases. In the case of multiple test cases, this is
-        referred to as a "test suite". Each individual test case is essentially a programmed routine, which aims to
-        test one or more properties of the UFO test camera which is currently connected to the target machine.
-    </p>
-    <p class="documentation">
-        <a href="{{ report.repository_url }}">UfoTest</a> is an application which aims to implement unit testing
-        and CI functionality for the UFO camera hardware which was developed at the IPE. The Documentation for the
-        project can be found here:
-        <a href="{{ report.documentation_url }}">UfoTest Documentation</a>
-    </p>
+        <p class="explanation">
+            This is an automatically generated document, which contains information about an ufotest test run. One such
+            test run describes the execution of a one or more test cases. In the case of multiple test cases, this is
+            referred to as a "test suite". Each individual test case is essentially a programmed routine, which aims to
+            test one or more properties of the UFO test camera which is currently connected to the target machine.
+        </p>
+        <p class="documentation">
+            <a href="{{ report.repository_url }}">UfoTest</a> is an application which aims to implement unit testing
+            and CI functionality for the UFO camera hardware which was developed at the IPE. The Documentation for the
+            project can be found here:
+            <a href="{{ report.documentation_url }}">UfoTest Documentation</a>
+        </p>
 
-    <!-- THE SHORT SUMMARY OF THE TEST RUN -->
-    <h2>Test Summary</h2>
+        <!-- THE SHORT SUMMARY OF THE TEST RUN -->
+        <h2>Test Summary</h2>
 
-    <p>
-        This section provides a summary of the most important details of this test run. The following sections then
-        explain these values in more detail.
-    </p>
+        <p>
+            This section provides a summary of the most important details of this test run. The following sections then
+            explain these values in more detail.
+        </p>
 
-    <div class="summary">
-        <div class="start-time">
-            <div>Start time</div><div>{{ report.start }}</div>
+        <div class="summary">
+            <div class="start-time">
+                <div>Start time</div><div>{{ report.start }}</div>
+            </div>
+            <div class="end-time">
+                <div>End time</div><div>{{ report.end }}</div>
+            </div>
+            <div class="duration">
+                <div>Duration</div><div>{{ report.duration }} minutes</div>
+            </div>
+            <div class="platform">
+                <div>Host platform</div><div>{{ report.platform }}</div>
+            </div>
+            <div class="version">
+                <div>UfoTest version</div><div>{{ report.version }}</div>
+            </div>
+            <div class="results">
+                <div>Test results</div><div>{{ report.successful_count}} / {{ report.test_count }} ({{ report.success_ratio * 100 }}% success)</div>
+            </div>
         </div>
-        <div class="end-time">
-            <div>End time</div><div>{{ report.end }}</div>
-        </div>
-        <div class="duration">
-            <div>Duration</div><div>{{ report.duration }} minutes</div>
-        </div>
-        <div class="platform">
-            <div>Host platform</div><div>{{ report.platform }}</div>
-        </div>
-        <div class="version">
-            <div>UfoTest version</div><div>{{ report.version }}</div>
-        </div>
-        <div class="results">
-            <div>Test results</div><div>{{ report.successful_count}} / {{ report.test_count }} ({{ report.success_ratio * 100 }}% success)</div>
-        </div>
+
+        <!-- DESCRIBING THE TEST CONTEXT -->
+        <h2>Test Context</h2>
+
+        <p class="context context-time">
+            The testing process was started at <strong>{{ report.start }}</strong> and ended
+            <strong>{{ report.end }}</strong>, which makes for a total duration of
+            <strong>{{ report.duration }} minutes</strong>.
+        </p>
+
+        <p class="context context-meta">
+            This test run was executed on a host machine with the following platform specification:
+            <strong>{{ report.platform }}</strong>. The UfoTest software version was
+            <strong>{{ report.version}}</strong>. The software is currently configured to interface a sensor with the
+            dimensions of <strong>{{ report.sensor }} pixels</strong>.
+        </p>
+
+        <p class="context context-folder">
+            The HTML and MARKDOWN versions of the report as well as the complete LOG file of the test process were
+            saved to the folder <strong>{{ report.folder_name }}</strong> within the main "archive" folder.
+        </p>
+
+        <!-- SHOWING THE TEST RESULTS -->
+        <h2>Test Results</h2>
+
+        <p>
+            This section explains the test results.
+        </p>
+
+        {% for test_name, result in report.results.items() %}
+        {%- if result.passing -%}
+            <h3 class="test passing">{{ test_name }}</h3>
+        {%- else %}
+            <h3 class="test error">{{ test_name }}</h3>
+        {% endif %}
+        {%- if report.get_test_description(test_name) != "" %}
+            <div class="test-description">
+                {{ report.get_test_description(test_name) }}
+            </div>
+        {% endif %}
+            {{ result.to_html() }}
+        {% endfor %}
     </div>
-
-    <!-- DESCRIBING THE TEST CONTEXT -->
-    <h2>Test Context</h2>
-
-    <p class="context context-time">
-        The testing process was started at <strong>{{ report.start }}</strong> and ended
-        <strong>{{ report.end }}</strong>, which makes for a total duration of
-        <strong>{{ report.duration }} minutes</strong>.
-    </p>
-
-    <p class="context context-meta">
-        This test run was executed on a host machine with the following platform specification:
-        <strong>{{ report.platform }}</strong>. The UfoTest software version was
-        <strong>{{ report.version}}</strong>. The software is currently configured to interface a sensor with the
-        dimensions of <strong>{{ report.sensor }} pixels</strong>.
-    </p>
-
-    <p class="context context-folder">
-        The HTML and MARKDOWN versions of the report as well as the complete LOG file of the test process were
-        saved to the folder <strong>{{ report.folder_name }}</strong> within the main "archive" folder.
-    </p>
-
-    <!-- SHOWING THE TEST RESULTS -->
-    <h2>Test Results</h2>
-
-    <p>
-        This section explains the test results.
-    </p>
-
-    {% for test_name, result in report.results.items() %}
-    {%- if result.passing -%}
-        <h3 class="test passing">{{ test_name }}</h3>
-    {%- else %}
-        <h3 class="test error">{{ test_name }}</h3>
-    {% endif %}
-    {%- if report.get_test_description(test_name) != "" %}
-        <div class="test-description">
-            {{ report.get_test_description(test_name) }}
-        </div>
-    {% endif %}
-        {{ result.to_html() }}
-    {% endfor %}
 {% endblock %}

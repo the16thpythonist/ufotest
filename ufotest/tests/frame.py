@@ -9,7 +9,12 @@ import matplotlib.pyplot as plt
 from ufotest.util import setup_environment, random_string
 from ufotest.camera import save_frame, import_raw, get_frame
 
-from ufotest.testing import AbstractTest, TestRunner, ImageTestResult, CombinedTestResult, DictTestResult
+from ufotest.testing import (AbstractTest,
+                             TestRunner,
+                             ImageTestResult,
+                             CombinedTestResult,
+                             DictTestResult,
+                             FigureTestResult)
 from ufotest.testing import MessageTestResult
 
 # This test case is essentially supposed to capture a single frame and potentially even display this frame inside of
@@ -49,12 +54,18 @@ class AcquireSingleFrame(AbstractTest):
         setup_environment()
 
         # -- REQUESTING FRAME FROM CAMERA
-        save_frame(self.frame_path)
+        #save_frame(self.frame_path)
+        frame_path = get_frame()
+        frames = import_raw(frame_path, 2, self.config.get_sensor_width(), self.config.get_sensor_height())
 
         creation_datetime = datetime.datetime.now()
         description = 'Frame taken from the camera @ {}'.format(creation_datetime.strftime('%d.%m.%Y, %H:%M'))
 
-        return ImageTestResult(0, self.frame_path, description, url_base=self.context.folder_url)
+        fig, ax = plt.subplots(nrows=1, ncols=1)
+        ax.imshow(frames[0])
+
+        figure_result = FigureTestResult(0, self.context, fig, description)
+        return figure_result
 
 
 class SingleFrameStatistics(AbstractTest):
@@ -145,11 +156,11 @@ class CalculatePairNoiseTest(AbstractTest):
     def run(self):
 
         frame1_path = get_frame()
-        frame1 = import_raw(frame1_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())
+        frame1 = import_raw(frame1_path, 2, self.config.get_sensor_width(), self.config.get_sensor_height())
         frame1_mean = np.mean(frame1)
 
         frame2_path = get_frame()
-        frame2 = import_raw(frame2_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())
+        frame2 = import_raw(frame2_path, 2, self.config.get_sensor_width(), self.config.get_sensor_height())
         frame2_mean = np.mean(frame2)
 
         row_count = len(frame1)

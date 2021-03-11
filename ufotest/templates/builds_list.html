@@ -8,21 +8,23 @@
 {% endblock %}
 
 {% block content %}
-    <h2>Archived Build Reports</h2>
-    {% for report in reports %}
-    <a class='test-report' href="{{ config.url('builds', report['folder_name'], 'report.html') }}">
-        <div class="item test-report">
-            <h3>{{ report['repository_name'] }}</h3>
-            <div class="time-container">
-                <div class="start-time">Etart: {{ report['start'] }}</div>
-                <div class="end-time">End: {{ report['end'] }}</div>
+    <div class="list-container">
+        <h2>Archived Build Reports</h2>
+        {% for report in reports %}
+        <a class='test-report' href="{{ config.url('builds', report['folder_name'], 'report.html') }}">
+            <div class="item test-report">
+                <h3>{{ report['repository_name'] }}</h3>
+                <div class="time-container">
+                    <div class="start-time">Etart: {{ report['start'] }}</div>
+                    <div class="end-time">End: {{ report['end'] }}</div>
+                </div>
+                <div>Branch: {{ report['branch'] }}</div>
+                <div>Commit: {{ report['commit'] }}</div>
+                <div>Version: {{ report['version'] }}</div>
+                <div>Test Result: {{ report['test_success_count'] }} / {{ report['test_count'] }} ({{ report['test_percentage'] * 100 }}%)</div>
             </div>
-            <div>Branch: {{ report['branch'] }}</div>
-            <div>Commit: {{ report['commit'] }}</div>
-            <div>Version: {{ report['version'] }}</div>
-            <div>Test Result: {{ report['test_success_count'] }} / {{ report['test_count'] }} ({{ report['test_percentage'] * 100 }}%)</div>
-        </div>
-    </a>
-    {% endfor %}
+        </a>
+        {% endfor %}
+    </div>
 {% endblock %}
 

@@ -37,6 +37,11 @@
     margin-bottom: 25px;
 }
 
+.report-container {
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
 h2 {
     margin-top: 80px;
     border-style: solid;

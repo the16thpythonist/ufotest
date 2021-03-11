@@ -242,7 +242,7 @@ def builds_list():
     )
 
     template = get_template('builds_list.html')
-    return template.render({'reports': sorted_reports}, 200)
+    return template.render({'reports': sorted_reports}), 200
 
 
 @server.route('/builds/<path:path>')

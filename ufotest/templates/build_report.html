@@ -14,89 +14,91 @@
             {{ report.repository_name }} @ {{ report.start }}
         </p>
     </div>
-    <!-- EXPLANATION OF WHAT A BUILD EVEN IS -->
 
-    <h2>Explanation</h2>
+    <div class="report-container">
+        <!-- EXPLANATION OF WHAT A BUILD EVEN IS -->
+        <h2>Explanation</h2>
 
-    <p class="explanation">
-        This is an automatically generated document, which contains the results of an ufotest build. A build refers
-        to the process of cloning the camera source code directory, flashing the new version of the configuration
-        from the repository to the hardware and running an automated test suite on the resulting hardware
-        configuration.
-    </p>
-    <p class="documentation">
-        <a href="https://github.com/the16thpythonist/ufotest">UfoTest</a> is an application which aims to implement
-        unit testing and CI functionality for the UFO camera hardware which was developed at the IPE. The
-        Documentation for the project can be found here:
-        <a href="https://ufotest.readthedocs.io/en/latest/index.html">UfoTest Documentation</a>
-    </p>
+        <p class="explanation">
+            This is an automatically generated document, which contains the results of an ufotest build. A build refers
+            to the process of cloning the camera source code directory, flashing the new version of the configuration
+            from the repository to the hardware and running an automated test suite on the resulting hardware
+            configuration.
+        </p>
+        <p class="documentation">
+            <a href="https://github.com/the16thpythonist/ufotest">UfoTest</a> is an application which aims to implement
+            unit testing and CI functionality for the UFO camera hardware which was developed at the IPE. The
+            Documentation for the project can be found here:
+            <a href="https://ufotest.readthedocs.io/en/latest/index.html">UfoTest Documentation</a>
+        </p>
 
-    <!-- DESCRIBING THE BUILD CONTEXT -->
-    <h2>Build Context</h2>
+        <!-- DESCRIBING THE BUILD CONTEXT -->
+        <h2>Build Context</h2>
 
-    <p class="context-time">
-        The build was started at <strong>{{ report.start }}</strong> and ended <strong>{{ report.end }}</strong>
-        with a total duration of <strong>{{ report.duration }} minutes</strong>.
-    </p>
+        <p class="context-time">
+            The build was started at <strong>{{ report.start }}</strong> and ended <strong>{{ report.end }}</strong>
+            with a total duration of <strong>{{ report.duration }} minutes</strong>.
+        </p>
 
-    <p class="context-repo">
-        The build is based on a clone of the source repository called <strong>{{ report.repository }}</strong>.
-        Specifically, the commit <strong>{{ report.commit }}</strong> from the branch
-        <strong>{{ report.branch }}</strong>.
-    </p>
+        <p class="context-repo">
+            The build is based on a clone of the source repository called <strong>{{ report.repository }}</strong>.
+            Specifically, the commit <strong>{{ report.commit }}</strong> from the branch
+            <strong>{{ report.branch }}</strong>.
+        </p>
 
-    <p class="context-folder">
-        Information about this build was saved in the 'builds' folder of the ufotest application on the machine,
-        which is currently hosting the ufotest application and thus the CI server. This specific report is saved
-        in the sub folder called <strong>{{ report.folder }}</strong>.<br>
-        This folder also contains the <strong>.BIT file</strong> which was flashed to the hardware to
-        produce the following results.
-    </p>
+        <p class="context-folder">
+            Information about this build was saved in the 'builds' folder of the ufotest application on the machine,
+            which is currently hosting the ufotest application and thus the CI server. This specific report is saved
+            in the sub folder called <strong>{{ report.folder }}</strong>.<br>
+            This folder also contains the <strong>.BIT file</strong> which was flashed to the hardware to
+            produce the following results.
+        </p>
 
-    <p>
-        The bit file responsible for these test results can be downloaded here:
-        <a href="./{{ report.bitfile_name }}">BIT File</a>
-    </p>
+        <p>
+            The bit file responsible for these test results can be downloaded here:
+            <a href="./{{ report.bitfile_name }}">BIT File</a>
+        </p>
 
-    <!-- SHOWING THE TEST RESULTS -->
-    <h2>Test Results</h2>
+        <!-- SHOWING THE TEST RESULTS -->
+        <h2>Test Results</h2>
 
-    <p class="test-results">
-        The test suite which was executed on the camera hardware, after the new version of the software was flashed,
-        is called <strong>{{ report.test_suite }}</strong>. This suite contains a total of
-        <strong>{{ report.test_count }}</strong> separate test cases. The specific names of these test cases can
-        be seen in the <em>separate test report</em>.<br>
-        This test report can be found in the <strong>{{ report.test_report_folder }}</strong> subfolder of the
-        'archive' folder within the ufotest installation.
-    </p>
+        <p class="test-results">
+            The test suite which was executed on the camera hardware, after the new version of the software was flashed,
+            is called <strong>{{ report.test_suite }}</strong>. This suite contains a total of
+            <strong>{{ report.test_count }}</strong> separate test cases. The specific names of these test cases can
+            be seen in the <em>separate test report</em>.<br>
+            This test report can be found in the <strong>{{ report.test_report_folder }}</strong> subfolder of the
+            'archive' folder within the ufotest installation.
+        </p>
 
-    <p class="test-link">
-        The online version of the test report can be found here:
-        <a href="{{ config.url('archive', report.test_folder_name, 'report.html') }}">Test Report</a>
-    </p>
+        <p class="test-link">
+            The online version of the test report can be found here:
+            <a href="{{ config.url('archive', report.test_folder_name, 'report.html') }}">Test Report</a>
+        </p>
 
-    <!-- PRESENTING THE SUMMARY -->
-    <h2>Build Summary</h2>
+        <!-- PRESENTING THE SUMMARY -->
+        <h2>Build Summary</h2>
 
-    <p>
-        The following Table shows a summary of the most important build details:
-    </p>
+        <p>
+            The following Table shows a summary of the most important build details:
+        </p>
 
-    <div class="summary">
-        <div class="start-time">
-            <div>Start time</div><div>{{ report.start }}</div>
-        </div>
-        <div class="end-time">
-            <div>End time</div><div>{{ report.end }}</div>
-        </div>
-        <div class="duration">
-            <div>Duration</div><div>{{ report.duration }} minutes</div>
-        </div>
-        <div class="test-suite">
-            <div>Test suite</div><div>{{ report.test_suite }}</div>
-        </div>
-        <div class="test-percentage">
-            <div>Test success</div><div>{{ report.test_percentage * 100 }}% (out of {{ report.test_count }})</div>
+        <div class="summary">
+            <div class="start-time">
+                <div>Start time</div><div>{{ report.start }}</div>
+            </div>
+            <div class="end-time">
+                <div>End time</div><div>{{ report.end }}</div>
+            </div>
+            <div class="duration">
+                <div>Duration</div><div>{{ report.duration }} minutes</div>
+            </div>
+            <div class="test-suite">
+                <div>Test suite</div><div>{{ report.test_suite }}</div>
+            </div>
+            <div class="test-percentage">
+                <div>Test success</div><div>{{ report.test_percentage * 100 }}% (out of {{ report.test_count }})</div>
+            </div>
         </div>
     </div>
 {% endblock %}

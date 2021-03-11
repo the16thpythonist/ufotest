@@ -8,21 +8,23 @@
 {% endblock %}
 
 {% block content %}
-    <h2>Archived Test Reports</h2>
-    {% for report in reports %}
-    <a class='test-report' href="{{ config.url('archive', report['folder_name'], 'report.html') }}">
-        <div class="item test-report">
-            <h3>{{ report['name'] }}</h3>
-            <div class="time-container">
-                <div class="start-time">Etart: {{ report['start'] }}</div>
-                <div class="end-time">End: {{ report['end'] }}</div>
+    <div class="list-container">
+        <h2>Archived Test Reports</h2>
+        {% for report in reports %}
+        <a class='test-report' href="{{ config.url('archive', report['folder_name'], 'report.html') }}">
+            <div class="item test-report">
+                <h3>{{ report['name'] }}</h3>
+                <div class="time-container">
+                    <div class="start-time">Etart: {{ report['start'] }}</div>
+                    <div class="end-time">End: {{ report['end'] }}</div>
+                </div>
+                <div>Version: {{ report['version'] }}</div>
+                <div>Result: {{ report['successful_count'] }} / {{ report['test_count'] }} ({{ report['success_ratio'] * 100 }}%)</div>
+                <div class="success-bar-container">
+                    <div class="success-bar" style="width: {{ report['success_ratio'] * 100 }}%"></div>
+                </div>
             </div>
-            <div>Version: {{ report['version'] }}</div>
-            <div>Result: {{ report['successful_count'] }} / {{ report['test_count'] }} ({{ report['success_ratio'] * 100 }}%)</div>
-            <div class="success-bar-container">
-                <div class="success-bar" style="width: {{ report['success_ratio'] * 100 }}%"></div>
-            </div>
-        </div>
-    </a>
-    {% endfor %}
+        </a>
+        {% endfor %}
+    </div>
 {% endblock %}
