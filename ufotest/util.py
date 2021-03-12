@@ -292,6 +292,15 @@ def init_install(verbose=False) -> str:
     return folder_path
 
 
+def update_install(folder_path: str) -> None:
+    # ~ replacing the static folder
+    static_path = os.path.join(folder_path, 'static')
+    shutil.rmtree(static_path)
+    shutil.copytree(STATIC_PATH, static_path)
+    if CONFIG.verbose():
+        cprint('Updated ufotest static folder to new version')
+
+
 def check_install():
     folder_path = get_path()
     config_path = get_config_path()

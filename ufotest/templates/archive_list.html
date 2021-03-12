@@ -15,11 +15,11 @@
             <div class="item test-report">
                 <h3>{{ report['name'] }}</h3>
                 <div class="time-container">
-                    <div class="start-time">Etart: {{ report['start'] }}</div>
+                    <div class="start-time">Start: {{ report['start'] }}</div>
                     <div class="end-time">End: {{ report['end'] }}</div>
                 </div>
                 <div>Version: {{ report['version'] }}</div>
-                <div>Result: {{ report['successful_count'] }} / {{ report['test_count'] }} ({{ report['success_ratio'] * 100 }}%)</div>
+                <div>Successes: {{ report['successful_count'] }} / {{ report['test_count'] }} ({{ report['success_ratio'] * 100 }}%)</div>
                 <div class="success-bar-container">
                     <div class="success-bar" style="width: {{ report['success_ratio'] * 100 }}%"></div>
                 </div>

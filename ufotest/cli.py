@@ -13,7 +13,7 @@ import shutil
 from ufotest.config import PATH, get_config_path, Config
 from ufotest.exceptions import IncompleteBuildError, BuildError, PciError, FrameDecodingError
 from ufotest.scripts import SCRIPTS, SCRIPTS_PATH
-from ufotest.util import (execute_command,
+from ufotest.util import (update_install,
                           run_command,
                           setup_environment,
                           init_install,
@@ -112,7 +112,8 @@ def install(path, verbose, no_dependencies, no_libuca, no_vivado):
 @click.command('init', short_help='Initializes the installation folder and config file for the app')
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 @click.option('--force', '-f', is_flag=True, help='Deletes the current installation to reinstall')
-def init(verbose, force):
+@click.option('--update', '-u', is_flag=True, help='Only update the static assets, leave data and configuration intact')
+def init(verbose, force, update):
     """Initializes the installation folder for this application. This folder will be located at *$HOME/.ufotest*.
     This init includes the creation of the necessary folder structure for the archive and the tests, as well as the
     creation of the config file from a default template.
@@ -123,6 +124,15 @@ def init(verbose, force):
     ctitle('INITIALIZING UFOTEST INSTALLATION')
     cparams({'installation path': installation_path})
 
+    if update:
+        if check_path(installation_path, is_dir=True):
+            update_install(installation_path)
+            cresult('Updated ufotest installation')
+            sys.exit(0)
+        else:
+            cerror('Cannot perform update without already existing installation!')
+            sys.exit(1)
+
     if check_path(installation_path, is_dir=True):
         if force:
             shutil.rmtree(get_path())
@@ -132,7 +142,7 @@ def init(verbose, force):
             cerror('Please use the --force flag if you wish to forcefully replace the existing installation')
             sys.exit(1)
     else:
-        click.secho('    Installation folder does not yet exist')
+        cprint('    Installation folder does not yet exist')
 
     init_install(verbose=verbose)
     cresult('UfoTest successfully initialized, use the --help option for further commands')

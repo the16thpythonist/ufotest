@@ -430,6 +430,8 @@ Changes
   constructed.
 - Deprecated "execute_script" with new version "run_script"
 - The "test" command now has better console output and actually returns a meaningful error code
+- The "init" command now has a flag "update" which only replaced the static assets and leaves the rest of the
+  installation intact.
 
 Fixes
 

@@ -127,7 +127,7 @@ class RepeatedResetTest(AbstractTest):
         ax.set_ylim(bottom=0, top=maximum_errors + 1)
 
         x = list(range(1, count + 1))
-        heights = error_counts
+        heights = [error_count if error_count else 0.5 for error_count in error_counts]
         color = ['red' if state_error else 'blue' for state_error in state_errors]
         ax.bar(x=x, height=heights, color=color)
 
