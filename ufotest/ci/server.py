@@ -253,3 +253,8 @@ def builds_detail(path):
 @server.route('/static/<path:path>')
 def static(path):
     return send_from_directory(STATIC_PATH, path)
+
+
+@server.route('/favicon.ico')
+def favicon():
+    return send_from_directory(STATIC_PATH, 'favicon.ico')
