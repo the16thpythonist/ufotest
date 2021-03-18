@@ -406,7 +406,7 @@ Fixes
 
 - Now actually using the config.static in the jinja templates, which enables the assets to be loaded correctly.
 
-1.1.0 (xx.xx.2021)
+1.1.0 (20.03.2021)
 ------------------
 
 Added
