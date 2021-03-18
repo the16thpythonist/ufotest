@@ -10,7 +10,7 @@ Overview
 
 The following is a small overview of the available commands:
 
-- **init**: Initializes the necessary installation folder and a default configuration file, which is needed to use this
+- :ref:`init<init>` : Initializes the necessary installation folder and a default configuration file, which is needed to use this
   command line interface
 - **config**: Opens the config file for the ufotest project with the preferred editor
 - **install**: Installs the necessary dependencies, which are required to operate the UFO camera
@@ -22,7 +22,7 @@ The following is a small overview of the available commands:
   into the archive of competed test runs
 
 Check CLI version
-"""""""""""""""""
+~~~~~~~~~~~~~~~~~
 
 To check the version of `ufotest`, which is currently installed on your machine, run the "--version" option like this:
 
@@ -30,6 +30,7 @@ To check the version of `ufotest`, which is currently installed on your machine,
 
     $ ufotest --version
 
+.. _init:
 
 Initializing the project
 ------------------------
@@ -43,7 +44,7 @@ needed for ufotest. The default installation path is "$HOME/.ufotest":
     $ ufotest init
 
 Custom installation folder
-""""""""""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can change the installation path by setting a different path to the environmental variable `UFOTEST_PATH`. Note
 however, that this variable also has to be set whenever any other command is being executed later on. So it would make

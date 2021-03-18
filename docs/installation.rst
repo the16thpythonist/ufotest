@@ -7,15 +7,20 @@ Installation
 Requirements
 ------------
 
-The projects needs python tkinter as one of it's dependencies. This will not be installed with pip, but has to
+The projects needs python tkinter as one of it's dependencies. This will usually not be installed with pip, but has to
 be installed with the operating systems project manager instead.
+
+For Ubuntu / Debian based operating systems:
 
 .. code-block:: console
 
-    # Ubuntu/Debian
     $ sudo apt-get -y install python3-tk
-    # OpenSUSE
-    $ zypper install -y python3-tk
+
+For OpenSUSE:
+
+.. code-block:: console
+
+    $ sudo zypper install -y python3-tk
 
 Stable release (Recommended)
 ----------------------------
@@ -29,18 +34,18 @@ To install ufotest, run this command in your terminal:
 
 .. code-block:: console
 
-    $ pip3 install ufotest
+    $ pip3 install --user ufotest
 
 The executable files for the actual command line interface will *most likely* not be installed into a valid PATH
-location. Instead the executable will be installed to `$HOME/.local/bin`. So this path has to be added to the PATH
+location. Instead the executable will be installed to :code:`$HOME/.local/bin`. So this path has to be added to the PATH
 variable for the executable to be callable from the console:
 
 .. code-block:: console
 
     $ export PATH=$PATH:$HOME/.local/bin
 
-**NOTE**: This extension of the PATH variable will be lost after a restart of the host machine. It is advised to add
-this line to the bashrc file:
+**IMPORTANT**: This extension of the PATH variable will be lost after a restart of the host machine. It is advised to
+add this line to the bashrc file like so:
 
 .. code-block:: console
 
