@@ -29,8 +29,6 @@ and camera module which are to be tested with. Contrary to a normal user, the te
 *programmer device* for the fpga module, which has to be connected at all times to be able to flash the new versions
 of the software to the device:
 
-TODO: Include a link to the actual programmer which is being used at the moment.
-
 Another important requirement is for the host machine, which will act as this test station, to have a public *hostname*.
 Ultimately, the machine will be acting as a server which accepts requests from the version control system whenever a
 change in the source code occurs. As such a server, the machine has to be in scope for the version control system to
@@ -39,12 +37,6 @@ be able to send the requests to the correct host machine.
 Lastly, the version control system will have to be configured to send the appropriate webhooks to this machine when
 new versions of the software are pushed to the remote repository. This will also be explained in more detail further
 down the page.
-
-
-Setting up a public hostname with NoIP
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-to be done.
 
 
 Configuration
@@ -62,7 +54,7 @@ looks like this:
         bitfile_path = 'camera.bit'
         branch = 'main'
         hostname = 'localhost'
-        port = 2424
+        port = 8030
         test_suite = 'mock'
         gmail_address = 'ipe.ufotest@gmail.com'
         gmail_password = 'enter password'
@@ -108,7 +100,7 @@ the credentials to an already existing account.
 The CI command group
 --------------------
 
-The continuous integration functionality of the ufotest application is wrapped by the *ci* command group.
+The continuous integration functionality of the ufotest application is wrapped by the :code:`ci` command group.
 This command group contains all the necessary commands which will be used for these functions.
 A list of all available commands can be obtained like this:
 
@@ -135,7 +127,7 @@ of the source:
     $ ufotest ci build "mock"
 
 This command will then proceed to clone the branch / repo which was defined in the config file of the project. It will
-search for the .bit file within this repository folder and then flash it to the hardware using the 'flash' command of
+search for the .bit file within this repository folder and then flash it to the hardware using the :code:`flash` command of
 ufotest. The specified test suite will then be run on the new version and then the test report is saved to the archive.
 
 
@@ -159,15 +151,15 @@ config file. These two values define which hostname the server will run under an
     $ ufotest ci serve
 
 With the previous example, the web server could be reached from within a browser by supplying the address
-``http://localhost:2424/``, as the default configuration for the hostname is "localhost" and the default port for
-the ufotest application is 2424.
+:code:`http://localhost:8030`, as the default configuration for the hostname is "localhost" and the default port for
+the ufotest application is 8030.
 The browser will display the home page of the web interface of the server. On this page there are
 all necessary navigation links to both the build and test report archive.
 
 Hostname and port
 ~~~~~~~~~~~~~~~~~
 
-The default port 2424 was chosen, so that the application could be run on a host machine which is already running a
+The default port 8030 was chosen, so that the application could be run on a host machine which is already running a
 different server on the default HTTP port 80. The port 80 and any other port can of course also be used for this
 application, the corresponding field of the config file simply has to be changed accordingly. Although it is important
 that there is no other application already attached to that port!

@@ -1,12 +1,14 @@
 Camera Testing
 ==============
 
-The previous section "usage" explained how the "test" command can be used to execute camera tests. The ufotest CLI
-already comes with predefined tests. These can be viewed in the corresponding section of the config file.
+The previous section "usage" explained how the :code:`test` command can be used to execute camera tests.
+The ufotest CLI
+already comes with predefined tests. Their names can be viewed in the corresponding section of the config file.
 
-But it is also possible to write custom camera tests. Custom camera tests are written using the Python programming
-language. Custom tests are dynamically discovered every time the `test` command is being run. To add a custom test
-simply put a python module into the folder `$HOME/.ufotest/tests`.
+But it is also possible to write custom camera tests. Custom camera tests are written using the *Python* programming
+language. Custom tests are dynamically discovered every time the :code:`test` command is being run. To add a custom test
+simply put a python module into the folder :code:`$HOME/.ufotest/tests`, which is located in the installation folder of
+the ufotest application.
 
 Of course, this module still needs the correct content. The following code example provides a boilerplate, which can be
 extended, but which is usable the way it is.
@@ -53,7 +55,7 @@ After having defined this module, it has to be placed into the "tests" folder. A
 
 .. code-block:: console
 
-    $ ufotest test my_test
+    $ ufotest test "my_test"
 
 
 Next steps
