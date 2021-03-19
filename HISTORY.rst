@@ -461,8 +461,6 @@ TODO
 
 Bugs:
 
-
-
 Features:
 
 - Document camera properties "Notes"
@@ -476,12 +474,6 @@ Features:
 - helpful error message when the wrong branch is specified for the CI repo or generally an error when the clone
   process fails!
 - Add information about the test suite to the builds list page.
-- Better output in the test report. Better output for the commands in general
-- **MORE TEST CASES**
-    - Record a single frame from the camera and put the result into the test report.
-- The "single_frame" test case saves a single image. I should probably work on putting in compression for this, because
-  holy moly, the one file had ~40MB... That cant be served by a little flask server...
 - Better output for the "flash" command.
 - Parameter for test cases encoded in their names. Could do it by colon separation or smth.
-- Current documentation of status network setup etc. in DAQ lab
 - Automatic generation of "datasheet" with some special characteristics...
