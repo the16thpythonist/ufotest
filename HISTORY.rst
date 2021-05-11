@@ -463,6 +463,10 @@ Bugs:
 
 Features:
 
+- Change the default URL for pcitool installation
+- Make scripts part of the CI repository. Fallback version?
+- Config file flash ID
+
 - Document camera properties "Notes"
 - Auto detect the operating system?
 - **Templating of the actual report files is done at compile time and not during the actual web request**. This means
