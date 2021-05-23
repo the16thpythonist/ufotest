@@ -456,6 +456,19 @@ Fixes
   decoding of the images works. I feel like all the images accumulate within the internal buffer of the camera and they
   are ALL being read out with each call to ipedecode?
 
+1.1.1 (??.??.2021)
+------------------
+
+Changes
+
+- Added "Development" section to the README
+
+Bug fixes
+
+- The "reload" method of Config overwrites the values and thus gets rid of the "context" field which is
+  only set in the constructor of the class.
+
+
 TODO
 ----
 

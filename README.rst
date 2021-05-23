@@ -25,25 +25,25 @@ The ufotest project provides a command line interface to install and test the UF
 * Documentation: https://ufotest.readthedocs.io
 
 Installation
-------------
+============
 
 The easiest way to install this package is by using PIP. This will automatically install all the requirements and
 also register the CLI commands to be usable.
 
 .. code-block:: console
 
-    $ pip3 install --user ufotest
-    $ export PATH=$PATH:$HOME/.local/bin
+    pip3 install --user ufotest
+    export PATH=$PATH:$HOME/.local/bin
 
 The :code:`init` command initializes the installation folder for the application which is needed for the functionality
 of the other commands.
 
 .. code-block:: console
 
-    $ ufotest init
+    ufotest init
 
 Usage
------
+=====
 
 The command line can be accessed through the :code:`ufotest` command within the console. Use the
 :code:`--help` option to display
@@ -51,10 +51,56 @@ a list of all available commands or consult the `Documentation <https://ufotest.
 
 .. code-block:: console
 
-    $ ufotest --help
+    ufotest --help
+
+
+Development
+===========
+
+Setup of development environment
+--------------------------------
+
+First clone this repository into a local folder using ``git``:
+
+.. code-block:: console
+
+    git clone https://github.com/the16thpythonist/ufotest.git
+
+Then install all the requirements and the dev requirements using ``pip``:
+
+.. code-block:: console
+
+    cd ufotest
+    pip3 install -r requirements.txt
+    pip3 install -r requirements_dev.txt
+
+To then install the ufotest program, including the command line interface, from your local
+development version, run in the ufotest folder:
+
+.. code-block:: console
+
+    pip3 install .
+
+Testing
+-------
+
+The unittests of the ufotest program are located in the *tests* folder in the top level repository
+folder. To run these tests, `pytest <https://docs.pytest.org/en/6.2.x/>`_ is required. This should have
+been installed by the *requirements_dev.txt* file. You can check the installation by running
+
+.. code-block:: console
+
+    pytest --version
+
+If pytest is successfully installed, the unittests for ufotest can be executed by running in the repository
+root folder:
+
+.. code-block:: console
+
+    pytest ./tests
 
 Features
---------
+========
 
 - Global configuration file
 - Automatic installation of all dependencies for a barebones operation of the UFO camera
@@ -79,6 +125,7 @@ The following software was used in the creation of the project:
 ToDo
 ----
 
+- [ ] Integrate a dockerfile which will create a container environment in which to run ufotest for development/tests
 - [x] Fix the crashes during the build process. No error should cause the program to crash
 - [x] Fix the crash when terminating the "serve" command
 - [ ] Fix the crash whenever a git repository url is formatted incorrectly

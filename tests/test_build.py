@@ -145,6 +145,8 @@ class TestBuildReport(UfotestBuildTestCase):
         """
         If a new object instance can be properly constructed by using the mock build runner
         """
+        self.assertIn('context', self.config.data.keys())
+
         with BuildContext(**BUILD_CONTEXT_KWARGS, config=self.config) as build_context:
             build_runner = MockBuildRunner(build_context)
             build_runner.build()
