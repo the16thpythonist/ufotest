@@ -215,7 +215,19 @@ class Config(metaclass=Singleton):
     # == UTILITY METHODS
 
     def reload(self):
-        self.data = load_config()
+        """
+        Reloads the config values from the config file, replacing the current object state with the values read from
+        the file.
+
+        :return: void
+        """
+        # Previously this method just assigned the return value of load_config to the data attribute, but that caused
+        # a bug, because the new dict value for data didnt contain the "context" field which is set in the constructor
+        # of this class.
+
+        # "load_config" reads the toml config file and returns its content as a dict.
+        new_data = load_config()
+        self.data.update(new_data)
 
     def url(self, *paths: str) -> str:
         hostname = self.get_hostname()

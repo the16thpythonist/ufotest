@@ -18,29 +18,36 @@ ufotest
 
 
 The ufotest project provides a command line interface to install and test the UFO camera, which was developed at the
-Institute of Data Processing (IPE) of the Karlsruhe Institute of Technology (KIT).
+`Institute of Data Processing (IPE) <https://www.ipe.kit.edu/>`_ of the
+`Karlsruhe Institute of Technology (KIT) <https://www.kit.edu/>`_.
 
 * Free software: MIT license
-* Documentation: https://ufotest.readthedocs.io.
+* Documentation: https://ufotest.readthedocs.io
 
 Installation
 ------------
 
 The easiest way to install this package is by using PIP. This will automatically install all the requirements and
 also register the CLI commands to be usable.
-(Note that the "sudo" is important to make the commands register correctly within the operating system)
 
 .. code-block:: console
 
     $ pip3 install --user ufotest
     $ export PATH=$PATH:$HOME/.local/bin
+
+The :code:`init` command initializes the installation folder for the application which is needed for the functionality
+of the other commands.
+
+.. code-block:: console
+
     $ ufotest init
 
 Usage
 -----
 
-The command line can be accessed through the `ufotest` command within the console. Use the `--help` option to display
-a list of all available commands or consilt the Documentation for a more detailed explanation
+The command line can be accessed through the :code:`ufotest` command within the console. Use the
+:code:`--help` option to display
+a list of all available commands or consult the `Documentation <https://ufotest.readthedocs.io>`_ for a more detailed explanation
 
 .. code-block:: console
 
@@ -62,31 +69,26 @@ Credits
 
 The following software was used in the creation of the project:
 
-* Flask_: Python microframework for creating web applications with minimal effort
-* Click_: Python library for creating CLI applications
-* Jinja2_: Templating library for Python
-* Cookiecutter_: A CLI tool for project templating
-* `audreyr/cookiecutter-pypackage`_: A basic template for python package projects
-
-.. _Flask: https://github.com/pallets/flask
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
-.. _Click: https://click.palletsprojects.com/en/7.x/
-.. _Jinja2: https://jinja.palletsprojects.com/en/2.11.x/
+* `Flask <https://github.com/pallets/flask>`_: Python microframework for creating web applications with minimal effort
+* `Click <https://click.palletsprojects.com/en/7.x/>`_: Python library for creating CLI applications
+* `Jinja2 <https://jinja.palletsprojects.com/en/2.11.x/>`_: Templating library for Python
+* `Cookiecutter <https://github.com/audreyr/cookiecutter>`_: A CLI tool for project templating
+* `audreyr/cookiecutter-pypackage <https://github.com/audreyr/cookiecutter-pypackage>`_: A basic template for python package projects
 
 
 ToDo
 ----
 
-- **[x]** Fix the crashes during the build process. No error should cause the program to crash
+- [x] Fix the crashes during the build process. No error should cause the program to crash
+- [x] Fix the crash when terminating the "serve" command
 - [ ] Fix the crash whenever a git repository url is formatted incorrectly
-- [ ] Document the current setup within the documentation
+- [x] Document the current setup within the documentation
 - [ ] Automatic generation of a datasheet with the camera properties (as a single test case?)
 - [ ] Redesign the loading of tests cases so that positional parameters can be encoded in the name
-- **[x]** Make the server process automatically start on boot for the test PC in the DAQ lab
-- [ ] Test case for x number of executions of the setup script. How many were successful?
-- [ ] Test case for x number of frame acquisitions. How many were successful?
-- [ ] Make all commands have a valid return code
+- [x] Make the server process automatically start on boot for the test PC in the DAQ lab
+- [x] Test case for x number of executions of the setup script. How many were successful?
+- [x] Test case for x number of frame acquisitions. How many were successful?
+- [x] Make all commands have a valid return code
 - [ ] Installation functions refactor to use the new "run_command" and new verbosity system
-- **[x]** Fix the ugly error message of the frame command
+- [x] Fix the ugly error message of the frame command
 - [ ] Add a '--png' option or smth. to the frame command, where the image is automatically converted to png

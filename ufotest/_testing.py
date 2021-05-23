@@ -12,6 +12,11 @@ from ufotest.config import CONFIG, reload_config, load_config, Config
 
 
 class UfotestTestCase(TestCase):
+    """
+    This is a custom base class for UnitTest specifically constructed to provide a mock environment for ufotest.
+
+
+    """
 
     @classmethod
     def setUpClass(cls) -> None:
