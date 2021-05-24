@@ -8,7 +8,7 @@ import subprocess
 from typing import Optional, Tuple
 
 from ufotest.config import CONFIG
-from ufotest.util import execute_command, get_repository_name
+from ufotest.util import execute_command, get_repository_name, cprint
 
 
 def git_clone(path: str, git_url: str, verbose: bool, branch: str = 'master') -> Tuple[str, str]:
@@ -122,9 +122,20 @@ def install_fastwriter(path: str, verbose=True):
     )
 
 
-def install_pcitools(path:str, verbose=True):
+def install_pcitools(path: str, verbose=True):
     """
-    Installs the pcitool repository into the given "path"
+    Installs the "pcitool" repository into the given *path*. Returns a dict which contains information about the
+    installation process.
+
+    The returned dict contains the following items:
+    - success: boolean value of whether or not the installation succeeded
+    - path: the string path of the file
+    - git: the string URL of the git repository from which it was installed
+
+    :param path: The string path of the folder into which to install this dependency
+    :param verbose: Whether or not to produce verbose output. DEPRECATED: Uses config field to determine verbosity
+
+    :return: A dict, which contains information about the installation process.
     """
     git_url = CONFIG['install']['pcitools_git']
     folder_path = install_generic_cmake(
@@ -153,6 +164,12 @@ def install_pcitools(path:str, verbose=True):
     exit_code = execute_command(activate_driver_command, verbose)
     if not exit_code:
         click.secho('Activated driver!', bold=True, fg='green')
+
+    return {
+        'success':          (not exit_code),
+        'path':             folder_path,
+        'git':              git_url
+    }
 
 
 def install_libufodecode(path:str, verbose=True):

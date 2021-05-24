@@ -3,6 +3,7 @@ Module containing all the actual console scripts of the project.
 """
 import sys
 import os
+import json
 from multiprocessing import Process
 
 import click
@@ -44,22 +45,105 @@ CONFIG = Config()
 
 # == COMMANDS ==
 
+# https://click.palletsprojects.com/en/8.0.x/complex/
+# https://click.palletsprojects.com/en/8.0.x/complex/#interleaved-commands
+pass_config = click.make_pass_decorator(Config)
+
+
 @click.group(invoke_without_command=True)
-@click.option('--version', '-v', is_flag=True, help='Print the version of the program')
-def cli(version):
+@click.option('--version', is_flag=True, help='Print the version of the program')
+@click.option('--verbose', '-v', is_flag=True, help='Print additional console output for the command')
+@click.pass_context
+def cli(ctx, version, verbose):
+    """
+    UfoTest command line interface
+
+    The main way to use UfoTest's functionality is by invoking the appropriate command. Each command has it's own set
+    of arguments and options. To list these options and to show an explanation of the commands purpose, use the
+    --help option which is available for every command:
+
+    ufotest <subcommand> --help
+    """
+    # If the version option of the base command is invoked, this means that we simply want to print the version of the
+    # project and then terminate execution
     if version:
+        # "get_version" reads the version of the software from the corresponding file in the source folder.
         version = get_version()
         click.secho(version, bold=True)
         sys.exit(0)
 
+    # We acquire an instance of the config object here in the base command and then simply pass it as a context to each
+    # respective sub command. Sure, the Config class is a singleton anyways and we could also invoke it in every
+    # sub command, but like this we can do something cool. We simply add a --verbose option to this base command and
+    # then save the value in the config, since we pass it along this also affects all sub commands and we dont need
+    # to implement the --verbose option for every individual sub command.
+    config = Config()
+    config['context']['verbose'] = True
+    ctx.obj = config
 
-@click.command('install', short_help='Install the project and its dependencies')
+
+# -- Commands related to the installation of dependencies
+
+#: A dictionary whose keys are possible string argument names for installable dependencies and the values are function
+#: objects, which actually perform the installation of that dependency. Each of these functions should accept a single
+#: positional argument which is the folder path into which they are supposed to be installed.
+DEPENDENCY_INSTALL_FUNCTIONS = {
+    'pcitool':              install_pcitools,
+    'fastwriter':           install_fastwriter,
+    'libufodecode':         install_libufodecode,
+    'libuca':               install_libuca,
+    'ipecamera':            install_ipecamera
+}
+
+
+# TODO: Add force flag
+@click.command('install', short_help='Install a dependency for the ufo camera')
+# https://click.palletsprojects.com/en/8.0.x/options/#choice-options
+@click.argument('dependency', type=click.Choice(['pcitool', 'fastwriter', 'libufodecode', 'libuca', 'ipecamera']))
+@click.argument('path', type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True))
+@click.option('--save-json', '-j', is_flag=True, help=(
+    'Whether or not to create a JSON output file as a result of the installation process. The file will be located in '
+    'the current working directory and be named "install.json" it will contain the keys: "success" (bool), '
+    '"path": (string), "git": (string).'
+))
+@click.option('--skip', is_flag=True, help='Does not perform the actual installation. For testing')
+@pass_config
+def install(config, dependency, path, save_json, skip):
+    """
+    Installs a given DEPENDENCY into the folder provided as PATH.
+
+    This command is used to install individual dependencies for running the ufo camera system on the local machine.
+
+    NOTE: Currently only "pcitool" works
+    """
+    if skip:
+        sys.exit(0)
+
+    install_function = DEPENDENCY_INSTALL_FUNCTIONS[dependency]
+    result = install_function(path)
+
+    # If the the "--save-json" flag was provided with the command, we'll also save the result of the installation
+    # process as a JSON file to the current working directory.
+    if save_json:
+        try:
+
+            json_path = os.path.join(os.getcwd(), 'install.json')
+            with open(json_path, mode='w+') as file:
+                json.dump(result, file, indent=4, sort_keys=True)
+
+        except Exception as e:
+            cerror(f'Could not save "install.json" because: {str(e)}')
+
+    sys.exit(0)
+
+
+@click.command('install_all', short_help='Install the project and its dependencies')
 @click.argument('path', type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True))
 @click.option('--verbose', '-v', is_flag=True, help='Show additional console output')
 @click.option('--no-dependencies', '-d', is_flag=True, help='Skip installation of required system packages')
 @click.option('--no-libuca', '-l', is_flag=True, help='Skip installation of libuca')
 @click.option('--no-vivado', is_flag=True, help='Skip installation of vivado')
-def install(path, verbose, no_dependencies, no_libuca, no_vivado):
+def install_all(path, verbose, no_dependencies, no_libuca, no_vivado):
     """
     Installing the Project into PATH
 

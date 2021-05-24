@@ -456,14 +456,20 @@ Fixes
   decoding of the images works. I feel like all the images accumulate within the internal buffer of the camera and they
   are ALL being read out with each call to ipedecode?
 
-1.1.1 (??.??.2021)
+1.2.0 (??.??.2021)
 ------------------
 
 Changes
 
 - Added "Development" section to the README
-- Changed the "UfotestTestCase" to be a mixin "UfotestTestMixin" instead of a inherited child class of TestCase,
-  because that caused unnecessary duplication of test methods and a Bug during testing.
+- Changed the "_testing.UfotestTestCase" to be a mixin "_testing.UfotestTestMixin" instead of a inherited child
+  class of TestCase, because that caused unnecessary duplication of test methods and a Bug during testing.
+- Added a test file for the CLI
+- Updated "install.install_pcitools" function to return result dict, use verbose and force fields of config
+- Reworked command "install". It now accepts two arguments, where the first one is the string name of the dependency
+  to install and the second one is the path into which to install. This command is now used to install individual
+  dependencies. The full installation will be made with another command.
+
 
 Bug fixes
 
