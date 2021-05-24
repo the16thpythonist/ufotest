@@ -97,7 +97,31 @@ root folder:
 
 .. code-block:: console
 
-    pytest ./tests
+    make test
+
+
+Pushing a new version
+---------------------
+
+To push a new version to the python package repository PyPI, first write up the changes in the *HISTORY.rst* file.
+
+Then change the content of the *VERSION* file of the top level repository to the new version string. Make sure that
+there are no additional whitespaces, newline or tab characters in that file.
+
+Finally run the following code, which will first install the new version on the local system and then create the
+distribution files which are pushed to pypi using
+`twine <https://pypi.org/project/twine/>`_:
+
+.. code-block:: console
+
+    make install
+    make dist
+
+This will prompt the credentials for PyPi.org. Finally the new version can be verified locally:
+
+.. code-block:: console
+
+    ufotest --version
 
 Features
 ========
@@ -120,7 +144,7 @@ The following software was used in the creation of the project:
 * `Jinja2 <https://jinja.palletsprojects.com/en/2.11.x/>`_: Templating library for Python
 * `Cookiecutter <https://github.com/audreyr/cookiecutter>`_: A CLI tool for project templating
 * `audreyr/cookiecutter-pypackage <https://github.com/audreyr/cookiecutter-pypackage>`_: A basic template for python package projects
-
+* `Twine <https://pypi.org/project/twine/>`_: For pushing new versions of the code to the python package index PyPi
 
 ToDo
 ----
