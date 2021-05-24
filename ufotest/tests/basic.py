@@ -117,6 +117,21 @@ class RepeatedResetTest(AbstractTest):
 
     @classmethod
     def create_figure(cls, error_counts: List[int], state_errors: List[bool], maximum_errors: int) -> plt.Figure:
+        """
+        Creates a bar chart using matplotlib where there is one bar for every repetition of the reset procedure.
+        The height of each bar indicates the number of register errors which was registered for the corresponding
+        execution of the reset script. Furthermore the color of the bars indicates if the reset procedure as a whole was
+        successful or not. Additionally a line indicates the total amount of all registers checked to compare the
+        amount of register errors against.
+
+        :param error_counts: A list of integers, where each integer represents the amount of errors registered for the
+            corresponding execution of the reset procedure.
+        :param state_errors: A list of booleans, where each boolean indicated whether or not the corresponding run of
+            the reset procedure was successful or not.
+        :param maximum_errors: An integer indicating the maximum possible amount of errors.
+
+        :return: A matplotlib Figure object.
+        """
         count = len(error_counts)
         fig, ax = plt.subplots(ncols=1, nrows=1)
         ax: plt.Axes = ax

@@ -462,11 +462,14 @@ Fixes
 Changes
 
 - Added "Development" section to the README
+- Changed the "UfotestTestCase" to be a mixin "UfotestTestMixin" instead of a inherited child class of TestCase,
+  because that caused unnecessary duplication of test methods and a Bug during testing.
 
 Bug fixes
 
 - The "reload" method of Config overwrites the values and thus gets rid of the "context" field which is
   only set in the constructor of the class.
+- Fixed all the test cases, such that they *should* all pass now.
 
 
 TODO

@@ -5,8 +5,6 @@ import os
 import tempfile
 
 from unittest import TestCase
-
-from ufotest._testing import UfotestTestCase
 from ufotest.config import get_path, DEFAULT_PATH
 
 

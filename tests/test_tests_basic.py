@@ -156,11 +156,15 @@ class TestRepeatedResetTest(TestCase):
         self.assertTrue(RepeatedResetTest.state_contains_error(state_value3))
 
     def test_create_figure(self):
+        """
+        If the method to actually create the matplotlib Figure object works
+        """
         error_counts = [2, 3, 5, 2, 1]
         state_errors = [False, True, True, False, False]
+        max_error_count = 10
 
-        fig = RepeatedResetTest.create_figure(error_counts, state_errors)
-        # fig.show()
+        fig = RepeatedResetTest.create_figure(error_counts, state_errors, max_error_count)
+
         self.assertIsInstance(fig, plt.Figure)
 
 

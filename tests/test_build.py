@@ -4,8 +4,9 @@ Unittests for the building functionality of ufotest.
 import os
 import datetime
 import shutil
+import unittest
 
-from ufotest._testing import UfotestTestCase
+from ufotest._testing import UfotestTestMixin
 from ufotest.config import get_path
 from ufotest.exceptions import IncompleteBuildError
 from ufotest.ci.build import BuildContext, BuildLock, BuildRunner, BuildReport, BuildQueue
@@ -40,10 +41,10 @@ class MockBuildRunner(BuildRunner):
         self.context.completed = True
 
 
-class UfotestBuildTestCase(UfotestTestCase):
+class UfotestBuildTestMixin(UfotestTestMixin):
 
     def tearDown(self) -> None:
-        UfotestTestCase.tearDown(self)
+        super(UfotestBuildTestMixin, self).tearDown()
 
         # After every test we need to make sure that the build lock is released again or it will have an effect on all
         # the test which come after.
@@ -65,7 +66,7 @@ class UfotestBuildTestCase(UfotestTestCase):
 # == UNITTEST CLASSES ==
 
 
-class TestBuildLock(UfotestBuildTestCase):
+class TestBuildLock(UfotestBuildTestMixin, unittest.TestCase):
 
     # -- TESTS --
 
@@ -107,7 +108,7 @@ class TestBuildLock(UfotestBuildTestCase):
             BuildLock.release()
 
 
-class TestBuildContext(UfotestBuildTestCase):
+class TestBuildContext(UfotestBuildTestMixin, unittest.TestCase):
 
     # -- TEST --
 
@@ -116,7 +117,7 @@ class TestBuildContext(UfotestBuildTestCase):
             self.assertIsInstance(build_context, BuildContext)
 
 
-class TestBuildRunner(UfotestBuildTestCase):
+class TestBuildRunner(UfotestBuildTestMixin, unittest.TestCase):
 
     # -- TESTS --
 
@@ -137,7 +138,7 @@ class TestBuildRunner(UfotestBuildTestCase):
             self.assertIsInstance(build_runner, BuildRunner)
 
 
-class TestBuildReport(UfotestBuildTestCase):
+class TestBuildReport(UfotestBuildTestMixin, unittest.TestCase):
 
     # -- TESTS --
 
