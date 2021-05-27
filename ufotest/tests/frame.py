@@ -94,6 +94,10 @@ class AcquireSingleFrame(AbstractTest):
         ax_hist.set_title('Captured Frame - Histogram')
         ax_hist.set_xlabel('Pixel Values')
 
+        # https://stackoverflow.com/questions/44654421/getting-the-same-subplot-size-using-matplotlib-imshow-and-scatter
+        aspect = np.diff(ax_frame.get_xlim())[0] / np.diff(ax_frame.get_ylim())[0]
+        ax_hist.set_ascpect(aspect)
+
         return fig
 
     @classmethod
