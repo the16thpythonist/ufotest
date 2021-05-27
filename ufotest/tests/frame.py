@@ -96,7 +96,7 @@ class AcquireSingleFrame(AbstractTest):
 
         # https://stackoverflow.com/questions/44654421/getting-the-same-subplot-size-using-matplotlib-imshow-and-scatter
         aspect = np.diff(ax_frame.get_xlim())[0] / np.diff(ax_frame.get_ylim())[0]
-        ax_hist.set_ascpect(aspect)
+        ax_hist.set_aspect(aspect)
 
         return fig
 
@@ -292,11 +292,12 @@ class RepeatedCalculatePairNoise(CalculatePairNoiseTest):
         for i in range(self.REPETITIONS):
             frame1, frame2 = self.get_frames()
             variance = self.calculate_pair_variance(frame1, frame2)
-            variances.append(variance)
+            rmsnoise = math.sqrt(variance)
+            variances.append(rmsnoise)
 
         stats = {
-            'mean variance': round(statistics.mean(variances), ndigits=self.NDIGITS),
-            'stdev variance': round(statistics.stdev(variances), ndigits=self.NDIGITS)
+            'mean noise': round(statistics.mean(variances), ndigits=self.NDIGITS),
+            'stdev noise': round(statistics.stdev(variances), ndigits=self.NDIGITS)
         }
         dict_result = DictTestResult(0, stats)
 
