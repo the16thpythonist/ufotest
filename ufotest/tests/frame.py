@@ -95,7 +95,9 @@ class AcquireSingleFrame(AbstractTest):
         ax_hist.set_xlabel('Pixel Values')
 
         # https://stackoverflow.com/questions/44654421/getting-the-same-subplot-size-using-matplotlib-imshow-and-scatter
-        aspect = np.diff(ax_frame.get_xlim())[0] / np.diff(ax_frame.get_ylim())[0]
+        x_lim = ax_frame.get_xlim()
+        y_lim = ax_frame.get_ylim()
+        aspect = abs(x_lim[0] - x_lim[1]) / abs(y_lim[0] - y_lim[1])
         ax_hist.set_aspect(aspect)
 
         return fig
