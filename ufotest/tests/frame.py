@@ -76,7 +76,7 @@ class AcquireSingleFrame(AbstractTest):
 
     @classmethod
     def create_figure(cls, frame: np.ndarray) -> plt.Figure:
-        fig, (ax_frame, ax_frame_mod, ax_hist) = plt.subplots(nrows=1, ncols=3)
+        fig, (ax_frame, ax_frame_mod, ax_hist) = plt.subplots(nrows=1, ncols=3, figsize=(20, 15))
 
         # ~ plotting the frame as an image
         ax_frame.imshow(frame)
@@ -256,7 +256,7 @@ class CalculatePairNoiseTest(AbstractTest):
 
     @classmethod
     def create_figure(cls, frame1: np.ndarray, frame2: np.ndarray) -> plt.Figure:
-        fig, (ax_frame1, ax_frame2, ax_diff) = plt.subplots(nrows=1, ncols=3, figsize=(20, 10))
+        fig, (ax_frame1, ax_frame2, ax_diff) = plt.subplots(nrows=1, ncols=3, figsize=(20, 15))
 
         ax_frame1.imshow(frame1)
         ax_frame1.set_title('Frame 1')
@@ -277,7 +277,7 @@ class RepeatedCalculatePairNoise(CalculatePairNoiseTest):
 
     name = 'repeated_calculate_pair_noise'
     description = (
-        'something else'
+        'Description to be done'
     )
 
     def __init__(self, test_runner: TestRunner):
@@ -286,7 +286,8 @@ class RepeatedCalculatePairNoise(CalculatePairNoiseTest):
     def run(self):
         variances = []
         for i in range(self.REPETITIONS):
-            variance = self.get_pair_variance()
+            frame1, frame2 = self.get_frames()
+            variance = self.calculate_pair_variance(frame1, frame2)
             variances.append(variance)
 
         stats = {
