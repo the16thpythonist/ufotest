@@ -76,7 +76,7 @@ class AcquireSingleFrame(AbstractTest):
 
     @classmethod
     def create_figure(cls, frame: np.ndarray) -> plt.Figure:
-        fig, (ax_frame, ax_frame_mod, ax_hist) = plt.subplots(nrows=1, cols=3)
+        fig, (ax_frame, ax_frame_mod, ax_hist) = plt.subplots(nrows=1, ncols=3)
 
         # ~ plotting the frame as an image
         ax_frame.imshow(frame)
@@ -256,7 +256,7 @@ class CalculatePairNoiseTest(AbstractTest):
 
     @classmethod
     def create_figure(cls, frame1: np.ndarray, frame2: np.ndarray) -> plt.Figure:
-        fig, (ax_frame1, ax_frame2, ax_diff) = plt.subplots(nrows=1, ncols=3)
+        fig, (ax_frame1, ax_frame2, ax_diff) = plt.subplots(nrows=1, ncols=3, figsize=(20, 10))
 
         ax_frame1.imshow(frame1)
         ax_frame1.set_title('Frame 1')
