@@ -469,6 +469,8 @@ Changes
 - Reworked command "install". It now accepts two arguments, where the first one is the string name of the dependency
   to install and the second one is the path into which to install. This command is now used to install individual
   dependencies. The full installation will be made with another command.
+- Changed "testing.FigureTestResult" to save the matplotlib figure with minimal
+  whitespace
 
 
 Bug fixes

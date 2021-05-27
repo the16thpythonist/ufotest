@@ -430,7 +430,9 @@ class FigureTestResult(ImageTestResult):
         # ~ SAVE IMAGE INTO TEST FOLDER
         self.figure_name = f'{random_string(10, additional_letters="")}.png'
         self.figure_path = self.test_context.get_path(self.figure_name)
-        figure.savefig(self.figure_path)
+        # https://stackoverflow.com/questions/11837979/removing-white-space-around-a-saved-image-in-matplotlib
+        # The parameters "bbox_inches" and "pad_inches" are supposed to reduce the whitespace around the plot.
+        figure.savefig(self.figure_path, bbox_inches='tight', pad_inches=0.0)
 
         ImageTestResult.__init__(self, exit_code, self.figure_path, description, url_base=self.test_context.folder_url)
 

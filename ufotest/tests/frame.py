@@ -88,9 +88,9 @@ class AcquireSingleFrame(AbstractTest):
         ax_frame_mod.set_title('Captured Frame - Increased Contrast')
 
         # ~ plotting the histogram
-        ax_frame_mod_flat = ax_frame_mod.flatten()
-        hist_bins = list(range(min(ax_frame_mod_flat), max(ax_frame_mod_flat)))
-        ax_hist.hist(ax_frame_mod.flatten(), bins=hist_bins)
+        frame_mod_flat = frame_mod.flatten()
+        hist_bins = list(range(min(frame_mod_flat), max(frame_mod_flat)))
+        ax_hist.hist(frame_mod.flatten(), bins=hist_bins)
         ax_hist.set_title('Captured Frame - Histogram')
         ax_hist.set_xlabel('Pixel Values')
 
