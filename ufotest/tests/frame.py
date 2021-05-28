@@ -110,6 +110,12 @@ class AcquireSingleFrame(AbstractTest):
         max_value = np.quantile(hist, 0.9)
         difference = max_value - min_value
 
+        # The absence of this section caused an error before. There is quite a reasonable probability, that this
+        # difference is actually 0 because the image just is so homogeneous. If that is the case we do not perform
+        # the procedure to increase the contrast (Division by zero!) and instead return the original frame
+        if difference == 0:
+            return frame
+
         frame_result = frame.copy()
         for i in range(len(frame_result)):
             for j in range(len(frame_result[i])):
@@ -283,27 +289,36 @@ class RepeatedCalculatePairNoise(CalculatePairNoiseTest):
 
     name = 'repeated_calculate_pair_noise'
     description = (
-        'Description to be done'
+        'Repeatedly calculates the noise by acquiring two separate frames, subtracting them and using the square root '
+        f'of the variance. Executes {REPETITIONS} times and displays the average and'
     )
 
     def __init__(self, test_runner: TestRunner):
         CalculatePairNoiseTest.__init__(self, test_runner)
 
     def run(self):
-        variances = []
+        noise_values = []
         for i in range(self.REPETITIONS):
             frame1, frame2 = self.get_frames()
             variance = self.calculate_pair_variance(frame1, frame2)
             rmsnoise = math.sqrt(variance)
-            variances.append(rmsnoise)
+            noise_values.append(rmsnoise)
 
         stats = {
-            'mean noise': round(statistics.mean(variances), ndigits=self.NDIGITS),
-            'stdev noise': round(statistics.stdev(variances), ndigits=self.NDIGITS)
+            'mean noise': round(statistics.mean(noise_values), ndigits=self.NDIGITS),
+            'stdev noise': round(statistics.stdev(noise_values), ndigits=self.NDIGITS)
         }
         dict_result = DictTestResult(0, stats)
 
-        return dict_result
+        message_result = MessageTestResult(0, (
+            f'These results show the average noise measurement and the standard deviation of this noise value for a '
+            f'total of {self.REPETITIONS} measurements of the noise out of pairs of frames:'
+        ))
+
+        return CombinedTestResult(
+            message_result,
+            dict_result
+        )
 
 
 class CalculateSeriesNoiseTest(AbstractTest):
