@@ -109,20 +109,24 @@ def install_dependencies(verbose=True):
     ), fg='green', bold=True)
 
 
-def install_fastwriter(path: str, verbose=True):
+def mock_install_repository(path: str):
     """
-    Installs the fastwriter repository into the given "path"
+    Does not actually perform anything, but still returns a result dict like the other install functions. This
+    result dict contains the following fields:
+    - success: True
+    - path: The path passed as parameter
+    - git: Github URL
+
+    :return: dict
     """
-    git_url = CONFIG['install']['fastwriter_git']
-    install_generic_cmake(
-        path,
-        git_url,
-        verbose,
-        {'CMAKE_INSTALL_PREFIX': '/usr'}
-    )
+    return {
+        'success':      True,
+        'path':         path,
+        'git':          'https://github.com'
+    }
 
 
-def install_pcitools(path: str, verbose=True):
+def install_pcitools(path: str, verbose: bool = True) -> dict:
     """
     Installs the "pcitool" repository into the given *path*. Returns a dict which contains information about the
     installation process.
@@ -141,7 +145,7 @@ def install_pcitools(path: str, verbose=True):
     folder_path = install_generic_cmake(
         path,
         git_url,
-        verbose,
+        CONFIG.verbose(),
         {'CMAKE_INSTALL_PREFIX': '/usr'}
     )
 
@@ -150,18 +154,18 @@ def install_pcitools(path: str, verbose=True):
     output = None if verbose else subprocess.DEVNULL
 
     build_command = 'mkdir build; cd build; cmake -DCMAKE_INSTALL_PREFIX=/usr ..'
-    exit_code = execute_command(build_command, verbose, cwd=driver_path)
+    exit_code = execute_command(build_command, CONFIG.verbose(), cwd=driver_path)
     if not exit_code:
         click.secho('Built "pcilib driver" sources', fg='green')
 
     install_command = 'cd build; sudo make install'
-    exit_code = execute_command(install_command, verbose, cwd=driver_path)
+    exit_code = execute_command(install_command, CONFIG.verbose(), cwd=driver_path)
     if not exit_code:
         click.secho('Installed "pcilib driver" successfully!', bold=True, fg='green')
 
     # Activating the driver after it has been installed...
     activate_driver_command = 'sudo depmod -a'
-    exit_code = execute_command(activate_driver_command, verbose)
+    exit_code = execute_command(activate_driver_command, CONFIG.verbose())
     if not exit_code:
         click.secho('Activated driver!', bold=True, fg='green')
 
@@ -172,15 +176,58 @@ def install_pcitools(path: str, verbose=True):
     }
 
 
-def install_libufodecode(path:str, verbose=True):
+def install_fastwriter(path: str, verbose: bool = True) -> dict:
     """
-    Installs the libufodecode repository into the given "path"
+    Installs the "fastwriter" repository into the given *path*. Returns a dict which contains some information about
+    the installation process.
+
+    The returned dict contains the following items:
+    - success: boolean value of whether or not the installation succeeded
+    - path: the string path of the file
+    - git: the string URL of the git repository from which it was installed
+
+    :param path: The string path of the folder into which to install this dependency
+    :param verbose: Whether or not to produce verbose output. DEPRECATED: Uses config field to determine verbosity
+
+    :return: A dict, which contains information about the installation process.
     """
-    git_url = CONFIG['install']['libufodecode_git']
-    install_generic_cmake(
+    git_url = CONFIG['install']['fastwriter_git']
+    folder_path = install_generic_cmake(
         path,
         git_url,
-        verbose,
+        CONFIG.verbose(),
+        {'CMAKE_INSTALL_PREFIX': '/usr'}
+    )
+
+    # Declare as successful if the folder exists and is not empty
+    success = os.path.exists(folder_path) and bool(os.listdir(folder_path))
+    return {
+        'success': success,
+        'path': folder_path,
+        'git': git_url
+    }
+
+
+def install_libufodecode(path: str, verbose: bool = True) -> dict:
+    """
+    Installs the "libufodecode" repository into the given *path*. Returns a dict which contains some information about
+    the installation process.
+
+    The returned dict contains the following items:
+    - success: boolean value of whether or not the installation succeeded
+    - path: the string path of the file
+    - git: the string URL of the git repository from which it was installed
+
+    :param path: The string path of the folder into which to install this dependency
+    :param verbose: Whether or not to produce verbose output. DEPRECATED: Uses config field to determine verbosity
+
+    :return: A dict, which contains information about the installation process.
+    """
+    git_url = CONFIG['install']['libufodecode_git']
+    folder_path = install_generic_cmake(
+        path,
+        git_url,
+        CONFIG.verbose(),
         {
             'CMAKE_INSTALL_PREFIX': '/usr',
             'IPECAMERA_WIDTH': CONFIG.get_sensor_width(),
@@ -188,29 +235,67 @@ def install_libufodecode(path:str, verbose=True):
         }
     )
 
+    # Declare as successful if the folder exists and is not empty
+    success = os.path.exists(folder_path) and bool(os.listdir(folder_path))
+    return {
+        'success':      success,
+        'path':         folder_path,
+        'git':          git_url
+    }
 
-def install_libuca(path: str, verbose=True):
+
+def install_libuca(path: str, verbose: bool = True) -> dict:
     """
-    Installs the libuca repository into the given "path"
+    Installs the libuca repository into the given *path*. Returns a dict which contains some information about
+    the installation process.
+
+    The returned dict contains the following items:
+    - success: boolean value of whether or not the installation succeeded
+    - path: the string path of the file
+    - git: the string URL of the git repository from which it was installed
+
+    :param path: The string path of the folder into which to install this dependency
+    :param verbose: Whether or not to produce verbose output. DEPRECATED: Uses config field to determine verbosity
+
+    :return: A dict, which contains information about the installation process.
     """
     git_url = CONFIG['install']['libuca_git']
-    install_generic_cmake(
+    folder_path = install_generic_cmake(
         path,
         git_url,
-        verbose,
+        CONFIG.verbose(),
         {'CMAKE_INSTALL_PREFIX': '/usr'}
     )
 
+    # Declare as successful if the folder exists and is not empty
+    success = os.path.exists(folder_path) and bool(os.listdir(folder_path))
+    return {
+        'success': success,
+        'path': folder_path,
+        'git': git_url
+    }
 
-def install_uca_ufo(path: str, verbose=True):
+
+def install_uca_ufo(path: str, verbose: bool = True) -> dict:
     """
-    Installs the uca-ufo repository into the given "path"
+    Installs the uca-ufo repository into the given *path*. Returns a dict which contains some information about the
+    installation process.
+
+    The returned dict contains the following items:
+    - success: boolean value of whether or not the installation succeeded
+    - path: the string path of the file
+    - git: the string URL of the git repository from which it was installed
+
+    :param path: The string path of the folder into which to install this dependency
+    :param verbose: Whether or not to produce verbose output. DEPRECATED: Uses config field to determine verbosity
+
+    :return: A dict, which contains information about the installation process.
     """
     git_url = CONFIG['install']['ucaufo_git']
-    install_generic_cmake(
+    folder_path = install_generic_cmake(
         path,
         git_url,
-        verbose,
+        CONFIG.verbose(),
         {
             'CMAKE_INSTALL_PREFIX': '/usr',
             'CMOSIS_SENSOR_WIDTH': CONFIG.get_sensor_width(),
@@ -218,20 +303,47 @@ def install_uca_ufo(path: str, verbose=True):
         }
     )
 
+    # Declare as successful if the folder exists and is not empty
+    success = os.path.exists(folder_path) and bool(os.listdir(folder_path))
+    return {
+        'success': success,
+        'path': folder_path,
+        'git': git_url
+    }
 
-def install_ipecamera(path: str, verbose=True):
+
+def install_ipecamera(path: str, verbose: bool = True) -> dict:
     """
-    Installs the ipecamera repository into the given "path"
+    Installs the "ipecamera" repository into the given *path*. Returns a dict which contains information about the
+    installation process.
+
+    The returned dict contains the following items:
+    - success: boolean value of whether or not the installation succeeded
+    - path: the string path of the file
+    - git: the string URL of the git repository from which it was installed
+
+    :param path: The string path of the folder into which to install this dependency
+    :param verbose: Whether or not to produce verbose output. DEPRECATED: Uses config field to determine verbosity
+
+    :return: A dict, which contains information about the installation process.
     """
     git_url = CONFIG['install']['ipecamera_git']
-    install_generic_cmake(
+    folder_path = install_generic_cmake(
         path,
         git_url,
-        verbose,
+        CONFIG.verbose(),
         {
             'CMAKE_INSTALL_PREFIX': '/usr',
         }
     )
+
+    # Declare as successful if the folder exists and is not empty
+    success = os.path.exists(folder_path) and bool(os.listdir(folder_path))
+    return {
+        'success': success,
+        'path': folder_path,
+        'git': git_url
+    }
 
 
 def install_vivado(path: str, verbose=True):
@@ -243,3 +355,9 @@ def install_vivado(path: str, verbose=True):
 
     # Returning the path to the folder
     pass
+
+
+# ====================================================================================================================
+# THE NEW HOOK BASED VERSION OF INSTALLATIONS
+# ====================================================================================================================
+# Right now, the old code simply uses the

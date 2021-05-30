@@ -484,6 +484,17 @@ Bug fixes
   zero exception
 
 
+1.1.2 (30.05.2021)
+------------------
+
+Changes
+
+- All the installation methods for the repository requirements are now updated to return a dict with information about
+  the installation process and should thus work now with the "install" command
+- Added the "install-all" command. Since the install command is now used to install individual dependencies, this
+  command can be used to install all of the dependencies and the required system packages all at once.
+
+
 TODO
 ----
 

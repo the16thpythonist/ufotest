@@ -25,7 +25,8 @@ from ufotest.util import (update_install,
                           check_vivado,
                           check_path)
 from ufotest.util import cerror, cresult, ctitle, csubtitle, cprint, cparams
-from ufotest.install import (install_dependencies,
+from ufotest.install import (mock_install_repository,
+                             install_dependencies,
                              install_fastwriter,
                              install_pcitools,
                              install_libufodecode,
@@ -106,21 +107,30 @@ DEPENDENCY_INSTALL_FUNCTIONS = {
     'the current working directory and be named "install.json" it will contain the keys: "success" (bool), '
     '"path": (string), "git": (string).'
 ))
-@click.option('--skip', is_flag=True, help='Does not perform the actual installation. For testing')
+@click.option('--skip', is_flag=True, help='Does not perform the actual installation. For testing.')
 @pass_config
 def install(config, dependency, path, save_json, skip):
     """
     Installs a given DEPENDENCY into the folder provided as PATH.
 
     This command is used to install individual dependencies for running the ufo camera system on the local machine.
-
-    NOTE: Currently only "pcitool" works
     """
-    if skip:
-        sys.exit(0)
+    # The path sting which is passed into this function could also be a relative path such as ".." which stands for
+    # "the parent folder relative to the current one from which I am executing this". All functions expect an
+    # absolute path and "realpath" converts these relative expressions into absolute paths
+    path = os.path.realpath(path)
 
-    install_function = DEPENDENCY_INSTALL_FUNCTIONS[dependency]
-    result = install_function(path)
+    # The "skip" flag is mainly for testing the CLI. It is supposed to prevent the actual functionality of
+    # the command to be executed so the test case does not take so long. So in this case we do not actually
+    # run the installation function, but still have to create a mock results dict
+    if skip:
+        result = mock_install_repository(path)
+    else:
+        # Each install function takes a single argument which is the folder path of the folder into which the
+        # dependency (repo) is to be installed. They return a dict which describes the outcome of the installation
+        # procedure with the following three fields: "success", "path", "git"
+        install_function = DEPENDENCY_INSTALL_FUNCTIONS[dependency]
+        result = install_function(path)
 
     # If the the "--save-json" flag was provided with the command, we'll also save the result of the installation
     # process as a JSON file to the current working directory.
@@ -133,26 +143,34 @@ def install(config, dependency, path, save_json, skip):
 
         except Exception as e:
             cerror(f'Could not save "install.json" because: {str(e)}')
+            sys.exit(1)
 
     sys.exit(0)
 
 
-@click.command('install_all', short_help='Install the project and its dependencies')
+@click.command('install-all', short_help='Install all project dependencies.')
 @click.argument('path', type=click.Path(exists=True, file_okay=False, dir_okay=True, writable=True))
-@click.option('--verbose', '-v', is_flag=True, help='Show additional console output')
 @click.option('--no-dependencies', '-d', is_flag=True, help='Skip installation of required system packages')
-@click.option('--no-libuca', '-l', is_flag=True, help='Skip installation of libuca')
-@click.option('--no-vivado', is_flag=True, help='Skip installation of vivado')
-def install_all(path, verbose, no_dependencies, no_libuca, no_vivado):
+@click.option('--save-json', '-j', is_flag=True, help=(
+    'Whether or not to create a JSON output file as a result of the installation process. The file will be located in '
+    'the current working directory and be named "install.json" it will contain the string names of the dependencies '
+    'as keys and the values will be dicts, which in turn have the following keys: "success" (bool), '
+    '"path": (string), "git": (string).'
+))
+@click.option('--skip', is_flag=True, help='Does not perform the actual installation. For testing.')
+@pass_config
+def install_all(config, path, no_dependencies, save_json, skip):
     """
-    Installing the Project into PATH
+    Installing all dependencies for the ufo camera project into PATH
 
-    PATH has to be the path to an existing folder. The command installs all the required repostories into this folder.
+    PATH has to be the path to an existing folder. The command installs all the required repositories into this folder.
     Apart from the repositories, the command also installs the required system packages for the operation of the
     UFO camera. For this it relies on the package installation method and operation system defined within the
     ufotest config file.
     """
-    CONFIG['context']['verbose'] = verbose
+    # The path sting which is passed into this function could also be a relative path such as ".." which stands for
+    # "the parent folder relative to the current one from which I am executing this". All functions expect an
+    # absolute path and "realpath" converts these relative expressions into absolute paths
     path = os.path.realpath(path)
 
     operating_system = CONFIG['install']['os']
@@ -163,32 +181,31 @@ def install_all(path, verbose, no_dependencies, no_libuca, no_vivado):
         'camera dimensions:': f'{CONFIG.get_sensor_width()} x {CONFIG.get_sensor_height()}'
     })
 
-    if not no_dependencies:
-        csubtitle('System Packages')
-        install_dependencies(verbose=verbose)
+    results = {}
+    # We will only actually execute the installation procedures if the skip flag is not set
+    if not skip:
+        if no_dependencies:
+            cprint('Skipping system packages...')
+        else:
+            install_dependencies(verbose=config.verbose())
+
+        for dependency_name, install_function in DEPENDENCY_INSTALL_FUNCTIONS.items():
+            csubtitle(f'Installing "{dependency_name}"')
+            result = install_function(path)
+            results[dependency_name] = result
+
     else:
-        cprint('Skipping system packages')
+        results['mock'] = mock_install_repository(path)
 
-    csubtitle('Installing fastwriter')
-    install_fastwriter(path, verbose=verbose)
-
-    csubtitle('Installing pcitool')
-    install_pcitools(path, verbose=verbose)
-
-    csubtitle('Installing libufodecode')
-    install_libufodecode(path, verbose=verbose)
-
-    if not no_libuca:
-        csubtitle('Installing libuca')
-        install_libuca(path, verbose=verbose)
-
-        csubtitle('Installing uca-ufo')
-        install_uca_ufo(path, verbose=verbose)
-
-        csubtitle('Installing ipecamera')
-        install_ipecamera(path, verbose)
-    else:
-        cprint('Skipping Libuca')
+    # Creating the JSON file if the flag was set.
+    if save_json:
+        try:
+            json_path = os.path.join(os.getcwd(), 'install.json')
+            with open(json_path, mode='w+') as file:
+                json.dump(results, file, indent=4, sort_keys=True)
+        except Exception as e:
+            cerror(f'Could not save "install.json" because: {str(e)}')
+            sys.exit(1)
 
     sys.exit(0)
 
@@ -562,6 +579,7 @@ ci.add_command(serve)
 cli.add_command(init)
 cli.add_command(config)
 cli.add_command(install)
+cli.add_command(install_all)
 cli.add_command(script)
 cli.add_command(frame)
 cli.add_command(setup)

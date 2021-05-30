@@ -1,6 +1,7 @@
 import os
 import unittest
 import shutil
+import json
 from typing import Optional
 
 from click.testing import CliRunner
@@ -71,7 +72,7 @@ class TestBaseCommand(UfotestCliTestMixin, unittest.TestCase):
         self.assertTrue(self.config.verbose())
 
 
-class TestInstallCommand(UfotestCliTestMixin, unittest.TestCase):
+class TestInstallCommands(UfotestCliTestMixin, unittest.TestCase):
 
     # Since this class tests the installation, it will have a heavy requirement for a temporary folder into which it
     # can actually install the stuff. "UfotestCliTestMixin" does already provide a temporary folder, but it is only
@@ -80,7 +81,7 @@ class TestInstallCommand(UfotestCliTestMixin, unittest.TestCase):
 
     def setUp(self):
 
-        super(TestInstallCommand, self).setUp()
+        super(TestInstallCommands, self).setUp()
 
         self.install_folder_path = os.path.join(self.folder_path, 'installs')
 
@@ -90,13 +91,13 @@ class TestInstallCommand(UfotestCliTestMixin, unittest.TestCase):
         # Create a new folder
         os.mkdir(self.install_folder_path)
 
-    # -- test methods
+    # -- test methods for "install"
 
     def test_invoking_without_arguments_causes_error(self):
         """
         If the exit code indicates an error when attempting to invoke command without positional arguments
         """
-        result = self.cli_runner.invoke(install, [])
+        result = self.cli_runner.invoke(cli, ['install'])
         self.assertExitCodeNotZero(result)
 
     def test_install_pcitool_skip(self):
@@ -106,4 +107,68 @@ class TestInstallCommand(UfotestCliTestMixin, unittest.TestCase):
         result = self.cli_runner.invoke(cli, ['install', '--skip', 'pcitool', self.install_folder_path])
         self.assertExitCodeZero(result)
 
+    def test_install_pcitool_with_json_flag(self):
+        """
+        If calling the "install" command with the --save-json flag actually creates the json result file in the cwd
+        """
+        os.chdir(self.install_folder_path)
+        # This should create a "install.json" file in the current working directory
+        result = self.cli_runner.invoke(cli, ['install', '--skip', '--save-json', 'pcitool', self.install_folder_path])
+        self.assertExitCodeZero(result)
 
+        # Does the JSON file exist?
+        json_file_path = os.path.join(self.install_folder_path, 'install.json')
+        self.assertTrue(os.path.exists(json_file_path))
+
+        # Does it contain the right content
+        with open(json_file_path, mode='r') as json_file:
+            content = json.load(json_file)
+            self.assertIn('success', content.keys())
+            self.assertTrue(content['success'])
+
+    def test_install_pcitool_without_json_flag(self):
+        """
+        If calling the "install" command without the --save-json flag does not create the json file.
+        """
+        os.chdir(self.install_folder_path)
+        result = self.cli_runner.invoke(cli, ['install', '--skip', 'pcitool', self.install_folder_path])
+        self.assertExitCodeZero(result)
+
+        json_file_path = os.path.join(self.install_folder_path, 'install.json')
+        self.assertFalse(os.path.exists(json_file_path))
+
+    # -- test methods for "install-all"
+
+    def test_install_all_skip(self):
+        """
+        If the "install-all" command basically works with exit code 0 when using the --skip option
+        """
+        result = self.cli_runner.invoke(cli, ['install-all', '--skip', self.install_folder_path])
+        self.assertExitCodeZero(result)
+
+    def test_install_all_with_save_json_flag(self):
+        """
+        If the "install-all" command actually produces a json result file if the --save-json flag is being passed
+        """
+        os.chdir(self.install_folder_path)
+        result = self.cli_runner.invoke(cli, ['install-all', '--skip', '--save-json', self.install_folder_path])
+        self.assertExitCodeZero(result)
+
+        # Does the JSON file exist?
+        json_file_path = os.path.join(self.install_folder_path, 'install.json')
+        self.assertTrue(os.path.exists(json_file_path))
+
+        # Does it contain the empty dict as it should?
+        with open(json_file_path, mode='r') as json_file:
+            content = json.load(json_file)
+            self.assertIn('mock', content.keys())
+
+    def test_install_all_without_save_json_flag(self):
+        """
+        If the "install-all" properly does not create a json file if the --save-json flag is not set
+        """
+        os.chdir(self.install_folder_path)
+        result = self.cli_runner.invoke(cli, ['install-all', '--skip', self.install_folder_path])
+
+        json_file_path = os.path.join(self.install_folder_path, 'install.json')
+        self.assertFalse(os.path.exists(json_file_path))
