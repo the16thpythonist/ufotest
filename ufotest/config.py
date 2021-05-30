@@ -4,10 +4,8 @@ Module containing the functions to access the configuration of ufotest.
 import os
 import toml
 from pathlib import Path
-from typing import List
 
-import shutil
-from jinja2 import Environment, PackageLoader, select_autoescape
+from ufotest.plugin import PluginManager
 
 # The path of the this very python package and the path to the default TOML config file, which will be copied during
 # the installation of this project
@@ -133,6 +131,14 @@ class Config(metaclass=Singleton):
             'verbose':          False
         }
 
+        # -- LOADING PLUGINS
+        # The plugin manager object maintains the list of all loaded plugins as well as the dictionaries which hold
+        # all the callbacks registered to the various hooks. "load_plugins" will search the folder passed to the
+        # constructor and interpret every subfolder which contains a main.py file as a plugin. The main.py file will
+        # be loaded.
+        self.pm = PluginManager(plugin_folder_path=self.get_plugin_folder())
+        self.pm.load_plugins()
+
     # IMPLEMENTING DICT FUNCTIONALITY
     # -------------------------------
 
@@ -211,6 +217,9 @@ class Config(metaclass=Singleton):
 
     def get_email_password(self):
         return self.data['ci']['gmail_password']
+
+    def get_plugin_folder(self):
+        return self.data['general']['plugin_folder']
 
     # == UTILITY METHODS
 

@@ -498,6 +498,16 @@ Changes
 1.2.0 (??.06.2021)
 ------------------
 
+Plugin System
+
+- Added the module "plugin.py" which is supposed to contain all the code, which implements a plugin system for ufotest
+- Added the class "plugin.PluginManager". During construction of the config singleton a new instance of plugin manager
+  is created as the config attribute "pm". It then loads all plugins from a folder which is specified in the config
+  option "general" -> "plugin_folder". These plugins can register callbacks to action and filter hooks which will then
+  be executed within ufotests routines at those points where the respective action and filter hooks are being called
+- Added the module "hooks.py", which contains the two classes "hooks.Action" and "hooks.Filter". These classes act as
+  decorators which can be used in plugins to register functions as hook callbacks
+
 Changes
 
 - Updated the README.rst to now also contain instructions for the installation of the project dependencies using either

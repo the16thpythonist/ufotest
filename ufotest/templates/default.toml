@@ -11,6 +11,8 @@ title = "UfoTest Config"
     repository_url = "http://github.com/the16thpythonist/ufotest.git"
     documentation_url = "https://ufotest.readthedocs.io/en/latest/index.html"
 
+    plugin_folder = "$HOME/.ufotest/plugins"
+
 # The installation section contains all the configuration, which us used to install all the requirements for the
 # project. This includes for example information about the target operating system, the URL's to the relevant
 # GIT repositories and the name of the packages to be installed.
