@@ -53,6 +53,39 @@ a list of all available commands or consult the `Documentation <https://ufotest.
 
     ufotest --help
 
+Installing all dependencies
+---------------------------
+
+To operate the ufo camera with on a new machine, several system packages and dependencies in the form of C code
+repositories have to be installed on the system. To simplify this setup process, the ufotest CLI offers the
+``install-all`` command:
+
+.. code-block:: console
+
+    ufotest install-all .
+
+.. note::
+
+    Be sure to configure the correct operating system, camera dimensions etc in the ufotest config file by using the
+    ``ufotest config`` command first.
+
+Installing single dependency
+----------------------------
+
+To install only a single dependency such as the "pcitool" repository, use the ``install`` command:
+
+.. code-block::
+
+    ufotest install "pcitool" .
+
+The ``--save-json`` flag can be used to create a "install.json" report file, which contains information about the
+installation process:
+
+.. code-block:: console
+
+    ufotest install --save-json "pcitool" .
+    cat install.json
+
 
 Development
 ===========

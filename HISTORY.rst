@@ -495,6 +495,14 @@ Changes
   command can be used to install all of the dependencies and the required system packages all at once.
 
 
+1.2.0 (??.06.2021)
+------------------
+
+Changes
+
+- Updated the README.rst to now also contain instructions for the installation of the project dependencies using either
+  the "install" command or the "install-all" command.
+
 TODO
 ----
 
