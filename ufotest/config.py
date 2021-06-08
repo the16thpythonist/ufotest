@@ -136,8 +136,11 @@ class Config(metaclass=Singleton):
         # all the callbacks registered to the various hooks. "load_plugins" will search the folder passed to the
         # constructor and interpret every subfolder which contains a main.py file as a plugin. The main.py file will
         # be loaded.
-        self.pm = PluginManager(plugin_folder_path=self.get_plugin_folder())
-        self.pm.load_plugins()
+        try:
+            self.pm = PluginManager(plugin_folder_path=self.get_plugin_folder())
+            self.pm.load_plugins()
+        except KeyError:
+            self.pm = None
 
         # -- LOADING SCRIPTS
         #self.sm = ScriptManager()

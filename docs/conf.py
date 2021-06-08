@@ -21,7 +21,6 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
 
-import ufotest
 from ufotest.util import get_version
 
 # -- General configuration ---------------------------------------------
