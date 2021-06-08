@@ -4,6 +4,7 @@ Module containing the functions to access the configuration of ufotest.
 import os
 import toml
 from pathlib import Path
+from typing import List
 
 from ufotest.plugin import PluginManager
 
@@ -253,6 +254,12 @@ class Config(metaclass=Singleton):
     def get_script_definitions(self):
         return SCRIPT_DEFINITIONS
 
+    def get_path(self) -> str:
+        """
+        Returns the path of the ufotest installation folder
+        """
+        return get_path()
+
     # -- Derived config values --
     # These are the methods which do not simply return the values which are in the config dict anyways, but which also
     # do some processing of the values
@@ -296,8 +303,35 @@ class Config(metaclass=Singleton):
 
         return repository_name
 
-    def get_ci_script_definitions(self):
-        pass
+    def get_ci_script_definitions(self) -> List[dict]:
+        """
+        Returns the scripts definitions for the CI repository. This is a list of dicts, where each dict contains
+        information about where to find a certain script within the source repository.
+
+        More specifically each of these dicts needs to contain AT LEAST the following fields:
+
+        - name: The unique string name by which the script will be identified within ufotest
+        - author: string defining the author name
+        - description: A description of the purpose of the script
+        - relative_path: A relative path providing the location of the script in question relative to the repo root
+        - class: The string class name of a valid implementation of scripts.AbstractScript which defines the type of
+          script
+
+        :returns: list of dicts defining scripts within the version controlled source repo
+        """
+        # The [ci.scripts] section in the config contains each registered script as an individual subsection and the
+        # fields of this subsection are the ones which are required as "script_definition". By the nature of toml
+        # config files, this section is a dict itself. We only need the list of its values
+        script_data = self.data['ci']['scripts']
+        return list(script_data.values())
+
+    def get_builds_path(self) -> str:
+        """
+        Returns the string absolute path to the "builds" folder within the ufotest installation folder. Simply appends
+        "builds" to the installation path.
+        """
+        ufotest_path = self.get_path()
+        return os.path.join(ufotest_path, 'builds')
 
     # == UTILITY METHODS
 

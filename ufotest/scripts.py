@@ -1,4 +1,8 @@
 import os
+import json
+import copy
+import datetime
+import warnings
 import subprocess
 from pathlib import Path
 from typing import List, Dict, Any, Optional
@@ -156,12 +160,43 @@ class ScriptManager(object):
         self.fallback_scripts[script_name] = script_class(script_definition)
 
     def register_script(self, script_definition: Dict[str, Any]) -> None:
+        # TODO: warning when registering a script which is not part in fallback
         script_name = script_definition['name']
         script_class = eval(script_definition['class'])
         self.scripts[script_name] = script_class(script_definition)
 
-    def load_scripts(self):
-        pass
+    def load_scripts(self) -> None:
+        """
+        This method loads all dem scripts.
+
+        After this method was called it can be assumed that a reference to all registered scripts has been loaded to
+        the internal values "self.fallback_scripts" and "self.scripts" respectively.
+
+        This method first loads the fallback scripts. These are part of the main ufotest code. The scripts which are
+        loaded are defined by the internal "fallback_script_definitions" list. The actual internal dict for the
+        scripts (self.scripts) is then initialized as a copy of these fallback scripts. Then it is attempted to load
+        the script from the latest cloned version of the remote repository (ci repo) and overwrite the self.script
+        entries with those.
+
+        :returns: None
+        """
+        # First of we load the fallback scripts. These are the scripts which are the hardcoded stable versions which
+        # come shipped with the actual ufotest code.
+        self.load_fallback_scripts()
+        # Then we will use these fallback scripts as the "default" versions of the main script dict. In the next step
+        # when loading the scripts from the remote repo, they will most likely be overwritten, but if a script is
+        # missing in the repo, that wont break our code (the whole purpose of a fallback)
+        self.scripts = copy.deepcopy(self.fallback_scripts)
+
+        try:
+            # This method returns the absolute path to the build folder of the most recent build. That is the build
+            # from which we want to use the scripts. If NONE builds exist yet, this raises a LookupError!
+            build_folder_path = self.most_recent_build_folder()
+            # Given the folder path of a build folder, this method uses the ci script definitions to load all the
+            # appropriate script wrapper instances into the self.scripts dict from this build.
+            self.load_build_scripts(build_folder_path)
+        except LookupError:
+            pass
 
     def load_build_scripts(self, build_folder_path: str):
         # First of all within the build folder we need the path of the actual cloned repository folder. This repo
@@ -183,13 +218,43 @@ class ScriptManager(object):
 
             self.register_script(script_definition)
 
+    # TODO: We are actually calculating this every time here. This is not the most efficient solution.
+    # If this becomes an issue in the future we can for example cache the current most recent result in a file
+    # whenever a test report is created...
     def most_recent_build_folder(self) -> str:
         """
         Returns the absolute path to the build folder of the most recent build.
 
+        :raises LookupError: In case there are no builds yet, on other words: If the remote repo has never been
+            cloned before, no scripts can be loaded from it either.
         :returns: string of absolute path
         """
+        # Well the dumb solution would be to parse the name of each build folder because part of the name is when
+        # the build was started. But the concrete format or the containing of the date itself could be subject to
+        # future change. I think each build folder also should contain a json file which contains the details of the
+        # build.
+        builds = []
+        builds_path = self.config.get_builds_path()
 
+        for root, folders, files in os.walk(builds_path):
+            if len(folders) == 0:
+                raise LookupError((
+                    'The builds folder of this ufotest installation is empty. This means that the remote repo has not '
+                    'been cloned at this point. Thus, no scripts can be loaded from the remote repository.'
+                ))
+
+            for folder in folders:
+                folder_path = os.path.join(root, folder)
+                json_path = os.path.join(folder_path, 'report.json')
+                with open(json_path, mode='r') as json_file:
+                    data = json.load(json_file)
+                    builds.append(data)
+            break
+
+        # 'start_iso' contains the datetime of when the build started in ISO format and thus we need to convert it
+        # into a datetime instance first for the max to work properly
+        most_recent_build = max(builds, key=lambda b: datetime.datetime.fromisoformat(b['end_iso']))
+        return most_recent_build['folder']
 
     def invoke(self, script_name: str, args: Optional[Any] = None, use_fallback: bool = False) -> Any:
         if use_fallback:

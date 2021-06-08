@@ -378,6 +378,7 @@ class BuildReport(AbstractRichOutput):
             'repository_name':      self.repository_name,
             'branch':               self.branch,
             'commit':               self.commit,
+            'folder':               self.folder,
             'folder_name':          self.folder_name,
             'bitfile_path':         self.bitfile_path,
         }
