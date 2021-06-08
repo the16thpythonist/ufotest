@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import List, Dict, Any, Optional
 
 import click
 
@@ -15,6 +16,54 @@ SCRIPT_AUTHORS = {
     'jonas':                'Jonas Teufel <jonseb1998@gmail.com',
     'timo':                 'Timo Dritschler <timo.dritschler@kit.edu>'
 }
+
+
+class AbstractScript(object):
+
+    def __init__(self, script_definition: Dict[str, Any]):
+        self.data = script_definition
+
+    def invoke(self, args: Optional[Any] = None):
+        pass
+
+
+class BashScript(AbstractScript):
+
+    def __init__(self):
+        pass
+
+
+class ScriptManager(object):
+
+    # DESIGN DECISION
+    # Explicitly pass in all relevant parameters?
+    # + More separation of concerns
+    # + Dependencies are more transparent
+    # Pass in the config instance?
+    # + In the future this class might need access to more config values and then I would not need to change the
+    #   the constructor signature
+    # + It is more unified, since all the other "manager" classes also just use the config.
+    # + definitely easier
+    # - I cannot actually import the config class since that would cause circular dependency.
+    def __init__(self, config):
+        self.config = config
+        self.config.pm.do_action('script_manager_pre_construct', self.config)
+
+        self.fallback_script_definitions: List[dict] = self.config.get_script_definitions()
+        self.fallback_script_definitions = self.config.pm.apply_filters(
+            'fallback_script_definitions',
+            self.fallback_script_definitions
+        )
+        self.fallback_scripts = {}
+
+    def load_fallback_scripts(self):
+        for script_definition in self.fallback_script_definitions:
+            script_name = script_definition['name']
+            script_class = eval(script_definition['class'])
+            self.fallback_scripts[script_name] = script_class(script_definition)
+
+    def load_scripts(self):
+        pass
 
 
 SCRIPTS = {

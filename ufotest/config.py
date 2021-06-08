@@ -139,6 +139,10 @@ class Config(metaclass=Singleton):
         self.pm = PluginManager(plugin_folder_path=self.get_plugin_folder())
         self.pm.load_plugins()
 
+        # -- LOADING SCRIPTS
+        #self.sm = ScriptManager()
+        #self.sm.load_scripts()
+
     # IMPLEMENTING DICT FUNCTIONALITY
     # -------------------------------
 

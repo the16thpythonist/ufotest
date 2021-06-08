@@ -23,6 +23,7 @@ Content Overview
    installation
    current
    usage
+   hooks
    tests
    ci
    camera
