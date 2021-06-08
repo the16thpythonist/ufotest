@@ -27,6 +27,31 @@ DEFAULT_PATH = os.path.join(HOME_PATH, '.ufotest')
 PATH_ENV = 'UFOTEST_PATH'
 
 
+SCRIPT_DEFINITIONS = [
+    {
+        'name':             'reset',
+        'path':             os.path.join(PATH, 'scripts', 'Reset_all.sh'),
+        'class':            'BashScript',
+        'description':      'Resets the camera to the default state',
+        'author':           'Michele Caselle <michele.caselle@kit.edu>'
+    },
+    {
+        'name':             'reset_tp',
+        'path':             os.path.join(PATH, 'scripts', 'Reset_all_TP.sh'),
+        'class':            'BashScript',
+        'description':      'Resets the camera to the default state, using the Test Pattern configuration',
+        'author':           'Michele Caselle <michele.caselle@kit.edu>'
+    },
+    {
+        'name':             'status',
+        'path':             os.path.join(PATH, 'scripts', 'status.sh'),
+        'class':            'BashScript',
+        'description':      'Reads out the internal status parameters of the camera',
+        'author':           'Michele Caselle <michele.caselle@kit.edu>'
+    }
+]
+
+
 def get_builds_path() -> str:
     """Returns the string path of the 'builds' folder within the ufotest installation folder.
 
@@ -169,6 +194,11 @@ class Config(metaclass=Singleton):
 
     # == WRAPPER METHODS
 
+    # -- trivial config values --
+    # These methods simply return values which are in the config dict anyways. Accessing these values through the single
+    # bottleneck of these wrapper methods leaves the option to change the config dict structure in the future without
+    # breaking the code in multiple places.
+
     def verbose(self):
         return self.data['context']['verbose']
 
@@ -183,14 +213,6 @@ class Config(metaclass=Singleton):
 
     def get_documentation_url(self):
         return self.data['general']['documentation_url']
-
-    def get_sensor_width(self):
-        sensor_model = self.data['camera']['model']
-        return self.data['camera'][sensor_model]['sensor_width']
-
-    def get_sensor_height(self):
-        sensor_model = self.data['camera']['model']
-        return self.data['camera'][sensor_model]['sensor_height']
 
     def get_archive_path(self):
         return os.path.expandvars(self.data['tests']['archive'])
@@ -227,6 +249,55 @@ class Config(metaclass=Singleton):
 
     def get_plugin_folder(self):
         return self.data['general']['plugin_folder']
+
+    def get_script_definitions(self):
+        return SCRIPT_DEFINITIONS
+
+    # -- Derived config values --
+    # These are the methods which do not simply return the values which are in the config dict anyways, but which also
+    # do some processing of the values
+
+    def get_sensor_width(self) -> str:
+        """
+        Returns the sensor width of the currently selected camera in pixels. Derives this value from the camera
+        selection. The config file itself defines multiple different camera profiles. What can be set in the config
+        is which profile is active. So this method has to first get the profile to then return the value from the
+        according profile section.
+
+        :returns: the string representation of the int camera width in pixels
+        """
+        sensor_model = self.data['camera']['model']
+        return self.data['camera'][sensor_model]['sensor_width']
+
+    def get_sensor_height(self):
+        """
+        Returns the sensor height of the currently selected camera in pixels. Derives this value from the camera
+        selection. The config file itself defines multiple different camera profiles. What can be set in the config
+        is which profile is active. So this method has to first get the profile to then return the value from the
+        according profile section.
+
+        :returns: the string representation of the int camera height in pixels
+        """
+        sensor_model = self.data['camera']['model']
+        return self.data['camera'][sensor_model]['sensor_height']
+
+    def get_ci_repository_name(self) -> str:
+        """
+        Returns the string name of the remote repository used for the continuous integration. This name is derived from
+        the repo url, which is the only thing saved in the config file
+        """
+        repository_url = self.get_ci_repository_url()
+
+        # So a URL is basically a path, which means that os.path.basename should give us only the last part of the
+        # whole thing. But this part may or may not refer to the repositories .git file, which is why we need to
+        # remove that substring.
+        repository_name = os.path.basename(repository_url)
+        repository_name = repository_name.replace('.git', '')
+
+        return repository_name
+
+    def get_ci_script_definitions(self):
+        pass
 
     # == UTILITY METHODS
 
