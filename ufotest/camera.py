@@ -15,6 +15,45 @@ from ufotest.util import cprint, cresult, cparams
 from ufotest.exceptions import PciError, FrameDecodingError
 
 
+class AbstractCamera(object):
+    """
+    This is the abstract base class for wrapping access to a specific camera.
+
+    **DESIGN CHOICE**
+
+    Here is the reasoning for why this is necessary: Previously the access to the camera was managed by a few isolated
+    functions in this module. That was a simpler and less bloated version, but it also was not sub optimal for the
+    following reasons:
+
+    (1) There is the desire to be able to actually use different cameras with the ufotest framework. The isolated
+    functions only implemented access to one specific model. So the reasonable alternative is to defines a set of
+    methods which have to be implemented by every camera and other than that leave room for individual requirements.
+    This needs an interface (this very class in other words)
+
+    (2) Representing the camera by a class has a secondary advantage: A class has a state. This leaves the option to
+    potentially cache certain values from the camera interaction and thus be more efficient. Or some functionality
+    inherently requires an external state management.
+    """
+    def __init__(self):
+        pass
+
+    @abstractmethod
+    def get_frame(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def set_up(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def tear_down(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def reset(self):
+        raise NotImplementedError
+
+
 def pci_write(addr: str, value: str):
     pci_command = 'pci -w {} {}'.format(addr, value)
     exit_code = execute_command(pci_command, verbose=False)
