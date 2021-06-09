@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import List
 
 from ufotest.plugin import PluginManager
+from ufotest.scripts import ScriptManager
 
 # The path of the this very python package and the path to the default TOML config file, which will be copied during
 # the installation of this project
@@ -49,6 +50,50 @@ SCRIPT_DEFINITIONS = [
         'class':            'BashScript',
         'description':      'Reads out the internal status parameters of the camera',
         'author':           'Michele Caselle <michele.caselle@kit.edu>'
+    },
+    {
+        'name':             'power_up',
+        'path':             os.path.join(PATH, 'scripts', 'PWUp.sh'),
+        'class':            'BashScript',
+        'description':      'Enables the internal power supply of the camera sensor',
+        'author':           'Michele Caselle <michele.caselle@kit.edu>'
+    },
+    {
+        'name':             'power_down',
+        'path':             os.path.join(PATH, 'scripts', 'PWDown.sh'),
+        'class':            'BashScript',
+        'description':      'Disables the internal power supply of the camera sensor',
+        'author':           'Michele Caselle <michele.caselle@kit.edu>'
+    },
+    {
+        'name':             'pcie_init',
+        'path':             os.path.join(PATH, 'scripts', 'pcie_init.sh'),
+        'class':            'BashScript',
+        'description':      'Identifies the fpga and initiates the driver for the connection',
+        'author':           'Michele Caselle <michele.caselle@kit.edu>'
+    },
+    {
+        'name':             'reset_fpga',
+        'path':             os.path.join(PATH, 'scripts', 'reset_fpga.sh'),
+        'class':            'BashScript',
+        'description':      'Resets the fpga',
+        'author':           'Michele Caselle <michele.caselle@kit.edu>'
+    },
+    {
+        'name':             'reset_dma',
+        'path':             os.path.join(PATH, 'scripts', 'dma.sh'),
+        'class':            'BashScript',
+        'description':      'Resets the dma engine of the fpga',
+        'author':           'Michele Caselle <michele.caselle@kit.edu>'
+    },
+    {
+        'name':             'hello_world',
+        'path':             os.path.join(PATH, 'scripts', 'hello_world.sh'),
+        'class':            'BashScript',
+        'description':      ('Only echos the single string line "Hello World!". This script does not serve any real '
+                             'purpose for the camera. It is only used for testing purposes. With this simple script '
+                             'it is possible to test if the scripts are discovered properly and if bash works.'),
+        'author':           'Jonas Teufel <jonseb1998@gmail.com>'
     }
 ]
 
@@ -157,20 +202,21 @@ class Config(metaclass=Singleton):
             'verbose':          False
         }
 
+        self.pm = None
+        self.sm = None
+
+    def prepare(self):
         # -- LOADING PLUGINS
         # The plugin manager object maintains the list of all loaded plugins as well as the dictionaries which hold
         # all the callbacks registered to the various hooks. "load_plugins" will search the folder passed to the
         # constructor and interpret every subfolder which contains a main.py file as a plugin. The main.py file will
         # be loaded.
-        try:
-            self.pm = PluginManager(plugin_folder_path=self.get_plugin_folder())
-            self.pm.load_plugins()
-        except KeyError:
-            self.pm = None
+        self.pm = PluginManager(plugin_folder_path=self.get_plugin_folder())
+        self.pm.load_plugins()
 
         # -- LOADING SCRIPTS
-        #self.sm = ScriptManager()
-        #self.sm.load_scripts()
+        self.sm = ScriptManager(self)
+        self.sm.load_scripts()
 
     # IMPLEMENTING DICT FUNCTIONALITY
     # -------------------------------

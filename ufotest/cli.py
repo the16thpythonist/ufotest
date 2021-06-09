@@ -13,7 +13,6 @@ import shutil
 
 from ufotest.config import PATH, get_config_path, Config
 from ufotest.exceptions import IncompleteBuildError, BuildError, PciError, FrameDecodingError
-from ufotest.scripts import SCRIPTS, SCRIPTS_PATH
 from ufotest.util import (update_install,
                           run_command,
                           setup_environment,
@@ -81,6 +80,8 @@ def cli(ctx, version, verbose):
     config = Config()
     config['context']['verbose'] = True
     ctx.obj = config
+
+    config.prepare()
 
 
 # -- Commands related to the installation of dependencies
@@ -321,39 +322,6 @@ def frame(verbose, output, display):
     sys.exit(0)
 
 
-@click.command('script', short_help="Execute one of the known (bash) scripts")
-@click.argument('name', type=click.STRING)
-@click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
-def script(name, verbose):
-    """Executes a registered script with the given NAME
-    """
-    CONFIG['context']['verbose'] = verbose
-
-    exit_code = execute_script(name, verbose=verbose)
-    if not exit_code:
-        click.secho('Script "{}" succeeded'.format(name), bold=True, fg='green')
-        cresult(f'Script "{name}" exited without errors')
-    else:
-        cerror(f'Script "{name}" failed!')
-        sys.exit(1)
-
-
-@click.command('list-scripts', short_help='List all available scripts')
-def list_scripts():
-    if not check_install():
-        return 1
-
-    click.secho('The following scripts are available:\n', fg='green', bold=True)
-
-    for script_id, script_data in SCRIPTS.items():
-        click.secho(script_id, bold=True)
-        click.secho('   Path: {}\n   Description: {}\n   Author: {}\n'.format(
-            script_data['path'],
-            script_data['description'],
-            script_data['author']
-        ))
-
-
 @click.command('setup', short_help="Enable the camera")
 @click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 def setup(verbose):
@@ -420,7 +388,7 @@ def flash(verbose, file: str) -> None:
         command=CONFIG['install']['vivado_command'],
         file=file_path
     )
-    exit_code = run_command(flash_command, cwd=SCRIPTS_PATH)
+    exit_code = run_command(flash_command)
     if not exit_code:
         cresult('Flashed FPGA with: {}'.format(file_path))
         sys.exit(0)
@@ -481,6 +449,141 @@ def test(verbose, suite, test_id):
     click.secho('    View the report at: http://localhost/archive/{}/report.html'.format(test_context.folder_name))
 
     sys.exit(0)
+
+
+# == SCRIPTS COMMAND GROUP ==
+
+@click.group('scripts', short_help='Command sub group for interacting with the scripts registered within ufotest')
+@pass_config
+def scripts(config):
+    pass
+
+
+@click.command('invoke', short_help='Invokes a script which is registered in ufotest identified by its string name')
+@click.option('--args', type=click.STRING, default='',
+              help=('This is a string which can contain additional arguments for the script itself. Depending on the '
+                    'type of script, the concrete format of this may differ. For the default bash type, this string '
+                    'is appended to the script call as it is.'))
+@click.option('--fallback', is_flag=True, default=False,
+              help=('Boolean flag of whether or not to use the fallback version of the script. The fallback version '
+                    'is the (generally) stable version of a script which comes shipped with ufotest itself and is '
+                    'not subject to version control.'))
+@click.argument('name', type=click.STRING)
+@pass_config
+def invoke_script(config, name, args, fallback):
+    """
+    Invokes the script identified by it's string NAME.
+
+    On default this command will attempt to invoke the most recent version of the script, which is subject to version
+    control and came with the most recent CI build. To use the stable fallback version which comes with the
+    ufotest software itself use the --fallback flag
+    """
+    ctitle('Invoking script')
+    cparams({
+        'script name': name,
+        'additional args': args,
+        'use fallback?': fallback,
+    })
+
+    try:
+        result = config.sm.invoke(name, args, use_fallback=fallback)
+
+        if result['exit_code'] == 0:
+            cresult(f'script "{name}" exits with code 0')
+            cprint('STDOUT:\n' + result['stdout'])
+
+        elif result['exit_code'] != 0:
+            cerror(f'script "{name}" exits with code 1')
+            cerror('STDERR:\n' + result['stderr'])
+            cprint('STDOUT:\n' + result['stdout'])
+            sys.exit(1)
+
+    except KeyError:
+        cerror(f'A script with name "{name}" is not registered with ufotest!')
+        sys.exit(1)
+
+    sys.exit(0)
+
+
+@click.command('list', short_help='Displays a list of all scripts which are registered with ufotest')
+@click.option('--full', is_flag=True, default=False,
+              help=('Boolean flag to show the full details of every script '))
+@pass_config
+def list_scripts(config, full):
+    """
+    Displays a list of all scripts that are registered with ufotest.
+
+    Use the --detail flag to display more information about each script.
+    """
+    ctitle('list registered scripts')
+
+    for script_name, script_wrapper in config.sm.scripts.items():
+        csubtitle(f'{script_name} ({script_wrapper.data["class"]})')
+
+        if full:
+            details = {
+                'description': script_wrapper.description,
+                'author': script_wrapper.author,
+                'path': script_wrapper.path,
+                'has fallback?': script_name in config.sm.fallback_scripts,
+            }
+        else:
+            details = {
+                'path': script_wrapper.path,
+                'has fallback?': script_name in config.sm.fallback_scripts
+            }
+
+        cparams(details)
+
+    sys.exit(0)
+
+
+@click.command('details', short_help='Displays the full details of a registered script including its source code')
+@click.argument('name', type=click.STRING)
+@pass_config
+def script_details(config, name):
+    """
+    Shows the full details of the scripts identified by it's string NAME.
+
+    This command prints the full details for the given script, including its source code.
+    """
+    # ~ Checking for eventual problems with the script
+    # First we need to check if a script with the given name even exists
+    if name in config.sm.scripts:
+        script = config.sm.scripts[name]
+    elif name in config.sm.fallback_scripts:
+        script = config.sm.fallback_scripts[name]
+    else:
+        cerror(f'A script identified by "{name}" is nor registered with ufotest!')
+        sys.exit(1)
+
+    # Then we need to check if the file even exists / the content can be read, since we also want to display the
+    # content of it
+    try:
+        with open(script.path, mode='r+') as file:
+            content = file.read()
+    except:
+        cerror(f'The file {script.path} does not exists and/or is not readable!')
+        sys.exit(1)
+
+    # ~ Displaying the results to the user in case there are no problems
+
+    ctitle(name)
+    cparams({
+        'type':         script.data['class'],
+        'path':         script.path,
+        'author':       script.author
+    })
+
+    cprint('DESCRIPTION:\n' + script.description)
+
+    print()
+    cprint('CONTENT:\n' + content)
+
+
+# == CONTINUOUS INTEGRATION COMMAND GROUP ==
+# The 'ci' sub command for ufotest is actually a command group which itself contains various sub commands related to
+# the CI functionality such as starting the CI server or triggering a new build process with the remote repository.
 
 
 @click.group('ci', short_help='continuous integration related commands')
@@ -575,19 +678,26 @@ def serve(verbose, host):
 ci.add_command(build)
 ci.add_command(serve)
 
+# Registering the commands with the "scripts" group.
+scripts.add_command(invoke_script)
+scripts.add_command(list_scripts)
+scripts.add_command(script_details)
+
 # Registering the commands within the click group
 cli.add_command(init)
 cli.add_command(config)
 cli.add_command(install)
 cli.add_command(install_all)
-cli.add_command(script)
 cli.add_command(frame)
 cli.add_command(setup)
 cli.add_command(teardown)
 cli.add_command(list_scripts)
 cli.add_command(flash)
 cli.add_command(test)
+
+# Registering the sub groups
 cli.add_command(ci)
+cli.add_command(scripts)
 
 
 if __name__ == "__main__":

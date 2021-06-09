@@ -14,7 +14,6 @@ from abc import ABC, abstractmethod
 from jinja2 import Template, FileSystemLoader, Environment
 
 from ufotest.config import *
-from ufotest.scripts import SCRIPTS
 
 # GLOBAL VARIABLES
 VERSION_PATH = os.path.join(PATH, 'VERSION')
@@ -22,6 +21,8 @@ VERSION_PATH = os.path.join(PATH, 'VERSION')
 TEMPLATE_LOADER = FileSystemLoader(TEMPLATE_PATH)
 TEMPLATE_ENVIRONMENT = Environment(loader=TEMPLATE_LOADER)
 TEMPLATE_ENVIRONMENT.globals['config'] = Config()
+
+SCRIPTS = {}
 
 
 # FUNCTIONS

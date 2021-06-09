@@ -180,6 +180,18 @@ class PluginManager:
                 plugin_name, module = self.import_plugin_by_path(plugin_path)
                 self.plugins[plugin_name] = module
 
+    def reset(self):
+        """
+        Resets the plugin manager, which means that it unloads all registered filter and action hooks. Also clears the
+        internal reference to all the plugin modules.
+
+        :returns: void
+        """
+        self.filters = defaultdict(list)
+        self.actions = defaultdict(list)
+
+        self.plugins = {}
+
     @classmethod
     def import_plugin_by_path(cls, path: str) -> Tuple[str, Any]:
         """

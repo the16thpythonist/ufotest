@@ -495,10 +495,12 @@ Changes
   command can be used to install all of the dependencies and the required system packages all at once.
 
 
-1.2.0 (??.06.2021)
+1.2.0 (09.06.2021)
 ------------------
 
-Plugin System
+Plugin System: This version introduces the initial implementation of the plugin system. The plugin system should make
+it possible to write plugins for ufotest, which modify and extend it's core behaviour in a reversible, modular fashion
+which does not require a permanent modification to the core source code.
 
 - Added the module "plugin.py" which is supposed to contain all the code, which implements a plugin system for ufotest
 - Added the class "plugin.PluginManager". During construction of the config singleton a new instance of plugin manager
@@ -507,9 +509,32 @@ Plugin System
   be executed within ufotests routines at those points where the respective action and filter hooks are being called
 - Added the module "hooks.py", which contains the two classes "hooks.Action" and "hooks.Filter". These classes act as
   decorators which can be used in plugins to register functions as hook callbacks
+- Added a section "hooks" to the project docs, which will contain a listing and description of all available hooks for
+  plugin development.
+- Added the test module "test_plugin.py" with unittests for the plugin system.
+
+Script Management: The basic script management has been rewritten with a more extensive system for managing the scrips.
+This new system was designed with two goals in mind: (1) The camera interaction scripts are supposed to be subject to
+the CI version control itself and (2) The script behavior should be modifyable by hooks.
+
+- Reworked the module "scripts.py"
+- Added the class "scripts.ScriptManager" which will be the central hub for loading the scripts and for interacting
+  with them (by invoking them for example). An instance of this script manager will be part of the config singleton and
+  thus accessible from anywhere.
+- Added the class "scripts.AbstractScript" as an abstract base class for specific implementations of script wrapper
+  classes, which internally wrap the functionality of interacting with different kinds of scripts.
+- Added the class "scripts.BashScript" as an initial implementation for a script wrapper for interacting with simple
+  bash scripts.
+- Added the test module "test_script.py" with unittests for the script management system.
+- Added the fallback scripts "hello_world.sh" for testing purposes only
 
 Changes
 
+- The main "config.Config" singleton was changes quite a bit: This singleton now also manages instances of the plugin
+  manager and the script manager. These instances cannot be created in the constructor of Config because they rely on
+  the config file itself. They are initialized by calling the "prepare" method externally. This should happen as far in
+  the runtimes start as possible!
+- Removed the two cli commands "script" and "list_scripts" in favor of the reworked script management system.
 - Updated the README.rst to now also contain instructions for the installation of the project dependencies using either
   the "install" command or the "install-all" command.
 
@@ -521,7 +546,6 @@ Bugs:
 Features:
 
 - Change the default URL for pcitool installation
-- Make scripts part of the CI repository. Fallback version?
 - Config file flash ID
 
 - Document camera properties "Notes"

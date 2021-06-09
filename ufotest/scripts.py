@@ -8,10 +8,6 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 from abc import abstractmethod
 
-import click
-
-from ufotest.config import CONFIG
-
 
 PATH = Path(__file__).parent.absolute()
 SCRIPTS_PATH = os.path.join(PATH, 'scripts')
@@ -134,7 +130,7 @@ class ScriptManager(object):
     # - I cannot actually import the config class since that would cause circular dependency.
     def __init__(self, config):
         self.config = config
-        self.config.pm.do_action('script_manager_pre_construct', self.config)
+        self.config.pm.do_action('script_manager_pre_construct', self, globals())
 
         self.fallback_script_definitions: List[dict] = self.config.get_script_definitions()
         self.fallback_script_definitions = self.config.pm.apply_filter(
@@ -155,12 +151,41 @@ class ScriptManager(object):
             self.register_fallback_script(script_definition)
 
     def register_fallback_script(self, script_definition: Dict[str, Any]) -> None:
+        """
+        Based on the given *script_definition", registers the script in question in the internal "fallback_scripts"
+        dict. To do that the script will be converted into the appropriate script wrapper instance.
+
+        :param script_definition: The dict which describes the script to be registered. It's required fields depend
+            on what type (class field) the script is of.
+
+        :returns: void
+        """
         script_name = script_definition['name']
         script_class = eval(script_definition['class'])
         self.fallback_scripts[script_name] = script_class(script_definition)
 
     def register_script(self, script_definition: Dict[str, Any]) -> None:
-        # TODO: warning when registering a script which is not part in fallback
+        """
+        Based on the given *script_definition", registers the script in question in the internal "scripts" dict. To
+        do that the script will be converted into the appropriate script wrapper instance.
+
+        Note that this method will create a warning when attempting to register a script with an identifier for which
+        no fallback script exists.
+
+        :param script_definition: The dict which describes the script to be registered. It's required fields depend
+            on what type (class field) the script is of.
+
+        :returns: void
+        """
+        # We will allow a script to be registered without a fallback scripts, because there might be a method to the
+        # madness so to say, but we will at least warn, that this is not how it is intended.
+        if script_definition['name'] not in self.fallback_scripts:
+            warnings.warn((
+                f'It seems like you are registering a script identified by "{script_definition["name"]}". For this '
+                f'identifier no fallback script exists. Be aware, that should the script not work or be absent in the '
+                f'future functionality might break without a stable fallback version to replace it with!'
+            ), UserWarning)
+
         script_name = script_definition['name']
         script_class = eval(script_definition['class'])
         self.scripts[script_name] = script_class(script_definition)
@@ -257,62 +282,48 @@ class ScriptManager(object):
         return most_recent_build['folder']
 
     def invoke(self, script_name: str, args: Optional[Any] = None, use_fallback: bool = False) -> Any:
+        """
+        This method invokes the script identified by *script_name* passing the optional *args*. If the *use_fallback*
+        flag is set it will attempt to use the fallback version.
+        """
         if use_fallback:
+            # We dont actually need to check this here, because if this entry actually did not exist in the dict, this
+            # would raise a key error anyways. But that key error would be very unspecific and hard to debug, so it's
+            # better to raise the error on our terms.
+            if script_name not in self.fallback_scripts:
+                raise KeyError((f'You are attempting to invoke a fallback script identified by "{script_name}", '
+                                f'but no script with this identifier has been registered as a fallback script. '
+                                f'Check if the given identifier has a typo and if the script was properly registered!'))
+
             script = self.fallback_scripts[script_name]
         else:
+            if script_name not in self.scripts:
+                raise KeyError((f'You are attempting to invoke a script identified by "{script_name}", '
+                                f'but no script with this identifier was previously registered as a script. '
+                                f'Check if the given identifier has a type and if the script was properly registered!'))
+
             script = self.scripts[script_name]
 
+        # Returning the result of the actual script invocation.
         return script.invoke(args)
+
+    def get(self, script_name: str, use_fallback: bool = False) -> AbstractScript:
+        if use_fallback:
+            if script_name not in self.fallback_scripts:
+                raise KeyError((f'You are attempting to retrieve a fallback script identified by "{script_name}", '
+                                f'but no script with this identifier has been registered as a fallback script!'))
+
+            return self.fallback_scripts[script_name]
+
+        else:
+            if script_name not in self.scripts:
+                raise KeyError((f'You are attempting to retrieve a fallback script identified by "{script_name}", '
+                                f'but no script with this identifier has been registered as a fallback script!'))
+
+            return self.scripts[script_name]
 
     def __len__(self):
         return len(self.fallback_scripts)
 
-
-SCRIPTS = {
-    'reset': {
-        'path':             os.path.join(SCRIPTS_PATH, 'Reset_all.sh'),
-        'description':      'Resets the camera parameters to the default state',
-        'author':           SCRIPT_AUTHORS['michele']
-    },
-    'reset_tp': {
-        'path':             os.path.join(SCRIPTS_PATH, 'Reset_all_TP.sh'),
-        'description':      'Resets the camera parameters to the default state and activates the test pattern',
-        'author':           SCRIPT_AUTHORS['michele']
-    },
-    'status': {
-        'path':             os.path.join(SCRIPTS_PATH, 'status.sh'),
-        'description':      'Reads out the status parameters of the camera',
-        'author':           SCRIPT_AUTHORS['michele']
-    },
-    'power_up': {
-        'path':             os.path.join(SCRIPTS_PATH, 'PWUp.sh'),
-        'description':      'Enables the internal power supply of the camera sensor',
-        'author':           SCRIPT_AUTHORS['michele']
-    },
-    'power_down': {
-        'path':             os.path.join(SCRIPTS_PATH, 'PWDown.sh'),
-        'description':      'Disables the internal power supply of the camera sensor',
-        'author':           SCRIPT_AUTHORS['michele']
-    },
-    'pcie_init': {
-        'path':             os.path.join(SCRIPTS_PATH, 'pcie_init.sh'),
-        'description':      'Identifies the fpga and initiates the driver for the connection',
-        'author':           SCRIPT_AUTHORS['michele']
-    },
-    'reset_fpga': {
-        'path':             os.path.join(SCRIPTS_PATH, 'reset_fpga.sh'),
-        'description':      'Resets the fpga',
-        'author':           SCRIPT_AUTHORS['michele']
-    },
-    'reset_dma': {
-        'path':             os.path.join(SCRIPTS_PATH, 'dma.sh'),
-        'description':      'Resets the dma engine of the fpga',
-        'author':           SCRIPT_AUTHORS['michele']
-    }
-}
-
-# Dynamically registering the scripts from the config file also.
-if 'scripts' in CONFIG.keys():
-    SCRIPTS.update(CONFIG['scripts'])
 
 
