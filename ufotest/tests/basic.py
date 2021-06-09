@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 
 from ufotest.testing import AbstractTest, FigureTestResult, MessageTestResult, CombinedTestResult, TestRunner
 from ufotest.camera import get_frame
-from ufotest.util import run_script
 from ufotest.exceptions import PciError, FrameDecodingError
 
 
@@ -58,7 +57,8 @@ class RepeatedResetTest(AbstractTest):
 
         for i in range(self.REPETITIONS):
             # For each repetition we want to execute the reset script and analyse the output for possible errors.
-            exit_code, stdout = run_script('reset')
+            result = self.config.sm.invoke('reset')
+            stdout = result['stdout']
 
             lines = self.clean_reset_output(stdout)
             self.register_data = self.segment_reset_output(lines)

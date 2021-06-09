@@ -68,6 +68,9 @@ class UfotestTestMixin(object):
         cls.config = Config()
         cls.config.reload()
 
+        # This will method is needed to initialize the plugin manager and the script manager!
+        cls.config.prepare()
+
     @classmethod
     def tearDownClass(cls) -> None:
 

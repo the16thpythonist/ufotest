@@ -4,7 +4,7 @@ Module containing the functions to access the configuration of ufotest.
 import os
 import toml
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from ufotest.plugin import PluginManager
 from ufotest.scripts import ScriptManager
@@ -151,7 +151,32 @@ def reload_config():
 
 
 class Singleton(type):
+    """
+    This is metaclass definition, which implements the singleton pattern. The objective is that whatever class uses
+    this as a metaclass does not work like a traditional class anymore, where upon calling the constructor a NEW
+    instance is returned. This class overwrites the constructor behavior to return the same instance upon calling the
+    the constructor. This makes sure that always just a single instance exists in the runtime!
 
+    **USAGE**
+
+    To implement a class as a singleton it simply has to use this class as the metaclass.
+
+    .. code-block:: python
+
+        class MySingleton(metaclass=Singleton):
+
+            def __init__(self):
+                # The constructor still works the same, after all it needs to be called ONCE to create the
+                # the first and only instance.
+                pass
+
+        # All of those actually return the same instance!
+        a = MySingleton()
+        b = MySingleton()
+        c = MySingleton()
+
+        print(a is b) # true
+    """
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
@@ -164,7 +189,7 @@ class Config(metaclass=Singleton):
     """
     This is a singleton class, which implements the access to the config file.
 
-    **Design Choice**
+    **DESIGN CHOICE**
 
     So I feel like I want to explain my reasoning for this class here. This is indeed not my first implementation for
     config access within this project. Previously I was simply loading the dictionary into global variable within this
@@ -184,6 +209,46 @@ class Config(metaclass=Singleton):
     structure of the config file you would have to change every occasion in the code, which uses this attribute...
     This is obviously a bad SOC. With a class you could write methods, which wrap certain behaviour. After a change
     only this method would have to be changed.
+
+    **USAGE**
+
+    In a sense the config singleton instance is the central data structure upon which all the other ufotest
+    functionality relies. This instance needs to be accessible by all other code. This is for several reasons. The
+    main reason is that this class wraps the access to all the values defined in the ufotest config file. Naturally
+    much of the functionality is influenced by the concrete values of these config fields.
+
+    Another reason is because the config singleton also contains the references to the essential plugin manager and
+    script manager. The plugin manager is especially important, because it contains the registration of callbacks to
+    specific hooks and the instance itself has to be used to invoke a certain hook.
+
+    The config singleton is automatically created whenever this config module is first imported. This is also the point
+    at which the config file is being read. So after this point, all the config values themselves can be accessed.
+    But the plugin and script manager are NOT yet initialized for this to happen the "prepare" method has to be called
+    at the very beginning of the new runtime.
+
+    .. code-block:: python
+
+        import Config from ufotest.config
+        # At this point an instance of Config is already loaded and it also contains the values from the actual config
+        # file
+
+        # This does not actually create a new instance but returns the only existing one "Config" is a singleton class
+        config = Config()
+        # Only after this line the plugin manager is actually initialized
+        config.prepare()
+
+        # Internally the config instance saves the toml structure as a dict. This is the bad way to access the config
+        # values since that structure is subject to change.
+        config.data['ci']['hostname']
+        # Better use the dedicated wrapper method
+        config.get_hostname()
+
+        # The plugin manager is saved as "pm"
+        config.pm.do_action('my_custom_action')
+
+        # The script manager is saved as "sm"
+        config.sm.invoke('my_script')
+
     """
 
     def __init__(self):
@@ -202,10 +267,17 @@ class Config(metaclass=Singleton):
             'verbose':          False
         }
 
-        self.pm = None
-        self.sm = None
+        self.pm: Optional[PluginManager] = None
+        self.sm: Optional[ScriptManager] = None
 
-    def prepare(self):
+    def prepare(self) -> None:
+        """
+        This method needs to be called to properly initialize both the plugin manager and the script manager! Only
+        after this method was called the config.sm and config.pm values actually hold references to the manager
+        instances.
+
+        :returns: void
+        """
         # -- LOADING PLUGINS
         # The plugin manager object maintains the list of all loaded plugins as well as the dictionaries which hold
         # all the callbacks registered to the various hooks. "load_plugins" will search the folder passed to the
@@ -409,4 +481,5 @@ class Config(metaclass=Singleton):
         return self.url('static', name)
 
 
+# Here we actually create the one and only instance for the config. This is executed ad IMPORT TIME.
 CONFIG = Config()

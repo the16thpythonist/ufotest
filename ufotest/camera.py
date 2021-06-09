@@ -3,6 +3,7 @@ A module containing the functionality related to interacting with the camera
 """
 import os
 import time
+from abc import abstractmethod
 
 import shutil
 import click
