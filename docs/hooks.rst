@@ -59,6 +59,8 @@ kwargs(1):
 
 - script_definitions: A list of dicts, where each dict describes one script to be registered
 
+returns: script_definitions
+
 This filter hook gets triggered in the constructor of the script manager, its outcome specifies the value of the
 internal attribute *fallback_script_definitions*. This is a list with dict values. Each dict value
 registers a fallback script in the ufotest system. A fallback script is a version of a camera interaction script which
@@ -97,6 +99,8 @@ kwargs(1):
 
 - script_definitions: A list of dicts, where each dict describes one script to be registered
 
+returns: script_definitions
+
 This filter hook gets triggered in the constructor of the script manager, its outcome specifies the value of the
 internal attribute *build_script_definitions*. This is a list with dict values. Each dict value
 registers a build script in the ufotest system. Build script definitions define how to extract the scripts from the
@@ -112,3 +116,19 @@ fields (potentially more depending on the specific script class):
   this will also define how the script is invoked etc.
 - description: A string description of what the script does
 - author: A string defining the author of the script
+
+
+``ufo_camera_tmp_path``
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Filter Hook
+
+kwargs(1):
+
+- value: The string absolute path of the folder where the ufo camera should store the temporary files
+
+returns: value
+
+The UfoCamera class interfaces with the camera. For acquiring frames, it is necessary to create two temporary files
+which store the raw received bytes and the .raw format of the image. On default the folder for storing these is set as
+/tmp. This can be changed with this hook

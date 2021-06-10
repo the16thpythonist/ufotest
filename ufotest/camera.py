@@ -3,13 +3,15 @@ A module containing the functionality related to interacting with the camera
 """
 import os
 import time
+import subprocess
 from abc import abstractmethod
+from typing import Optional
 
 import shutil
 import click
 import numpy as np
 
-from ufotest.config import CONFIG
+from ufotest.config import CONFIG, Config
 from ufotest.util import execute_command, get_command_output, execute_script, run_command
 from ufotest.util import cprint, cresult, cparams
 from ufotest.exceptions import PciError, FrameDecodingError
@@ -34,24 +36,177 @@ class AbstractCamera(object):
     potentially cache certain values from the camera interaction and thus be more efficient. Or some functionality
     inherently requires an external state management.
     """
-    def __init__(self):
+    def __init__(self, config: Config):
+        self.config = config
+
+    @abstractmethod
+    def get_frame(self) -> np.array:
+        raise NotImplementedError
+
+    @abstractmethod
+    def poll(self) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
+    def set_up(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def tear_down(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def reset(self) -> None:
+        raise NotImplementedError
+
+
+# TODO: CommandHistoryMixin
+
+
+class UfoCamera(AbstractCamera):
+
+    def __init__(self, config: Config):
+        AbstractCamera.__init__(self, config)
+
+        self.tmp_path = self.config.pm.apply_filter('ufo_camera_tmp_path', value='/tmp')
+
+        # These paths are required for the method of how frames are retrieved from the camera. This works by using a
+        # system command "pci" this command will require the received data to be written to files. In a first stage the
+        # raw received bytes are written to the .out file. This data is then decoded to produce image in a .raw format.
+        self.data_path = os.path.join(self.tmp_path, 'frame')
+        self.frame_path = self.data_path + '.raw'
+
+    # -- AbstractCamera --
+    # The following methods are the abstract methods which have to be implemented for AbstractCamera
+
+    def get_frame(self) -> np.array:
+        self.request_frame()
+        self.receive_frame()
+        self.decode_frame()
+
+        # At this point, if everything worked out as it should, the frame data resides in the file references by
+        # self.frame_path as a .raw file. Now we only need to interpret this file as a numpy array and return that.
+        frame_array = import_raw(self.frame_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())
+        return frame_array
+
+    def poll(self) -> bool:
         pass
 
-    @abstractmethod
-    def get_frame(self):
-        raise NotImplementedError
-
-    @abstractmethod
     def set_up(self):
-        raise NotImplementedError
+        pass
 
-    @abstractmethod
     def tear_down(self):
-        raise NotImplementedError
+        pass
 
-    @abstractmethod
     def reset(self):
-        raise NotImplementedError
+        pass
+
+    # -- Helper methods --
+    # These methods wrap camera specific functionality which is required to implement the more top level behavior
+
+    def decode_frame(self):
+
+        # This command will decode the raw data which should have previously been written as the file
+        # referenced by self.data_path and decode it into an actual picture in the .raw format. The resulting file
+        # is written to the same folder and has the same filename as the input file but with a .raw appended.
+        # Its important to note that this operation needs to be supplied with the camera dimensions. So it is
+        # instrumental that the correct dimensions are set in the config file which fit the uses sensor.
+        decode_command = 'ipedec -r {height} --num-columns {width} {path} {verbose}'.format(
+            height=self.config.get_sensor_height(),
+            width=self.config.get_sensor_width(),
+            path=self.data_path,
+            verbose='-v' if self.config.verbose() else ''
+        )
+        result = self.execute_command(decode_command)
+
+        # If this step fails, it is usually because not enough bytes could be received. Wrong data vs no data at all.
+        if result['exit_code']:
+            stdout = result['stdout']
+            raise FrameDecodingError(stdout[:stdout.find('\n')])
+
+    def receive_frame(self, force=True):
+        if force and os.path.exists(self.data_path):
+            os.remove(self.data_path)
+
+        # This command will trigger a continuous readout of the camera (this is for larger data chunks). The data is
+        # written into a file. This data is not yet usable! It is in a special transfer format and still needs decoding!
+        receive_command = f'pci -r dma0 --multipacket -o {self.data_path}'
+        result = self.execute_command(receive_command)
+
+        # A PciError is used when the data transfer itself fails and a DecodingError if the receive itself is successful
+        # but the data is wrong.
+        if result['exit_code']:
+            stdout = result['stdout']
+            raise PciError(stdout[:stdout.find('\n')])
+
+        # I have no clue what this does, but it is also done in micheles script.
+        time.sleep(0.1)
+        pci_read('9050', '12')
+        time.sleep(0.1)
+
+    def request_frame(self):
+        # At this point I have no clue, what these instructions specifically do. I just imitated the relevant
+        # section from micheles bash script for requesting frames.
+        pci_write('0x9040', '0x80000201')
+        pci_write('0x9040', '0x80000209')
+        time.sleep(0.1)
+        pci_read('9070', '4')
+        pci_write('0x9040', '0x80000201')
+        time.sleep(0.01)
+
+    def pci_write(self, addr: str, value: str) -> bool:
+        pci_command = f'pci -w {addr} {value}'
+        result = self.execute_command(pci_command)
+        return not bool(result['exit_code'])
+
+    def pci_read(self, addr: str, size: int) -> str:
+        pci_command = 'pci -r {} -s {}'.format(addr, str(size))
+        result = self.execute_command(pci_command)
+        return result['stdout']
+
+    def execute_command(self, command: str, cwd: Optional[str] = None) -> dict:
+        completed_process = subprocess.run(
+            command,
+            cwd=cwd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        return {
+            'exit_code': completed_process.returncode,
+            'stdout': completed_process.stdout.decode(),
+            'stderr': completed_process.stderr.decode()
+        }
+
+
+class MockCamera(AbstractCamera):
+
+    def __init__(self, config: Config):
+        AbstractCamera.__init__(self, config)
+
+        self.enabled = False
+
+    def get_frame(self) -> np.array:
+        width = self.config.get_sensor_width()
+        height = self.config.get_sensor_height()
+
+        frame_array = np.random.rand(height, width)
+        return frame_array
+
+    def poll(self):
+        return self.enabled
+
+    def set_up(self):
+        self.enabled = True
+
+    def tear_down(self):
+        self.enabled = False
+
+    def reset(self):
+        pass
+
+
+# == DEPRECATED ==
 
 
 def pci_write(addr: str, value: str):

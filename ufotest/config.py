@@ -382,29 +382,29 @@ class Config(metaclass=Singleton):
     # These are the methods which do not simply return the values which are in the config dict anyways, but which also
     # do some processing of the values
 
-    def get_sensor_width(self) -> str:
+    def get_sensor_width(self) -> int:
         """
         Returns the sensor width of the currently selected camera in pixels. Derives this value from the camera
         selection. The config file itself defines multiple different camera profiles. What can be set in the config
         is which profile is active. So this method has to first get the profile to then return the value from the
         according profile section.
 
-        :returns: the string representation of the int camera width in pixels
+        :returns: the int camera width in pixels
         """
         sensor_model = self.data['camera']['model']
-        return self.data['camera'][sensor_model]['sensor_width']
+        return int(self.data['camera'][sensor_model]['sensor_width'])
 
-    def get_sensor_height(self):
+    def get_sensor_height(self) -> int:
         """
         Returns the sensor height of the currently selected camera in pixels. Derives this value from the camera
         selection. The config file itself defines multiple different camera profiles. What can be set in the config
         is which profile is active. So this method has to first get the profile to then return the value from the
         according profile section.
 
-        :returns: the string representation of the int camera height in pixels
+        :returns: the int camera height in pixels
         """
         sensor_model = self.data['camera']['model']
-        return self.data['camera'][sensor_model]['sensor_height']
+        return int(self.data['camera'][sensor_model]['sensor_height'])
 
     def get_ci_repository_name(self) -> str:
         """
