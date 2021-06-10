@@ -86,7 +86,8 @@ class UfoCamera(AbstractCamera):
 
         # At this point, if everything worked out as it should, the frame data resides in the file references by
         # self.frame_path as a .raw file. Now we only need to interpret this file as a numpy array and return that.
-        frame_array = import_raw(self.frame_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())
+        frames = import_raw(self.frame_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())
+        frame_array = frames[0]
         return frame_array
 
     def poll(self) -> bool:

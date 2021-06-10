@@ -61,7 +61,7 @@ class AcquireSingleFrame(AbstractTest):
         frames = import_raw(frame_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())
         frame = frames[0]
 
-        fig = self.create_figure(frame)
+        fig_frame = self.create_frame_figure(frame)
         description = (
             'This figure shows a single frame, which was captured from the camera. The first subplot shows the frame '
             'image exactly as it is. All pixel values are exactly as returned by the camera. The second subplot shows '
@@ -71,11 +71,15 @@ class AcquireSingleFrame(AbstractTest):
             'the histogram.'
         )
 
-        figure_result = FigureTestResult(0, self.context, fig, description)
-        return figure_result
+        fig_hist = self.create_histogram_figure(frame)
+
+        return CombinedTestResult(
+            FigureTestResult(0, self.context, fig_frame, ''),
+            FigureTestResult(0, self.context, fig_hist, '')
+        )
 
     @classmethod
-    def create_figure(cls, frame: np.ndarray) -> plt.Figure:
+    def create_frame_figure(cls, frame: np.ndarray) -> plt.Figure:
         fig, (ax_frame, ax_frame_mod, ax_hist) = plt.subplots(nrows=1, ncols=3, figsize=(20, 15))
 
         # ~ plotting the frame as an image
@@ -87,18 +91,28 @@ class AcquireSingleFrame(AbstractTest):
         ax_frame_mod.imshow(frame_mod)
         ax_frame_mod.set_title('Captured Frame - Increased Contrast')
 
-        # ~ plotting the histogram
-        frame_mod_flat = frame_mod.flatten()
-        hist_bins = list(range(min(frame_mod_flat), max(frame_mod_flat)))
-        ax_hist.hist(frame_mod.flatten(), bins=hist_bins)
+        return fig
+
+    @classmethod
+    def create_histogram_figure(cls, frame: np.ndarray) -> plt.Figure:
+        fig, (ax_hist, ax_hist_zoom) = plt.subplots(nrows=1, ncols=2, figsize=(20, 15))
+
+        frame_flat = frame.flatten()
+        hist, _ = np.histogram(frame_flat, bins=list(range(0, cls.MAX_PIXEL_VALUE)))
+        bottom_quantile = np.quantile(hist, 0.1)
+        top_quantile = np.quantile(hist, 0.9)
+
+        hist_bins = list(range(min(frame_flat), max(frame_flat)))
+        ax_hist.hist(frame_flat, bins=hist_bins)
         ax_hist.set_title('Captured Frame - Histogram')
         ax_hist.set_xlabel('Pixel Values')
+        ax_hist.set_ylabel('Occurrences')
 
-        # https://stackoverflow.com/questions/44654421/getting-the-same-subplot-size-using-matplotlib-imshow-and-scatter
-        x_lim = ax_frame.get_xlim()
-        y_lim = ax_frame.get_ylim()
-        aspect = abs(x_lim[0] - x_lim[1]) / abs(y_lim[0] - y_lim[1])
-        ax_hist.set_aspect(aspect)
+        hist_zoom_bins = list(range(bottom_quantile, top_quantile))
+        ax_hist_zoom.hist(frame_flat, bins=hist_zoom_bins)
+        ax_hist_zoom.set_title('Captured Frame - Zoomed Histogram')
+        ax_hist_zoom.set_xlabel('Pixel Values')
+        ax_hist_zoom.set_ylabel('Occurrences')
 
         return fig
 
