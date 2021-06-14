@@ -86,3 +86,4 @@ install: clean ## install the package to the active Python's site-packages
 	cp VERSION ufotest/VERSION
 	cp README.rst docs/readme.rst
 	python3 -m pip install --user .
+	ufotest --version
