@@ -290,6 +290,14 @@ class Config(metaclass=Singleton):
         self.sm = ScriptManager(self)
         self.sm.load_scripts()
 
+    def is_prepared(self) -> bool:
+        """
+        Returns whether or not the plugin and script manager have been initialized
+
+        :returns: Whether or not the plugin and script manager are initialized
+        """
+        return self.pm is not None and self.sm is not None
+
     # IMPLEMENTING DICT FUNCTIONALITY
     # -------------------------------
 

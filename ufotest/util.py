@@ -148,7 +148,11 @@ def get_version() -> str:
         version = version_file.read()
         version = version.replace(' ', '').replace('\n', '')
 
-    version = CONFIG.pm.apply_filter('get_version', value=version)
+    # Here we actually need to check if the plugin management system is actually initialized (this is what the boolean
+    # return of is_prepared indicates) because the version function needs to be functional even when the ufotest
+    # installation folder and thus the config file does not yet exist.
+    if CONFIG.is_prepared():
+        version = CONFIG.pm.apply_filter('get_version', value=version)
 
     return version
 
