@@ -126,10 +126,29 @@ def markdown_to_html(input_path: str, output_path: str, header_lines: List[str] 
         write_file.write('\n'.join(lines))
 
 
-def get_version():
+def get_version() -> str:
+    """
+    Returns the version string for the ufotest project. The version scheme of ufotest loosely follows the
+    technique of `Semantic Versioning <https://semver.org/>`_. Where a minor version change may introduce backward
+    incompatible changes, due to the project still being in active development with many features being subject to
+    change.
+
+    The return value of this function is subject to the "get_version" filter hook, which is able to modify the version
+    string *after* it has been loaded from the file and sanitized.
+
+    *EXAMPLE*
+
+    .. code-block:: python
+
+        version = get_version() # "1.2.1"
+
+    :returns: The version string without any additional characters or whitespaces.
+    """
     with open(VERSION_PATH) as version_file:
         version = version_file.read()
         version = version.replace(' ', '').replace('\n', '')
+
+    version = CONFIG.pm.apply_filter('get_version', value=version)
 
     return version
 

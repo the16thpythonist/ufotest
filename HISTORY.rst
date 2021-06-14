@@ -538,6 +538,20 @@ Changes
 - Updated the README.rst to now also contain instructions for the installation of the project dependencies using either
   the "install" command or the "install-all" command.
 
+1.2.1 (14.06.2021)
+------------------
+
+Changes
+
+- Added the filter hook "get_version" which modifies the version string for the project.
+
+Fixes
+
+- There was bug which invoked the init of the plugin system when attempting to make an initial installation of
+  ufotest using the "init" command, but the plugin system init requires a valid config file to exist, which presents a
+  deadlock and caused the program not to be able to be installed at all. This is fixed by preventing the
+  plugin system to be loaded for the init command.
+
 TODO
 ----
 

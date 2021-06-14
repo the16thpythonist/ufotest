@@ -5,6 +5,7 @@ import sys
 import os
 import json
 from multiprocessing import Process
+from pprint import pprint
 
 import click
 import matplotlib
@@ -81,7 +82,13 @@ def cli(ctx, version, verbose):
     config['context']['verbose'] = True
     ctx.obj = config
 
-    config.prepare()
+    # This fixes an important bug: Previously when any command was executed, the program attempted to call the prepare
+    # method which would then in turn load the plugins. But that caused a problem when initially attempting to install
+    # ufotest. For an initial installation there is not config file yet, but "prepare" and the init of the script and
+    # plugin manager need certain config values! Thus ufotest could never be installed. Now we will treat the
+    # installation command "init" as a special case which does not need the use the plugin system.
+    if ctx.invoked_subcommand != 'init':
+        config.prepare()
 
 
 # -- Commands related to the installation of dependencies

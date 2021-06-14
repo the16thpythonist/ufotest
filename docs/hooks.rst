@@ -132,3 +132,19 @@ returns: value
 The UfoCamera class interfaces with the camera. For acquiring frames, it is necessary to create two temporary files
 which store the raw received bytes and the .raw format of the image. On default the folder for storing these is set as
 /tmp. This can be changed with this hook
+
+
+``get_version``
+~~~~~~~~~~~~~~~
+
+Filter Hook
+
+kwargs(1):
+
+- value: The version string which was already loaded from the VERSION file and sanitized for additional whitespaces
+  and newlines.
+
+The ufotest python package (Not the installation folder!) ships a file called VERSION, which only contains the string
+representation of the current version. This content of this file can be read from within the code and the version
+string can be used. This filter is able to modify this version before it is returned by the central utility function
+"get_version".
