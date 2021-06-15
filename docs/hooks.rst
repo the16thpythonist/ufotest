@@ -1,6 +1,13 @@
 Plugin Hook Specifications
 ==========================
 
+This section lists the explanations for all available hooks. Hooks are identified by their string names. They are part
+of the plugin system and enable custom code from plugins to be executed at certain points within the core ufotest
+routines. There is generally a distinction between *action* and *filter* hooks. Action hooks do not have a return value
+and they only exist so that some custom code can be executed at a specific point in the core routine. Filter hooks
+accepts a special "value" argument which ultimately has to be returned again. They provide the possibility of
+modifying certain core data structures.
+
 
 Action Hooks
 ------------
@@ -44,6 +51,24 @@ script definitions:
             'class': 'MyScript'
             # ...
         })
+
+
+``pre_command``
+~~~~~~~~~~~~~~~
+
+Action Hook
+
+kwargs(3):
+
+- config: The instance of the config singleton
+- namespace: The dict which represents the namespace of the cli.py module. Modifying this dict with additional values
+  allows those new variables to be used within the commands later on.
+- context: This is the click Context object, which contains all the information about the actual command call. This
+  includes the information about which sub command was invoked and which parameters have been passed.
+
+This action is actually executed *directly* after calling "Config.prepare" which means after the plugins have been
+loaded etc. This is probably the earliest available hook to execute some generic setup steps within the runtime of any
+individual command.
 
 
 Filter Hooks

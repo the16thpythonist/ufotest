@@ -552,6 +552,18 @@ Fixes
   deadlock and caused the program not to be able to be installed at all. This is fixed by preventing the
   plugin system to be loaded for the init command.
 
+1.2.2 (15.06.2021)
+------------------
+
+Changes
+
+- Added the action hook "pre_command" which is executed right at the start of every CLI command
+
+Fixes
+
+- The "init" command for creating the installation folder now actually also creates the plugins
+  folder.
+
 TODO
 ----
 

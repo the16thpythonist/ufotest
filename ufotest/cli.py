@@ -90,6 +90,9 @@ def cli(ctx, version, verbose):
     if ctx.invoked_subcommand != 'init':
         config.prepare()
 
+        # This hook can be used to execute generic functionality before any command specific code is executed
+        config.pm.do_action('pre_command', config=config, namespace=globals(), context=ctx)
+
 
 # -- Commands related to the installation of dependencies
 

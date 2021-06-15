@@ -306,6 +306,13 @@ def init_install(verbose=False) -> str:
     if verbose:
         click.secho('    Created the "builds" folder for ufotest')
 
+    # -- PLUGINS FOLDER
+    # This folder will contain the individual plugins folders for ufotest
+    plugins_path = os.path.join(folder_path, 'plugins')
+    os.mkdir(plugins_path)
+    if verbose:
+        click.secho('   Created the "plugins" folder for ufotest')
+
     # -- STATIC FOLDER
     # This folder contains all the static assets which are required for the internal CI web server. This folder already
     # exists within the ufotest package, it simply needs to be copied into the installation folder...
