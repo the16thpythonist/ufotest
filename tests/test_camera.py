@@ -3,7 +3,87 @@ from ufotest._testing import UfotestTestMixin
 
 import numpy as np
 
-from ufotest.camera import AbstractCamera, MockCamera, import_raw
+from ufotest.camera import AbstractCamera, MockCamera, import_raw, InternalDictMixin
+
+
+class TestInternalDictMixin(unittest.TestCase):
+
+    def test_creating_subclass(self):
+        """
+        If a subclass can be created and an instance of this subclass can be instantiated without error
+        """
+
+        class Local(InternalDictMixin):
+
+            default_values = {
+                'time': 0
+            }
+
+            def __init__(self):
+                InternalDictMixin.__init__(self)
+
+        local = Local()
+        self.assertIsInstance(local, Local)
+
+    def test_creating_subclass_without_default_values_error(self):
+        """
+        The InternalDictMixin expects the subclass to define a static attribute "default_values". This method tests if
+        the proper error is raised when this is missing.
+        """
+        with self.assertRaises(NotImplementedError):
+
+            class Local(InternalDictMixin):
+                pass
+
+            local = Local()
+
+    def test_normally_using_internal_dict(self):
+        """
+        If the normal functionality of the mixin can be used. This includes the three exposed methods supports_prop,
+        set_prop and get_prop, which interact with the internal dict
+        """
+        class Local(InternalDictMixin):
+
+            default_values = {
+                'a': 0,
+                'b': 0
+            }
+
+            def __init__(self):
+                InternalDictMixin.__init__(self)
+
+        # Now we are just going to try and use the get and set prop methods of this class
+        local = Local()
+        self.assertFalse(local.supports_prop('c'))
+        self.assertTrue(local.supports_prop('a'))
+        local.set_prop('a', 100)
+        self.assertEqual(100, local.get_prop('a'))
+
+    def test_overwrite_methods(self):
+        """
+        If providing an optional overwrite method works
+        """
+        class Local(InternalDictMixin):
+
+            default_values = {
+                'a': 0,
+                'b': 0
+            }
+
+            def __init__(self):
+                InternalDictMixin.__init__(self)
+
+            def get_a(self):
+                return 100
+
+        local = Local()
+        local.set_prop('a', 10)
+        # In the class definition we provided an overwrite method for the "a" prop, which will always return 100, but
+        # by setting 10 earlier, that value should still be in the internal dict.
+        self.assertEqual(100, local.get_prop('a'))
+        self.assertEqual(10, local.values['a'])
+
+
 
 
 class TestMockCamera(UfotestTestMixin, unittest.TestCase):
@@ -42,4 +122,3 @@ class TestMockCamera(UfotestTestMixin, unittest.TestCase):
         frame = mock_camera.get_frame()
         self.assertIsInstance(frame, np.ndarray)
         self.assertNotEqual(0, frame[0, 0])
-

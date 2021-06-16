@@ -564,6 +564,28 @@ Fixes
 - The "init" command for creating the installation folder now actually also creates the plugins
   folder.
 
+1.3.0 (xx.06.2021)
+------------------
+
+Changes
+
+- Added additional methods to be implemented for the interface "camera.AbstractCamera": "supports_prop", "set_prop" and
+  "get_prop" which can be used to manipulate internal properties of the camera.
+- Added "camera.InternalDictMixin" which is a mixin, which implements the management of camera internal props by using
+  a central dict. Provides default implementations for the relevant abstract methods of
+  "camera.AbstractCamera"
+- The "frame" command now uses the UfoCamera class to retrieve it's images.
+- Added filter hook "camera_class" which will be used to retrieve the AbstractCamera subclass to use to interface with
+  the actual camera hardware.
+- Added the action hook "pre_command_frame" which is called at the start of the "frame" CLI command.
+
+Documentation
+
+- Extended "hooks.rst"
+- Docstrings for "testing.TestRunner"
+- Docstrings for "camera.AbstractCamera"
+- Docstrings for "camera.MockCamera"
+
 TODO
 ----
 

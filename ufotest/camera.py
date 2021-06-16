@@ -3,15 +3,18 @@ A module containing the functionality related to interacting with the camera
 """
 import os
 import time
+import copy
+import functools
 import subprocess
 from abc import abstractmethod
-from typing import Optional
+from typing import Optional, Any
 
 import shutil
 import click
 import numpy as np
+from PIL import Image
 
-from ufotest.config import CONFIG, Config
+from ufotest.config import CONFIG, Config, get_path
 from ufotest.util import execute_command, get_command_output, execute_script, run_command
 from ufotest.util import cprint, cresult, cparams
 from ufotest.exceptions import PciError, FrameDecodingError
@@ -39,26 +42,165 @@ class AbstractCamera(object):
     def __init__(self, config: Config):
         self.config = config
 
-    @abstractmethod
-    def get_frame(self) -> np.array:
-        raise NotImplementedError
+    # -- state management
 
     @abstractmethod
     def poll(self) -> bool:
+        """
+        This method should return a boolean value of whether or not the camera is currently *usable*. This will most
+        likely be false before a init sequence has established a connection to the camera and true afterwards. But it
+        can also be used to indicate a possible temporary blocking during a readout operation or the like.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def set_up(self) -> None:
+        """
+        This method is supposed to execute all necessary interactions with the camera to ensure that afterwards the
+        camera can be used -> return frames, manipulate properties
+        """
         raise NotImplementedError
 
     @abstractmethod
     def tear_down(self) -> None:
+        """
+        This method is supposed to execute all code which is needed to properly terminate the connection with the
+        camera. All cleanup operations so to say.
+        It should NOT permanently disable the camera though. Subsequently calling set_up and tear_down should be
+        possible
+        """
         raise NotImplementedError
 
     @abstractmethod
     def reset(self) -> None:
+        """
+        This method is supposed to reset the camera into it's default internal state. It would be important that this
+        also works in case the camera has issues and might not communicate correctly. Thus, this should be a hard reset
+        to tear down the entire connection and then set it up from scratch would be best.
+        """
         raise NotImplementedError
 
+    # -- actual camera stuff
+
+    @abstractmethod
+    def get_frame(self) -> np.array:
+        """
+        This method should wrap all interaction which is required to obtain a single frame from the camera. The frame
+        should then be converted into a simple two dimensional numpy array and returned.
+        """
+        raise NotImplementedError
+
+    # -- manipulating internal properties
+
+    @abstractmethod
+    def set_prop(self, key: str, value: Any) -> None:
+        """
+        This method is supposed to set the internal property of the camera with the name *key* to the new *value*
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_prop(self, key: str) -> Any:
+        """
+        This method is supposed to return the currently configured value of the internal property with the name *key*
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def supports_prop(self, key: str) -> bool:
+        """
+        This method should return the boolean value of whether or not, the specific camera implementation supports a
+        a property of the given name.
+        """
+        raise NotImplementedError
+
+
+class InternalDictMixin:
+    """
+    This is a mixin which can be used for subclasses of AbstractCamera. This abstract camera interface expects the
+    ability to manipulate internal camera properties using three distinct functions. This mixin offers a default
+    implementation for these methods, which will manage these internal camera properties in an internal dict
+    "self.values". The default implementation will simple read and write these values to this internal dict. But this
+    mixin also allows to implement overwrite getter and setter methods for each prop to customize the behavior.
+
+    **EXAMPLE**
+
+    In the order of the multiple inheritance, the mixins are best placed first. This mixin furthermore expects the
+    subclass to define a static attribute "default_values", which is a dict and contains the default values for all the
+    props. This dict should contain all (and only) entries for each prop which is supported by the camera, because the
+    outcome of "supports_prop" is defined by whether or not the prop is defined in this default dict.
+
+    The behavior of the get / set operation for a specific prop can be customized by simply implementing a method which
+    is called get_{prop name} / set_{prop name}
+
+    .. code-block: python
+
+        class ExampleCamera(InternalDictMixin, AbstractCamera):
+
+            default_values = {'exposure_time': 100}
+
+            def set_exposure_time(value):
+                # You only have to implement the instructions to actually modify the camera here.
+                # At this point the value is already saved in the internal self.values dict!
+
+    **WHAT IT EXPECTS**
+
+    - static attribute dict *default_dict*
+    - no instance attribute named *values*
+    """
+    # default_values = {...}
+
+    def __init__(self):
+        if not hasattr(self, 'default_values'):
+            raise NotImplementedError((f'You are attempting to instantiate a subclass of "InternalDictMixin" without '
+                                       f'having defined a static attribute "default_values". This mixin expects this '
+                                       f'attribute to exists. Please add this static dict to the subclass!'))
+
+        self.values = copy.deepcopy(self.default_values)
+
+    def supports_prop(self, key: str) -> bool:
+        """
+        Returns whether or not the prop with the name *key* is supported. This is determined by it's existence as a key
+        within default_values.
+
+        :param str key: The string name of the prop
+
+        :returns bool:
+        """
+        return key in self.default_values.keys()
+
+    def set_prop(self, key: str, value: Any) -> None:
+        """
+        Sets the new value of the prop with the name *key* to *value*
+
+        :param str key: The string name of the prop
+        :param value: The new value
+
+        :returns: void
+        """
+        self.values[key] = value
+
+        method_name = f'set_{key}'
+        if hasattr(self, method_name):
+            method = getattr(self, method_name)
+            method(value)
+
+    def get_prop(self, key: str) -> Any:
+        """
+        Returns the current value of the prop with the name *prop*
+
+        :param str key: The string name of the prop
+
+        :returns: The value of the prop
+        """
+        value = self.values[key]
+
+        method_name = f'get_{key}'
+        if hasattr(self, method_name):
+            method = getattr(self, method_name)
+            value = method()
+
+        return value
 
 # TODO: CommandHistoryMixin
 
@@ -180,19 +322,80 @@ class UfoCamera(AbstractCamera):
         }
 
 
-class MockCamera(AbstractCamera):
+class MockCamera(InternalDictMixin, AbstractCamera):
+    """
+    This is a mock implementation of the AbstractCamera interface. It does not actually interface with any real
+    hardware, it only simulates camera behavior testing purposes.
+
+    **FRAMES**
+
+    As expected by the AbstractCamera interface, this class implements a functional "get_frame" method. This method
+    returns a static picture which is based on the "sample.png" image from the static folder of the ufotest
+    installation. The image itself displays some kind of landscape.
+
+    **SET UP**
+
+    The camera does indeed require the "set_up" method to be called before any frames can be captured. This is however
+    not due to any specific reason. The setup status is internally simple represented as a boolean flag. This is to
+    simulate camera behavior as well as possible.
+
+    **EXPOSURE TIME**
+
+    This class supports the "exposure_time" prop. It can be set as int values between 1 and 100. This class actually
+    attempts to simulate the effects of exposure time somewhat. With higher values the static image becomes (1)
+    brighter, as in higher pixel values overall and (2) there is more noise: The magnitude of the additive gaussian
+    noise gets more with higher exposure time.
+    """
+    default_values = {
+        'exposure_time': 1,
+        'min_exposure_time': 1,
+        'max_exposure_time': 100
+    }
 
     def __init__(self, config: Config):
         AbstractCamera.__init__(self, config)
+        InternalDictMixin.__init__(self)
 
         self.enabled = False
 
+        # -- loading the sample image
+        self.image_path = get_path('static', 'mock.jpg')
+        self.image = self.load_image(self.image_path)
+
+    @functools.lru_cache
+    def load_image(self, image_path: str):
+        """
+        Uses pillow to load the image with the given *image_path* as a grayscale image object.
+
+        **DESIGN CHOICE**
+
+        One could say that this method is redundant, because the little code within I could have just called within the
+        constructor as it is. That is true, but the important thing is that this method is cached. The loading of the
+        image is relatively time intensive. This is not a problem were this class be used in the normal ufotest routine
+        the camera class is only instantiated once. But the mock implementation is mainly for testing and for testing
+        the camera class is instantiated many more times, such that this runtime becomes an issue...
+
+        :param image_path: The str absolute path to the image file
+
+        :returns Image: the image object
+        """
+        return Image.open(image_path).convert('L')
+
     def get_frame(self) -> np.array:
+        # ~ Resizing the image to fit the given geometry constraints
         width = self.config.get_sensor_width()
         height = self.config.get_sensor_height()
+        image = self.image.resize((width, height))
+        frame_array = np.array(image, dtype=np.float64)
 
-        frame_array = np.random.rand(height, width)
-        return frame_array
+        # ~ Applying the exposure time to the image
+        # The first effect of a higher exposure time is that the image gets brighter
+        exposure_time = self.get_prop('exposure_time')
+        frame_array *= np.sqrt(exposure_time / self.get_prop('min_exposure_time'))
+        # The other effect is that there is more noise
+        frame_array = self.add_gaussian_noise(frame_array, exposure_time)
+
+        return frame_array.astype(np.uint16)
 
     def poll(self):
         return self.enabled
@@ -206,6 +409,19 @@ class MockCamera(AbstractCamera):
     def reset(self):
         pass
 
+    # -- utility methods
+
+    @classmethod
+    def add_gaussian_noise(cls, frame_array: np.ndarray, intensity: float) -> np.ndarray:
+        """
+        Given a base frame *frame_array* this method generates a random gaussian noise centered around 0 and with a
+        standard deviation of *intensity* with the original frames shape and then adds the noise array to this base
+        frame and returns the result.
+
+        :returns: The modified frame array
+        """
+        noise_array = np.random.normal(loc=0.0, scale=intensity, size=frame_array.shape)
+        return frame_array + noise_array
 
 # == DEPRECATED ==
 

@@ -20,6 +20,7 @@ from ufotest.util import (markdown_to_html,
                           get_version,
                           AbstractRichOutput,
                           random_string)
+from ufotest.camera import UfoCamera
 from ufotest.util import csubtitle
 
 
@@ -134,6 +135,35 @@ class TestContext(AbstractContextManager):
 
 
 class TestRunner(object):
+    """
+    The TestRunner manages the loading and the execution of test cases.
+
+    **EXAMPLE**
+
+    A new test runner has to be instantiated with a reference to a valid TestContext object. After creating a new test
+    runner, the "load" method has to be called. This will trigger the dynamic import of all python modules within the
+    valid test folders (defined in the test context). From those modules all test cases (all subclasses of AbstractTest)
+    are loaded as available tests. Only then can a test case or a test suite be invoked.
+
+    .. code-block:: python
+
+        with TestContext() as test_context:
+            test_runner = TestRunner(test_context)
+            test_runner.load()
+
+            test_runner.run_test()
+            test_runner.run_suite()
+
+    **EXECUTION OF A TEST**
+
+    Through the "load" method all tests are part of the internal self.test dict, where their string names are the
+    keys and the classes are the values. When a test is supposed to be executed, a new instance of that class is being
+    created. The only thing, which is passed to the constructor of each test case is the test runner instance itself.
+    This test runner contains all other important references such as the config singleton, the test context and an
+    instance of th camera interface. Finally, the "run" method of this test is invoked and the resulting TestResult
+    object is added to the TestReport instance. This test report is not returned but instead added to the context from
+    where it can be accessed and further processed.
+    """
 
     def __init__(self, test_context: TestContext):
         # constructed attributes
@@ -146,11 +176,35 @@ class TestRunner(object):
         self.tests = {}
         self.modules = {}
 
-    def load_modules(self):
+        # 1.3.0
+        # The whole system of interfacing with the camera has been reworked to the point where all interaction should
+        # be funneled through a single camera instance of a class which implements the "AbstractCamera" interface.
+        # This camera instance will be the most important value to which each test case will have to have access to.
+        self.camera_class = self.config.pm.apply_filter('camera_class', UfoCamera)
+        self.camera = self.camera_class(self.config)
+
+    def load_modules(self) -> None:
+        """
+        This method loads all the test modules (not test cases yet) by iterating all the test folders which are defined
+        in the test context and importing all modules from these folders. These modules are then stored in the internal
+        self.modules dict, where the key is name of the module and the value the reference to the imported module.
+
+        :return: void
+        """
         for test_folder in self.context.test_folders:
             self.load_module_from_test_folder(test_folder)
 
-    def load_module_from_test_folder(self, test_folder: str):
+    def load_module_from_test_folder(self, test_folder: str) -> None:
+        """
+        Given the string path of a *test_folder* this method dynamically imports all the python modules in this folder
+        (interpreting them as python modules containing UfoTest test cases) and saved the reference to those module and
+        thus all their contents in the internal self.modules dict.
+
+        :param test_folder: The string absolute path to a folder which contains python modules which in turn contain
+            classes that define UfoTest test cases.
+
+        :return: void
+        """
         # All the modules within the test folder have to be dynamically imported to access the TestCase classes within
         # them. This loop iterates all the python modules in the given folder path and then adds the dynamic import to
         # the "modules" dict.
@@ -170,13 +224,32 @@ class TestRunner(object):
 
         self.logger.info('loaded {} test modules from folder: {}'.format(counter, test_folder))
 
-    def load_tests(self):
+    def load_tests(self) -> None:
+        """
+        Based on the modules already imported into the internal self.modules dict, this method will iterate all of
+        those methods extract all UfoTest test cases and store them in the internal self.tests dict, where the keys are
+        defined by the test cases static "name" attribute and the values are the according classes.py
+
+        :return: void
+        """
         for module_name, module in self.modules.items():
             self.load_tests_from_module(module)
 
         self.context.tests = self.tests
 
-    def load_tests_from_module(self, module: Any):
+    def load_tests_from_module(self, module: Any) -> None:
+        """
+        Given the reference to an imported module *module* this method will extract all UfoTest test case classes from
+        this module and store them in the internal self.tests dict. A class within the module will only be
+        interpreted as a test case if it directly inherits from "AbstractTest".
+
+        Note that this method can only be called when the module have previously already been imported and thus the
+        self.modules dict is already populated.
+
+        :param module: A reference to the dynamically imported module object.
+
+        :return: void
+        """
         counter = 1
         # Now we have a dynamically imported module and want to extract the classes from it in a similarly dynamic
         # fashion. Luckily, the "inspect" module provides exactly such functionality.
@@ -197,15 +270,33 @@ class TestRunner(object):
 
         self.logger.info('imported {} tests from the module: {}'.format(counter, module.__name__))
 
-    def load(self):
+    def load(self) -> None:
+        """
+        Dynamically loads all the test cases from the folder locations given in the test context which was passed to
+        this runner. Only after this method was called, test cases are actually known to the runner and can be executed
+
+        :return: void
+        """
         self.load_modules()
         self.load_tests()
 
         self.logger.info('All tests loaded')
 
-    def get_test_suite(self, suite_name: str):
+    def get_test_suite(self, suite_name: str) -> TestSuite:
+        """
+        Return a TestSuite wrapper object which represents the suite identified by the given *suite_name*.
+
+        :param str suite_name: The unique string name, which identifies the suite
+
+        :raises KeyError: If the given suite name does not exist
+
+        :return TestSuite: The test suite wrapper object
+        """
         suites = self.config.get_test_suites()
-        assert suite_name in suites.keys(), 'Test suite {} unknown!'.format(suite_name)
+
+        if suite_name not in suites.keys():
+            raise KeyError((f'You are attempting to run a test suite with the name "{suite_name}", but a suite with '
+                            f'this name is not known to the system. Please check for eventual typos!'))
 
         test_names = suites[suite_name]
         # suite_tests = [test for test_name, test in self.tests.items() if test_name in test_names]
@@ -214,8 +305,18 @@ class TestRunner(object):
 
         return test_suite
 
-    def run_test(self, test_name: str):
-        assert test_name in self.tests.keys(), 'Test {} does not exist!'.format(test_name)
+    def run_test(self, test_name: str) -> None:
+        """
+        Executes a single test case which is identified by *test_name*.
+
+        :param str test_name: The unique string name which identifies the test case
+
+        :return: void
+        """
+        if test_name not in self.tests.keys():
+            raise KeyError((f'You are attempting to run a test case with the name {test_name}, but a test case '
+                            f'with this name does not exist. Please check for typo, or if the test case is placed in a '
+                            f'valid test folder!'))
 
         self.context.start(test_name)
         # A AbstractTest subclass can be instantiated by passing a single argument to the constructor and that is the
@@ -228,6 +329,11 @@ class TestRunner(object):
         self.context.end(test_name)
 
     def run_suite(self, suite_name: str):
+        """
+        Executes multiple tests which are part of the suite identified by *suite_name*
+
+        :return: void
+        """
         self.context.start(suite_name)
         test_suite = self.get_test_suite(suite_name)
 
@@ -589,6 +695,7 @@ class AbstractTest(ABC):
         self.logger = self.test_runner.logger
         self.config = self.test_runner.config
         self.context = self.test_runner.context
+        self.camera = self.test_runner.camera
 
     def execute(self) -> AbstractTestResult:
         start_datetime = datetime.datetime.now()

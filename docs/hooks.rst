@@ -70,10 +70,25 @@ This action is actually executed *directly* after calling "Config.prepare" which
 loaded etc. This is probably the earliest available hook to execute some generic setup steps within the runtime of any
 individual command.
 
+``pre_command_frame``
+~~~~~~~~~~~~~~~~~~~~~
+
+Action Hook
+
+kwargs(4):
+
+- config: The instance of the config singleton
+- namespace: The dict which represents the namespace of the cli.py module. Modifying this dict with additional values
+  allows those new variables to be used within the commands later on.
+- output: The string path of where to save the frame
+- display: The boolean flag of whether or not to display the frame
+
+This action hook is executed at the very beginning of the code for the "frame" CLI command, but after the generic
+``pre_command`` hook!
+
 
 Filter Hooks
 ------------
-
 
 ``fallback_script_definitions``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -173,3 +188,53 @@ The ufotest python package (Not the installation folder!) ships a file called VE
 representation of the current version. This content of this file can be read from within the code and the version
 string can be used. This filter is able to modify this version before it is returned by the central utility function
 "get_version".
+
+
+``camera_class``
+~~~~~~~~~~~~~~~~
+
+Filter Hook
+
+kwargs(1):
+
+- value: The class which is a subclass of camera.AbstractCamera and whose object instance will be invoked to interface
+  with the camera.
+
+This filter hook is called in multiple places, whenever a new instance of the camera is supposed to be created. One
+example would be the "frame" CLI command, which will request a single frame from the camera object and display it to
+the user.
+
+Probably the most important place where this filter is used is within the constructor of testing.TestRunner, where a
+new camera instance is created, which will then be passed to every single test case that is scheduled to be run with
+that test suite.
+
+This hook will be the most important hook when extending UfoTest to be compatible with a new camera model. Within a
+possible plugin, the interfacing with this camera model will have to be implemented as a subclass of
+camera.AbstractCamera and then this hook can be used to instruct the core routine to use that class instead of the
+default:
+
+.. code-block:: python
+
+    from ufotest.hooks import Filter
+    from ufotest.camera import AbstractCamera
+
+    class CustomCamera(AbstractCamera):
+        # ...
+
+    @Filter('camera_class', 10)
+    def use_custom_camera(value):
+        return CustomCamera
+
+
+Interesting for testing purposes is the fact, that UfoTest comes shipped with an implementation camera.MockCamera,
+which does not actually require any hardware but instead only simulates camera behavior. Using this mock implementation
+could be enabled like this:
+
+.. code-block:: python
+
+    from ufotest.hooks import Filter
+    from ufotest.camera import MockCamera
+
+    @Filter('camera_class', 10)
+    def use_mock(value):
+        return MockCamera

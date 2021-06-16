@@ -33,7 +33,7 @@ from ufotest.install import (mock_install_repository,
                              install_libuca,
                              install_uca_ufo,
                              install_ipecamera)
-from ufotest.camera import save_frame, import_raw, set_up_camera, tear_down_camera, get_frame
+from ufotest.camera import save_frame, import_raw, set_up_camera, tear_down_camera, get_frame, UfoCamera, MockCamera
 from ufotest.testing import TestRunner, TestContext, TestReport
 from ufotest.ci.build import BuildRunner, BuildReport, BuildLock, build_context_from_config
 from ufotest.ci.server import server, BuildWorker
@@ -274,15 +274,21 @@ def config(editor):
 
 
 @click.command('frame', short_help='Acquire and display a frame from the camera')
-@click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 @click.option('--output', '-o', type=click.STRING,
-              help='Specify the output file path for the frame', default='/tmp/frame.raw')
+              help='Specify the output file path for the frame', default='/tmp/frame.png')
 @click.option('--display', '-d', is_flag=True, help='display the frame in seperate window')
-def frame(verbose, output, display):
+@pass_config
+def frame(config, output, display):
     """
     Capture a single frame from the camera, save it as a file and optionally display it to the user
     """
-    CONFIG['context']['verbose'] = verbose
+    config.pm.do_action(
+        'pre_command_frame',
+        config=config,
+        namespace=globals(),
+        output=output,
+        display=display
+    )
 
     ctitle('CAPTURING FRAME')
     cparams({
@@ -301,8 +307,9 @@ def frame(verbose, output, display):
     # "get_frame" handles the whole communication process with the camera, it requests the frame, saves the raw data,
     # decodes it into an image and then returns the string path of the final image file.
     try:
-        frame_path = get_frame()
-        shutil.copy(frame_path, output)
+        camera_class = config.pm.apply_filter('get_camera_class', UfoCamera)
+        camera = camera_class(config)
+        frame = camera.get_frame()
     except PciError as error:
         cerror('PCI communication with the camera failed!')
         cerror(f'PciError: {str(error)}')
@@ -310,14 +317,18 @@ def frame(verbose, output, display):
     except FrameDecodingError as error:
         cerror('Decoding of the frame failed!')
         cerror(f'FrameDecodingError: {str(error)}')
+        sys.exit(1)
 
-    images = import_raw(
-        path=output,
-        n=1,
-        sensor_height=CONFIG.get_sensor_height(),
-        sensor_width=CONFIG.get_sensor_width()
-    )
+    # ~ Saving the frame as a file
+    _, file_extension = output.split('.')
+    if file_extension == 'raw':
+        cerror('Currently the frame cannot be saved as .raw format!')
+    else:
+        from PIL import Image
+        image = Image.fromarray(frame)
+        image.save(output)
 
+    # ~ Displaying the image if the flag is set
     if display:
         # An interesting thing is that matplotlib is imported in-time here and not at the top of the file. This actually
         # had to be changed due to a bug. When using ufotest in a headless environment such as a SSH terminal session
@@ -326,7 +337,7 @@ def frame(verbose, output, display):
         import matplotlib.pyplot as plt
         matplotlib.use('TkAgg')
 
-        plt.imshow(images[0])
+        plt.imshow(frame)
         plt.show()
 
     sys.exit(0)
