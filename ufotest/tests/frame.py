@@ -87,7 +87,7 @@ class AcquireSingleFrame(AbstractTest):
         ax_frame.set_title('Captured Frame')
 
         # ~ plotting the frame with increased contrast
-        frame_mod = cls.increase_frame_contrast(frame)
+        frame_mod = frame.copy() #cls.increase_frame_contrast(frame)
         ax_frame_mod.imshow(frame_mod)
         ax_frame_mod.set_title('Captured Frame - Increased Contrast')
 
@@ -102,7 +102,7 @@ class AcquireSingleFrame(AbstractTest):
         bottom_quantile = np.quantile(hist, 0.1)
         top_quantile = np.quantile(hist, 0.9)
 
-        hist_bins = list(range(min(frame_flat), max(frame_flat)))
+        hist_bins = list(range(np.min(frame_flat), np.max(frame_flat)))
         ax_hist.hist(frame_flat, bins=hist_bins)
         ax_hist.set_title('Captured Frame - Histogram')
         ax_hist.set_xlabel('Pixel Values')

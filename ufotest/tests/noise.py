@@ -52,7 +52,7 @@ class CalculateDarkPhotonTransferCurve(AbstractTest):
     def run(self):
         noises = []
         for exposure_time in range(self.start, self.end, self.step):
-            self.camera.set_prop('exposure_time', exposure_time)
+            # self.camera.set_prop('exposure_time', exposure_time)
             noise = statistics.mean([self.measure_noise() in range(self.reps)])
             noises.append(noise)
 
