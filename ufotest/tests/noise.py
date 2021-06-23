@@ -41,7 +41,7 @@ class CalculateDarkPhotonTransferCurve(AbstractTest):
     name = 'dark_photon_transfer_curve'
     description = 'blub'
 
-    def __init__(self, test_runner: TestRunner, start: int = 1, end: int = 10, step: int = 5, reps: int = 1):
+    def __init__(self, test_runner: TestRunner, start: int = 1, end: int = 10, step: int = 1, reps: int = 2):
         AbstractTest.__init__(self, test_runner)
 
         self.start = start
@@ -76,6 +76,9 @@ class CalculateDarkPhotonTransferCurve(AbstractTest):
     def create_ptc_figure(cls, noises: List[float]):
         fig, (ax_ptc) = plt.subplots(nrows=1, ncols=1, figsize=(20, 15))
 
+        ax_ptc.set_title('Dark Photon Transfer Curve')
+        ax_ptc.set_xlabel('Exposure time')
+        ax_ptc.set_ylabel('Noise')
         ax_ptc.plot(noises)
 
         return fig
