@@ -215,6 +215,10 @@ class UfoCamera(InternalDictMixin, AbstractCamera):
     }
 
     def __init__(self, config: Config):
+        # The InternalDictMixin provides a default implementation for the property management of the camera class. On
+        # default getting and setting will modify the values of the internal "values" dict. For specific properties
+        # behavior can be overwritten by providing special getter and setter methods following the naming convention
+        # of the property
         InternalDictMixin.__init__(self)
         AbstractCamera.__init__(self, config)
 
@@ -229,7 +233,18 @@ class UfoCamera(InternalDictMixin, AbstractCamera):
     # -- AbstractCamera --
     # The following methods are the abstract methods which have to be implemented for AbstractCamera
 
-    def get_frame(self) -> np.array:
+    def get_frame(self) -> np.ndarray:
+        """
+        Returns a frame from the camera as a numpy array. The dimensions of this array are dependent on the camera
+        sensor / the configuration of the camera sensor selected in the config file of the project.
+
+        The process of retrieving a frame can be roughly outlined like this. Using the command line interface of
+        "pcitool" specific registers are set, which instruct the camera to acquire a frame. The data of this frame is
+        then saved as a raw bytestream. By using the command line interface of ipedecode this frame is decoded into the
+        RAW image format, which is then loaded into a numpy array and returned.
+
+        :return: np.ndarray
+        """
         self.request_frame()
         self.receive_frame()
         self.decode_frame()
@@ -241,6 +256,11 @@ class UfoCamera(InternalDictMixin, AbstractCamera):
         return frame_array
 
     def poll(self) -> bool:
+        """
+        Returns whether or not the camera can be used.
+
+        :return: bool
+        """
         result = self.config.sm.invoke('status')
         if self.config.verbose():
             cprint(result['stdout'])
@@ -248,6 +268,17 @@ class UfoCamera(InternalDictMixin, AbstractCamera):
         return result['exit_code']
 
     def set_up(self):
+        """
+        Executes the routine to set up the camera for subsequent operations.
+
+        Specifically this involves the following series of scripts:
+        - pcie_init
+        - reset_fpga
+        - power_up
+        - reset
+
+        :return: void
+        """
         self.config.sm.invoke('pcie_init', args={'prefix': 'sudo', 'postfix': ''})
         time.sleep(0.5)
         self.config.sm.invoke('reset_fpga')
@@ -263,6 +294,13 @@ class UfoCamera(InternalDictMixin, AbstractCamera):
         pass
 
     def set_exposure_time(self, value: int):
+        """
+        *KIND OF* sets the exposure time of the camera. At the current point in time, this method does modify the
+        exposure time of the camera, but which value in ms it actually is, is unclear. Supported are int values up to
+        12. Generally the higher the value the higher the exposure time.
+
+        :return void:
+        """
         self.pci_write('9000', 'a001')
         time.sleep(0.2)
         self.pci_read('9010', 1)
@@ -328,16 +366,46 @@ class UfoCamera(InternalDictMixin, AbstractCamera):
         time.sleep(0.01)
 
     def pci_write(self, addr: str, value: str) -> bool:
+        """
+        Uses the "pci" command to write a new value to the given register address of the FPGA. Returns the boolean
+        value of whether or not the write operation was successful.
+
+        :param addr: The string representation of the register address to write to
+        :param value: The actual value to write to the register
+
+        :return: boolean
+        """
         pci_command = f'pci -w {addr} {value}'
         result = self.execute_command(pci_command)
         return not bool(result['exit_code'])
 
     def pci_read(self, addr: str, size: int) -> str:
+        """
+        Uses the "pci" command to perform a register readout operation of the FPGA at the given address and with the
+        given size. Returns the string output of the console command.
+
+        :return: string
+        """
         pci_command = 'pci -r {} -s {}'.format(addr, str(size))
         result = self.execute_command(pci_command)
         return result['stdout']
 
     def execute_command(self, command: str, cwd: Optional[str] = None) -> dict:
+        """
+        Executes a terminal command in a separate shell process and returns a dict which contains the information about
+        the outcome of the command.
+
+        The returned dict contains the following fields:
+        - stdout: A string which contains the entire console output of the command
+        - stderr: A string which contains the entire error output of the command
+        - exit_code: The int exit code of the command
+
+        :param command: The bash string to be executed in the terminal
+        :param cwd: An optional string to define the absolute path of the folder in which the command should be
+            executed in.
+
+        :return: dict
+        """
         completed_process = subprocess.run(
             command,
             cwd=cwd,
