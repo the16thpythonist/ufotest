@@ -79,7 +79,7 @@ def cli(ctx, version, verbose):
     # then save the value in the config, since we pass it along this also affects all sub commands and we dont need
     # to implement the --verbose option for every individual sub command.
     config = Config()
-    config['context']['verbose'] = True
+    config['context']['verbose'] = verbose
     ctx.obj = config
 
     # This fixes an important bug: Previously when any command was executed, the program attempted to call the prepare
@@ -424,10 +424,10 @@ def flash(verbose, file: str) -> None:
 
 
 @click.command('test', short_help="Run a camera test")
-@click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 @click.option('--suite', '-s', is_flag=True, help='Execute a test SUITE with the given name')
 @click.argument('test_id', type=click.STRING)
-def test(verbose, suite, test_id):
+@pass_config
+def test(config, suite, test_id):
     """
     Run the test "TEST_ID"
 
@@ -438,12 +438,11 @@ def test(verbose, suite, test_id):
     The results of these tests will generate a test report. This test report will be saved into the archive of all
     test reports as a markdown and html file.
     """
-    CONFIG['context']['verbose'] = verbose
     ctitle(f'RUNNING TEST{" SUITE" if suite else ""}')
     cparams({
         'test identifier': test_id,
         'is test suite': suite,
-        'verbose': verbose
+        'verbose': config.verbose()
     })
 
     try:
@@ -468,11 +467,11 @@ def test(verbose, suite, test_id):
         click.secho('[!] {}'.format(e), fg='red', bold=True)
         sys.exit(1)
 
-    if verbose:
+    if config.verbose():
         click.secho(test_report.to_string())
 
-    click.secho('(+) Test report saved to: {}'.format(test_context.folder_path), fg='green', bold=True)
-    click.secho('    View the report at: http://localhost/archive/{}/report.html'.format(test_context.folder_name))
+    cresult('Test report saved to: {}'.format(test_context.folder_path))
+    cprint('View the report at: http://localhost/archive/{}/report.html'.format(test_context.folder_name))
 
     sys.exit(0)
 

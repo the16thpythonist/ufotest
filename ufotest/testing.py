@@ -21,7 +21,7 @@ from ufotest.util import (markdown_to_html,
                           AbstractRichOutput,
                           random_string)
 from ufotest.camera import UfoCamera
-from ufotest.util import csubtitle
+from ufotest.util import csubtitle, cprint, cresult
 
 
 class TestContext(AbstractContextManager):
@@ -729,11 +729,14 @@ class TestSuite(object):
         self.results = {}
 
     def execute_all(self):
+        """
+        Executes all all test cases which are part of this suite.
+        """
         for test_class in self.tests:
             test = test_class(self.test_runner)
-            if self.config.verbose():
-                csubtitle(f'TEST: {test.name}')
+            csubtitle(f'TEST: {test.name}')
             self.results[test.name] = test.execute()
+            cresult(f'{test.name} DONE')
 
         return self.results
 
