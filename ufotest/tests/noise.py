@@ -41,7 +41,7 @@ class CalculateDarkPhotonTransferCurve(AbstractTest):
     name = 'dark_photon_transfer_curve'
     description = 'blub'
 
-    def __init__(self, test_runner: TestRunner, start: int = 1, end: int = 10, step: int = 1, reps: int = 1):
+    def __init__(self, test_runner: TestRunner, start: int = 1, end: int = 3, step: int = 1, reps: int = 4):
         AbstractTest.__init__(self, test_runner)
 
         self.start = start
@@ -49,15 +49,15 @@ class CalculateDarkPhotonTransferCurve(AbstractTest):
         self.step = step
         self.reps = reps
 
+        self.exposure_times = list(range(self.start, self.end, self.step))
+
     def run(self):
         noises = []
-        for exposure_time in range(self.start, self.end, self.step):
+        for exposure_time in self.exposure_times:
             # self.camera.set_prop('exposure_time', exposure_time)
-            #noise = statistics.mean([self.measure_noise() in range(self.reps)])
-            noise = self.measure_noise()
-            noises.append(noise)
+            noises.append([self.measure_noise() in range(self.reps)])
 
-        ptc_fig = self.create_ptc_figure(noises)
+        ptc_fig = self.create_ptc_figure(self.exposure_times, noises)
 
         description = 'photon transfer curve'
 
@@ -73,12 +73,16 @@ class CalculateDarkPhotonTransferCurve(AbstractTest):
         return noise
 
     @classmethod
-    def create_ptc_figure(cls, noises: List[float]):
+    def create_ptc_figure(cls, exposure_times: List[int], noises: List[List[float]]):
         fig, (ax_ptc) = plt.subplots(nrows=1, ncols=1, figsize=(20, 15))
+
+        noise_means = statistics.mean(noises)
+        noise_stdevs = statistics.stdev(noises)
 
         ax_ptc.set_title('Dark Photon Transfer Curve')
         ax_ptc.set_xlabel('Exposure time')
         ax_ptc.set_ylabel('Noise')
-        ax_ptc.plot(noises)
+        ax_ptc.plot(exposure_times, noise_means)
+        ax_ptc.errorbar(exposure_times, noise_means, yerr=noise_stdevs)
 
         return fig
