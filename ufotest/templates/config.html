@@ -18,15 +18,23 @@
                 <span>Config.toml</span>
             </div>
             <textarea id="editor" rows="{{ line_count }}" spellcheck="false">{{ config_content }}</textarea>
-            <button class="btn save" onclick="console.log('Jello')">Save</button>
+            <button class="btn save" onclick="saveConfig()">Save</button>
         </div>
     </div>
     <script>
         let editor = document.getElementById('editor');
         let codeMirror = CodeMirror.fromTextArea(editor);
         codeMirror.options.mode = 'toml';
-        //codeMirror.options.lineNumbers = true;
         codeMirror.setSize("", "100%");
         codeMirror.refresh();
+
+        function saveConfig() {
+            let xhr = new XMLHttpRequest();
+            xhr.open('POST', "{{ config.url('config/save') }}" ,true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({
+                content: codeMirror.getValue()
+            }));
+        }
     </script>
 {% endblock %}

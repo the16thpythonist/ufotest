@@ -600,7 +600,7 @@ Documentation
 - Docstrings for "testing.TestRunner"
 - Docstrings for "camera.AbstractCamera"
 - Docstrings for "camera.MockCamera"
-- Docstrigns for "camera.UfoCamera"
+- Docstrings for "camera.UfoCamera"
 
 TODO
 ----

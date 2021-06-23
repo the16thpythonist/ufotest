@@ -178,6 +178,8 @@ The following software was used in the creation of the project:
 * `Cookiecutter <https://github.com/audreyr/cookiecutter>`_: A CLI tool for project templating
 * `audreyr/cookiecutter-pypackage <https://github.com/audreyr/cookiecutter-pypackage>`_: A basic template for python package projects
 * `Twine <https://pypi.org/project/twine/>`_: For pushing new versions of the code to the python package index PyPi
+* `CodeMirror: <https://codemirror.net/>`_: JS library for displaying a code editor widget.
+* `FontAwesome: <https://https://fontawesome.com/>`_: CSS/JS Icon library.
 
 ToDo
 ----

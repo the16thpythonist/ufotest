@@ -178,6 +178,19 @@ def config():
     return template.render(context), 200
 
 
+@server.route('/config/save', methods=['POST'])
+def save_config():
+    try:
+        data = request.get_json()
+        content = data['content']
+        with open(get_path('config.toml'), mode='w') as config_file:
+            config_file.write(content)
+        return 'Config file saved', 200
+
+    except:
+        return 'There has been an error', 400
+
+
 @server.route('/push/github', methods=['POST'])
 def push_github():
     data = request.get_json()
