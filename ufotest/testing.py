@@ -20,7 +20,7 @@ from ufotest.util import (markdown_to_html,
                           get_version,
                           AbstractRichOutput,
                           random_string)
-from ufotest.camera import UfoCamera
+from ufotest.camera import UfoCamera, AbstractCamera
 from ufotest.util import csubtitle, cprint, cresult
 
 
@@ -696,7 +696,7 @@ class AbstractTest(ABC):
         self.logger = self.test_runner.logger
         self.config = self.test_runner.config
         self.context = self.test_runner.context
-        self.camera = self.test_runner.camera
+        self.camera: AbstractCamera = self.test_runner.camera
 
     def execute(self) -> AbstractTestResult:
         start_datetime = datetime.datetime.now()

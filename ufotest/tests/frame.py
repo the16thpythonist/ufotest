@@ -57,9 +57,7 @@ class AcquireSingleFrame(AbstractTest):
         setup_environment()
 
         # -- REQUESTING FRAME FROM CAMERA
-        frame_path = get_frame()
-        frames = import_raw(frame_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())
-        frame = frames[0]
+        frame = self.camera.get_frame()
 
         fig_frame = self.create_frame_figure(frame)
         description = (
@@ -80,14 +78,14 @@ class AcquireSingleFrame(AbstractTest):
 
     @classmethod
     def create_frame_figure(cls, frame: np.ndarray) -> plt.Figure:
-        fig, (ax_frame, ax_frame_mod, ax_hist) = plt.subplots(nrows=1, ncols=3, figsize=(20, 15))
+        fig, (ax_frame, ax_frame_mod) = plt.subplots(nrows=1, ncols=2, figsize=(20, 15))
 
         # ~ plotting the frame as an image
         ax_frame.imshow(frame)
         ax_frame.set_title('Captured Frame')
 
         # ~ plotting the frame with increased contrast
-        frame_mod = frame.copy() #cls.increase_frame_contrast(frame)
+        frame_mod = cls.increase_frame_contrast(frame)
         ax_frame_mod.imshow(frame_mod)
         ax_frame_mod.set_title('Captured Frame - Increased Contrast')
 
