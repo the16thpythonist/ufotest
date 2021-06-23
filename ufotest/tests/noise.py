@@ -41,7 +41,7 @@ class CalculateDarkPhotonTransferCurve(AbstractTest):
     name = 'dark_photon_transfer_curve'
     description = 'blub'
 
-    def __init__(self, test_runner: TestRunner, start: int = 1, end: int = 10, step: int = 1, reps: int = 2):
+    def __init__(self, test_runner: TestRunner, start: int = 1, end: int = 10, step: int = 1, reps: int = 1):
         AbstractTest.__init__(self, test_runner)
 
         self.start = start
@@ -53,11 +53,11 @@ class CalculateDarkPhotonTransferCurve(AbstractTest):
         noises = []
         for exposure_time in range(self.start, self.end, self.step):
             # self.camera.set_prop('exposure_time', exposure_time)
-            noise = statistics.mean([self.measure_noise() in range(self.reps)])
+            #noise = statistics.mean([self.measure_noise() in range(self.reps)])
+            noise = self.measure_noise()
             noises.append(noise)
 
         ptc_fig = self.create_ptc_figure(noises)
-        ptc_fig.show()
 
         description = 'photon transfer curve'
 

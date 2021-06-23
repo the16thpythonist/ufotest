@@ -97,14 +97,15 @@ class AcquireSingleFrame(AbstractTest):
 
         frame_flat = frame.flatten()
         hist, _ = np.histogram(frame_flat, bins=list(range(0, cls.MAX_PIXEL_VALUE)))
-        bottom_quantile = int(np.quantile(hist, 0.1))
-        top_quantile = int(np.quantile(hist, 0.9))
+        bottom_quantile = int(np.quantile(hist, 0.05))
+        top_quantile = int(np.quantile(hist, 0.95))
 
-        hist_bins = list(range(int(np.min(frame_flat)), int(np.max(frame_flat))))
+        hist_bins = list(range(int(np.min(frame_flat)) + 1, int(np.max(frame_flat))))
         ax_hist.hist(frame_flat, bins=hist_bins)
         ax_hist.set_title('Captured Frame - Histogram')
         ax_hist.set_xlabel('Pixel Values')
         ax_hist.set_ylabel('Occurrences')
+        ax_hist.set_ylim()
 
         hist_zoom_bins = list(range(bottom_quantile, top_quantile))
         ax_hist_zoom.hist(frame_flat, bins=hist_zoom_bins)
