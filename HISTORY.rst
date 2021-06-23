@@ -567,6 +567,10 @@ Fixes
 1.3.0 (xx.06.2021)
 ------------------
 
+Fixes
+
+- The "setup" and "teardown" script previously still used the old script system. Now they also use the camera class.
+
 Changes
 
 - Added additional methods to be implemented for the interface "camera.AbstractCamera": "supports_prop", "set_prop" and

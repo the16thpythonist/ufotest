@@ -33,7 +33,7 @@ from ufotest.install import (mock_install_repository,
                              install_libuca,
                              install_uca_ufo,
                              install_ipecamera)
-from ufotest.camera import save_frame, import_raw, set_up_camera, tear_down_camera, get_frame, UfoCamera, MockCamera
+from ufotest.camera import AbstractCamera, UfoCamera, MockCamera
 from ufotest.testing import TestRunner, TestContext, TestReport
 from ufotest.ci.build import BuildRunner, BuildReport, BuildLock, build_context_from_config
 from ufotest.ci.server import server, BuildWorker
@@ -344,21 +344,26 @@ def frame(config, output, display):
 
 
 @click.command('setup', short_help="Enable the camera")
-@click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
-def setup(verbose):
-    if not check_install():
-        return 1
-
-    set_up_camera(verbose=verbose)
+@pass_config
+def setup(config):
+    """
+    Executes the setup routine for the camera, which includes all the steps required to properly initialize the
+    camera such that all subsequent requests / frame captures should succeed.
+    """
+    camera_class = config.pm.apply_filter('camera_class', UfoCamera)
+    camera: AbstractCamera = camera_class(config)
+    camera.set_up()
 
 
 @click.command('teardown', short_help="Disable the camera. DO NOT USE")
-@click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
-def teardown(verbose):
-    if not check_install():
-        return 1
-
-    tear_down_camera(verbose)
+@pass_config
+def teardown(config):
+    """
+    Executes the teardonw routine for the camera, which includes all the steps required to properly end the usage.
+    """
+    camera_class = config.pm.apply_filter('camera_class', UfoCamera)
+    camera: AbstractCamera = camera_class(config)
+    camera.tear_down()
 
 
 @click.command('flash', short_help='Flash a new .BIT file to the FPGA memory')
