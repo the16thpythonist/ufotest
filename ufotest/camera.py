@@ -233,7 +233,7 @@ class UfoCamera(AbstractCamera):
         return frame_array
 
     def poll(self) -> bool:
-        result = self.config.sm.invoke('status', {'prefix': 'sudo', 'postfix': ''})
+        result = self.config.sm.invoke('status', args={'prefix': 'sudo', 'postfix': ''})
         if self.config.verbose():
             cprint(result['stdout'])
 

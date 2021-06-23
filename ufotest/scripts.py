@@ -75,7 +75,7 @@ class BashScript(AbstractScript):
         folder = os.path.dirname(self.path)
 
         script_command = self.path
-        if args is not None:
+        if isinstance(args, dict):
             script_command = f'{args["prefix"]} {script_command} {args["postfix"]}'
 
         completed_process = subprocess.run(
