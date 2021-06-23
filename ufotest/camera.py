@@ -254,6 +254,18 @@ class UfoCamera(AbstractCamera):
     def reset(self):
         pass
 
+    def set_exposure_time(self, value: int):
+        self.pci_write('9000', 'a001')
+        time.sleep(0.2)
+        self.pci_read('9010', 1)
+        time.sleep(0.2)
+
+        hex_value = hex(41216 + 2 ** value).lstrip('0x')
+        self.pci_write('9000', hex_value)
+        time.sleep(0.2)
+        self.pci_read('9010', 1)
+        time.sleep(0.2)
+
     # -- Helper methods --
     # These methods wrap camera specific functionality which is required to implement the more top level behavior
 
