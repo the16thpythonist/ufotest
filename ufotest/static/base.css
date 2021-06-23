@@ -93,3 +93,26 @@ a.nav-item:visited {
     display: flex;
     flex-direction: column;
 }
+
+.btn {
+    color: white;
+    font-family: "Bitstream Vera Sans Mono", Monaco, "Courier New", Courier, monospace;
+    padding: 3px;
+    padding-left: 6px;
+    padding-right: 6px;
+    background-color: #ffb703;
+    border-width: 0;
+    border-style: solid;
+    border-bottom-width: 3px;
+    border-right-width: 2px;
+    border-color: #fb8500;
+    border-radius: 2px;
+    font-size: 1em;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn:active {
+    background-color: #fb8500;
+    border-color: rgba(0, 0, 0, 0);
+}

@@ -589,7 +589,10 @@ Changes
   and then calculates the noise for each one, plotting those results at the end.
 - Added "tests.noise.MeasureNoiseMixin" which can be used for easy access to a method which wraps the measurement of
   camera noise by taking two independent frames and then calculating the variance of the frame difference
-
+- Added "FontAwesome" Icons to the static folder of the project
+- Added "CodeMirror" JS code editor to the static folder
+- Web Interface: Added a new nav item "Config" which directs to a page where the config file can be viewed, edited and
+  then saved.
 
 Documentation
 
