@@ -71,12 +71,12 @@ class BashScript(AbstractScript):
         self.author = self.data['author']
         self.description = self.data['description']
 
-    def invoke(self, args: Optional[str] = None) -> dict:
+    def invoke(self, args: Optional[dict] = None) -> dict:
         folder = os.path.dirname(self.path)
 
         script_command = self.path
         if args is not None:
-            script_command += f' {args}'
+            script_command = f'{args["prefix"]} {script_command} {args["postfix"]}'
 
         completed_process = subprocess.run(
             script_command,

@@ -233,10 +233,20 @@ class UfoCamera(AbstractCamera):
         return frame_array
 
     def poll(self) -> bool:
-        pass
+        result = self.config.sm.invoke('status', {'prefix': 'sudo', 'postfix': ''})
+        if self.config.verbose():
+            cprint(result['stdout'])
+
+        return result['exit_code']
 
     def set_up(self):
-        pass
+        self.config.sm.invoke('pcie_init')
+        time.sleep(0.5)
+        self.config.sm.invoke('reset_fpga')
+        time.sleep(0.5)
+        self.config.sm.invoke('power_up')
+        time.sleep(0.5)
+        self.config.sm.invoke('reset')
 
     def tear_down(self):
         pass
