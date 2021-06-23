@@ -228,7 +228,7 @@ class CalculateDarkPhotonTransferCurve(MeasureNoiseMixin, AbstractTest):
 
         return CombinedTestResult(
             FigureTestResult(0, self.context, ptc_fig, description),
-            MessageTestResult(0, f'A total of *{error_count}* noise measurements failed')
+            MessageTestResult(0, f'A total of <strong>{error_count}</strong> noise measurements failed')
         )
 
     @classmethod

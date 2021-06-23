@@ -164,6 +164,20 @@ def home():
     return template.render({}), 200
 
 
+@server.route('/config', methods=['GET'])
+def config():
+    template = get_template('config.html')
+
+    with open(get_path('config.toml')) as config_file:
+        config_lines = config_file.readlines()
+        context = {
+            'line_count':       len(config_lines),
+            'config_content':   ''.join(config_lines)
+        }
+
+    return template.render(context), 200
+
+
 @server.route('/push/github', methods=['POST'])
 def push_github():
     data = request.get_json()

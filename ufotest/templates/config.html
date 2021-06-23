@@ -4,18 +4,17 @@
 
 {% block head %}
     {{ super() }}
-    <link rel="stylesheet" type="text/css" href="{{ config.static('main.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ config.static('config.css') }}">
 {% endblock %}
 
 {% block content %}
     <div class="config-container">
         <div class="config-editor">
             <div class="filename">
-                Config.toml
+                <i class="fas fa-pen"></i> Config.toml
             </div>
-            <textarea>
-                lol
-            </textarea>
+            <textarea rows="{{ line_count }}">{{ config_content }}</textarea>
+            <button class="save">Save</button>
         </div>
     </div>
 {% endblock %}
