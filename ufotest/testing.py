@@ -182,6 +182,7 @@ class TestRunner(object):
         # This camera instance will be the most important value to which each test case will have to have access to.
         self.camera_class = self.config.pm.apply_filter('camera_class', UfoCamera)
         self.camera = self.camera_class(self.config)
+        self.camera.set_up()
 
     def load_modules(self) -> None:
         """

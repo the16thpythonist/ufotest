@@ -381,12 +381,17 @@ class MockCamera(InternalDictMixin, AbstractCamera):
         """
         return Image.open(image_path).convert('L')
 
+    @functools.lru_cache
+    def resize_image(self, width, height):
+        image = self.image.resize((width, height))
+        frame_array = np.array(image, dtype=np.float64)
+        return frame_array
+
     def get_frame(self) -> np.array:
         # ~ Resizing the image to fit the given geometry constraints
         width = self.config.get_sensor_width()
         height = self.config.get_sensor_height()
-        image = self.image.resize((width, height))
-        frame_array = np.array(image, dtype=np.float64)
+        frame_array = self.resize_image(width, height)
 
         # ~ Applying the exposure time to the image
         # The first effect of a higher exposure time is that the image gets brighter

@@ -346,24 +346,3 @@ class CalculateSeriesNoiseTest(AbstractTest):
     def run(self):
         pass
 
-
-class CalculateDarkPhotonTransferCurve(AbstractTest):
-
-    name = 'dark_photon_transfer_curve'
-    description = 'blub'
-
-    def __init__(self, test_runner: TestRunner):
-        AbstractTest.__init__(self, test_runner)
-        self.camera = UfoCamera(self.config)
-
-    def run(self):
-        frame = self.camera.get_frame()
-        fig = self.create_figure(frame)
-
-        return FigureTestResult(0, self.context, fig, '')
-
-    def create_figure(self, frame):
-        fig, (ax_frame1) = plt.subplots(nrows=1, ncols=1, figsize=(20, 15))
-        ax_frame1.imshow(frame)
-
-        return fig

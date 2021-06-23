@@ -578,6 +578,9 @@ Changes
 - Added filter hook "camera_class" which will be used to retrieve the AbstractCamera subclass to use to interface with
   the actual camera hardware.
 - Added the action hook "pre_command_frame" which is called at the start of the "frame" CLI command.
+- Added the module "noise.py" to the default list of camera tests. It is supposed to contain all those test cases which
+  are in some way concerned with the calculation of noise characteristics for the camera.
+
 
 Documentation
 
