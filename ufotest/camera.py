@@ -205,8 +205,10 @@ class InternalDictMixin:
 # TODO: CommandHistoryMixin
 
 
-class UfoCamera(AbstractCamera):
-
+class UfoCamera(InternalDictMixin, AbstractCamera):
+    """
+    Implements the interface to interact with the UFO camera.
+    """
     def __init__(self, config: Config):
         AbstractCamera.__init__(self, config)
 
