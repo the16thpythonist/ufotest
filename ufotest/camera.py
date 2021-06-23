@@ -316,7 +316,13 @@ class UfoCamera(InternalDictMixin, AbstractCamera):
     # These methods wrap camera specific functionality which is required to implement the more top level behavior
 
     def decode_frame(self):
+        """
+        Uses the raw frame data stored in the file at "data_path" to decode it into an actual image of the
+        RAW format, which is stored at the path "frame_path"
 
+        :raises FrameDecodingError: If there is any problem during the decoding process
+        :return: void
+        """
         # This command will decode the raw data which should have previously been written as the file
         # referenced by self.data_path and decode it into an actual picture in the .raw format. The resulting file
         # is written to the same folder and has the same filename as the input file but with a .raw appended.
@@ -336,6 +342,15 @@ class UfoCamera(InternalDictMixin, AbstractCamera):
             raise FrameDecodingError(stdout[:stdout.find('\n')])
 
     def receive_frame(self, force=True):
+        """
+        Reads out the raw byte data of the previously requested frames and stores it into a temporary file
+        whose path is defined in the "data_path" property of this class.
+
+        :param force: Boolean flag of whether or not to forcefully delete the previous data file. Default is True
+
+        :raises PciError: If there is any problem with receiving the frame
+        :return: void
+        """
         if force and os.path.exists(self.data_path):
             os.remove(self.data_path)
 
@@ -356,6 +371,11 @@ class UfoCamera(InternalDictMixin, AbstractCamera):
         time.sleep(0.1)
 
     def request_frame(self):
+        """
+        Writes the necessary registers of the camera to indicate that a new frame is requested
+
+        :return: void
+        """
         # At this point I have no clue, what these instructions specifically do. I just imitated the relevant
         # section from micheles bash script for requesting frames.
         pci_write('0x9040', '0x80000201')

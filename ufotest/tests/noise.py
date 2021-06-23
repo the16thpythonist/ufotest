@@ -119,8 +119,8 @@ class CalculateDarkPhotonTransferCurve(AbstractTest):
         """
         fig, (ax_ptc) = plt.subplots(nrows=1, ncols=1, figsize=(20, 15))
 
-        noise_means = [statistics.mean(noises) for noises in noises_list]
-        noise_stdevs = [statistics.stdev(noises) for noises in noises_list]
+        noise_means = [statistics.mean(noises) if noises else 0 for noises in noises_list]
+        noise_stdevs = [statistics.stdev(noises) if noises else 0 for noises in noises_list]
 
         ax_ptc.set_title('Dark Photon Transfer Curve')
         ax_ptc.set_xlabel('Exposure time')
