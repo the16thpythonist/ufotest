@@ -209,7 +209,13 @@ class UfoCamera(InternalDictMixin, AbstractCamera):
     """
     Implements the interface to interact with the UFO camera.
     """
+
+    default_values = {
+        'exposure_time': 1
+    }
+
     def __init__(self, config: Config):
+        InternalDictMixin.__init__(self)
         AbstractCamera.__init__(self, config)
 
         self.tmp_path = self.config.pm.apply_filter('ufo_camera_tmp_path', value='/tmp')
