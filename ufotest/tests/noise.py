@@ -4,7 +4,8 @@ from typing import List
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ufotest.testing import AbstractTest, TestRunner, FigureTestResult, MessageTestResult
+from ufotest.testing import AbstractTest, TestRunner, FigureTestResult, MessageTestResult, CombinedTestResult
+from ufotest.exceptions import PciError, FrameDecodingError
 
 
 # == UTILITY FUNCTIONS
@@ -52,16 +53,27 @@ class CalculateDarkPhotonTransferCurve(AbstractTest):
         self.exposure_times = list(range(self.start, self.end, self.step))
 
     def run(self):
+        error_count = 0
         noises = []
         for exposure_time in self.exposure_times:
-            # self.camera.set_prop('exposure_time', exposure_time)
-            noises.append([self.measure_noise() in range(self.reps)])
+            _noises = []
+            for i in range(self.reps):
+                try:
+                    noise = self.measure_noise()
+                    _noises.append(noise)
+                except (PciError, FrameDecodingError):
+                    error_count += 1
+
+            noises.append(_noises)
 
         ptc_fig = self.create_ptc_figure(self.exposure_times, noises)
 
         description = 'photon transfer curve'
 
-        return FigureTestResult(0, self.context, ptc_fig, description)
+        return CombinedTestResult(
+            FigureTestResult(0, self.context, ptc_fig, description),
+            MessageTestResult(0, f'A total of *{error_count}* noise measurements failed')
+        )
 
     def measure_noise(self):
         frame1 = self.camera.get_frame()
@@ -73,11 +85,11 @@ class CalculateDarkPhotonTransferCurve(AbstractTest):
         return noise
 
     @classmethod
-    def create_ptc_figure(cls, exposure_times: List[int], noises: List[List[float]]):
+    def create_ptc_figure(cls, exposure_times: List[int], noises_list: List[List[float]]):
         fig, (ax_ptc) = plt.subplots(nrows=1, ncols=1, figsize=(20, 15))
 
-        noise_means = statistics.mean(noises)
-        noise_stdevs = statistics.stdev(noises)
+        noise_means = [statistics.mean(noises) for noises in noises_list]
+        noise_stdevs = [statistics.stdev(noises) for noises in noises_list]
 
         ax_ptc.set_title('Dark Photon Transfer Curve')
         ax_ptc.set_xlabel('Exposure time')
