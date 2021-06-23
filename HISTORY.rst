@@ -570,6 +570,7 @@ Fixes
 Fixes
 
 - The "setup" and "teardown" script previously still used the old script system. Now they also use the camera class.
+- The tests now also use the Camera class which is passed to them by the test runner and not the old method
 
 Changes
 
@@ -584,6 +585,10 @@ Changes
 - Added the action hook "pre_command_frame" which is called at the start of the "frame" CLI command.
 - Added the module "noise.py" to the default list of camera tests. It is supposed to contain all those test cases which
   are in some way concerned with the calculation of noise characteristics for the camera.
+- Added "tests.noise.CalculateDarkPhotonTransferCurve" which sweeps different values for the cameras exposure time
+  and then calculates the noise for each one, plotting those results at the end.
+- Added "tests.noise.MeasureNoiseMixin" which can be used for easy access to a method which wraps the measurement of
+  camera noise by taking two independent frames and then calculating the variance of the frame difference
 
 
 Documentation
@@ -592,6 +597,7 @@ Documentation
 - Docstrings for "testing.TestRunner"
 - Docstrings for "camera.AbstractCamera"
 - Docstrings for "camera.MockCamera"
+- Docstrigns for "camera.UfoCamera"
 
 TODO
 ----
@@ -599,6 +605,9 @@ TODO
 Bugs:
 
 Features:
+
+- A command which lists the currently active plugins
+- Frontend: An additional tab which allows to modify the config file...
 
 - Change the default URL for pcitool installation
 - Config file flash ID

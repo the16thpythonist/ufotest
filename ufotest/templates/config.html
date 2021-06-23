@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Config{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" type="text/css" href="{{ config.static('main.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="config-container">
+        <div class="config-editor">
+            <div class="filename">
+                Config.toml
+            </div>
+            <textarea>
+                lol
+            </textarea>
+        </div>
+    </div>
+{% endblock %}

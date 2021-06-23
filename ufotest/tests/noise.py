@@ -1,10 +1,17 @@
+import math
 import statistics
 from typing import List
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ufotest.testing import AbstractTest, TestRunner, FigureTestResult, MessageTestResult, CombinedTestResult
+from ufotest.config import CONFIG
+from ufotest.testing import (AbstractTest,
+                             TestRunner,
+                             FigureTestResult,
+                             MessageTestResult,
+                             CombinedTestResult,
+                             DictTestResult)
 from ufotest.exceptions import PciError, FrameDecodingError
 
 
@@ -37,7 +44,140 @@ def calculate_pair_variance(frame1: np.ndarray, frame2: np.ndarray) -> float:
 
 # == ACTUAL TEST CASES
 
-class CalculateDarkPhotonTransferCurve(AbstractTest):
+
+class MeasureNoiseMixin:
+
+    def __init__(self):
+        self.noise_measurement = {
+            'frame1':       None,
+            'frame2':       None,
+            'variance':     0,
+            'rmsnoise':     0
+        }
+
+    def measure_noise(self) -> float:
+        """
+        Captures two independent frames from the camera and proceeds to calculate the noise as the square root of the
+        variance of the difference between those frames. This final noise value is then returned
+
+        :return: float
+        """
+        frame1 = self.camera.get_frame()
+        self.noise_measurement['frame1'] = frame1
+        frame2 = self.camera.get_frame()
+        self.noise_measurement['frame2'] = frame2
+
+        variance = calculate_pair_variance(frame1, frame2)
+        self.noise_measurement['variance'] = variance
+        rmsnoise = np.sqrt(variance)
+        self.noise_measurement['rmsnoise'] = rmsnoise
+
+        return rmsnoise
+
+
+class CalculatePairNoiseTest(AbstractTest):
+
+    NDIGITS = 3
+    INFO_MESSAGE = (
+        'The calculation of the noise is based on the description in the following PDF document: '
+        f'<a href="{CONFIG.static("photon_transfer_method.pdf")}">Photon Transfer Method</a>.'
+    )
+
+    name = 'calculate_pair_noise'
+    description = (
+        'This test calculates the noise of the camera. The procedure is based on a description of the measurement for '
+        'the "Photon Transfer Curve (PTC)". A link to a PDF document describing this procedure can be found in the '
+        'content below. A rough explanation of the procedure goes like this: Two frames are captures from the camera '
+        'in short succession of each other and with the same settings. These two images are subtracted from each other '
+        'to cancel out the influence of the fixed pattern noise. The variance is calculates like this:  '
+        'var = \\sum_{i}^{N} (I_1i - M1) - (I_2i - M2) / 2 N'
+        'where N is the total number of pixels, I_i the value of pixel at index i and M is the average pixel value of '
+        'the respective image. The noise measure "rmsnoise" is then calculated as the square root of this variance:  '
+        'rmsnoise = \\sqrt{var}.'
+    )
+
+    def __init__(self, test_runner):
+        AbstractTest.__init__(self, test_runner)
+        self.exit_code = 0
+
+    def run(self):
+
+        message_result = MessageTestResult(self.exit_code, self.INFO_MESSAGE)
+
+        frame1 = self.camera.get_frame()
+        frame2 = self.camera.get_frame()
+        variance = calculate_pair_variance(frame1, frame2)
+        rmsnoise = math.sqrt(variance)
+
+        dict_result = DictTestResult(self.exit_code, {
+            'variance': round(variance, ndigits=self.NDIGITS),
+            'rmsnoise': round(rmsnoise, ndigits=self.NDIGITS)
+        })
+
+        fig = self.create_figure(frame1, frame2)
+        figure_description = (
+            'This figure shows the two frames which were captured for the purpose of calculating the noise '
+            'The first subplot shows the first frame, the second subplot shows the second frame and the third subplot '
+            'shows the image which results when subtracting all the pixel values of the first frame from those of the '
+            'second frame.'
+        )
+        figure_result = FigureTestResult(self.exit_code, self.context, fig, figure_description)
+
+        return CombinedTestResult(
+            message_result,
+            figure_result,
+            dict_result
+        )
+
+    @classmethod
+    def create_figure(cls, frame1: np.ndarray, frame2: np.ndarray) -> plt.Figure:
+        fig, (ax_frame1, ax_frame2, ax_diff) = plt.subplots(nrows=1, ncols=3, figsize=(20, 15))
+
+        ax_frame1.imshow(frame1)
+        ax_frame1.set_title('Frame 1')
+
+        ax_frame2.imshow(frame2)
+        ax_frame2.set_title('Frame 2')
+
+        frame_difference = frame2 - frame1
+        ax_diff.imshow(frame_difference)
+        ax_diff.set_title('Frame Difference (Frame2 - Frame1)')
+
+        return fig
+
+
+class RepeatedCalculatePairNoise(MeasureNoiseMixin, AbstractTest):
+
+    REPETITIONS = 5
+
+    def __init__(self, test_runner):
+        MeasureNoiseMixin.__init__(self)
+        AbstractTest.__init__(self, test_runner)
+
+    def run(self):
+        noise_values = []
+        for i in range(self.REPETITIONS):
+            rmsnoise = self.measure_noise()
+            noise_values.append(rmsnoise)
+
+        stats = {
+            'mean noise': round(statistics.mean(noise_values), ndigits=3),
+            'stdev noise': round(statistics.stdev(noise_values), ndigits=3)
+        }
+        dict_result = DictTestResult(0, stats)
+
+        message_result = MessageTestResult(0, (
+            f'These results show the average noise measurement and the standard deviation of this noise value for a '
+            f'total of {self.REPETITIONS} measurements of the noise out of pairs of frames:'
+        ))
+
+        return CombinedTestResult(
+            message_result,
+            dict_result
+        )
+
+
+class CalculateDarkPhotonTransferCurve(MeasureNoiseMixin, AbstractTest):
 
     name = 'dark_photon_transfer_curve'
     description = (
@@ -51,7 +191,8 @@ class CalculateDarkPhotonTransferCurve(AbstractTest):
         'of the "noise" without any external image information.'
     )
 
-    def __init__(self, test_runner: TestRunner, start: int = 1, end: int = 10, step: int = 1, reps: int = 3):
+    def __init__(self, test_runner: TestRunner, start: int = 1, end: int = 5, step: int = 1, reps: int = 3):
+        MeasureNoiseMixin.__init__(self)
         AbstractTest.__init__(self, test_runner)
 
         self.start = start
@@ -89,21 +230,6 @@ class CalculateDarkPhotonTransferCurve(AbstractTest):
             FigureTestResult(0, self.context, ptc_fig, description),
             MessageTestResult(0, f'A total of *{error_count}* noise measurements failed')
         )
-
-    def measure_noise(self) -> float:
-        """
-        Captures two independent frames from the camera and proceeds to calculate the noise as the square root of the
-        variance of the difference between those frames. This final noise value is then returned
-
-        :return: float
-        """
-        frame1 = self.camera.get_frame()
-        frame2 = self.camera.get_frame()
-
-        var = calculate_pair_variance(frame1, frame2)
-        noise = np.sqrt(var)
-
-        return noise
 
     @classmethod
     def create_ptc_figure(cls, exposure_times: List[int], noises_list: List[List[float]]):

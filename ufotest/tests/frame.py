@@ -62,16 +62,10 @@ class AcquireSingleFrame(AbstractTest):
         frame = self.camera.get_frame()
 
         fig_frame = self.create_frame_figure(frame)
-        description = (
-            'This figure shows a single frame, which was captured from the camera. The first subplot shows the frame '
-            'image exactly as it is. All pixel values are exactly as returned by the camera. The second subplot shows '
-            'the same frame but with an increased contrast. The contrast has been increased through an algorithm which '
-            'stretches the histogram of the image to its 0.1 and 0.9 quantile. The third subplot shows the histogram '
-            'of the image with increased contrast. This roughly equates to zooming into the "interesting region" of '
-            'the histogram.'
-        )
+        frame_description = ('')
 
         fig_hist = self.create_histogram_figure(frame)
+        hist_description = ('')
 
         return CombinedTestResult(
             FigureTestResult(0, self.context, fig_frame, ''),
@@ -102,7 +96,7 @@ class AcquireSingleFrame(AbstractTest):
         bottom_quantile = int(np.quantile(hist, cls.LOW_PERCENTILE))
         top_quantile = int(np.quantile(hist, cls.HIGH_PERCENTILE))
 
-        hist_bins = list(range(int(np.min(frame_flat)) + 1, int(np.max(frame_flat))))
+        hist_bins = list(range(int(np.min(frame_flat)) + 1, int(np.max(frame_flat)) + 100))
         ax_hist.hist(frame_flat, bins=hist_bins)
         ax_hist.set_title('Captured Frame - Histogram')
         ax_hist.set_xlabel('Pixel Values')
@@ -203,147 +197,4 @@ class SingleFrameStatistics(AbstractTest):
 
         return fig
 
-
-class CalculatePairNoiseTest(AbstractTest):
-
-    NDIGITS = 3
-    INFO_MESSAGE = (
-        'The calculation of the noise is based on the description in the following PDF document: '
-        f'<a href="{CONFIG.static("photon_transfer_method.pdf")}">Photon Transfer Method</a>.'
-    )
-
-    name = 'calculate_pair_noise'
-    description = (
-        'This test calculates the noise of the camera. The procedure is based on a description of the measurement for '
-        'the "Photon Transfer Curve (PTC)". A link to a PDF document describing this procedure can be found in the '
-        'content below. A rough explanation of the procedure goes like this: Two frames are captures from the camera '
-        'in short succession of each other and with the same settings. These two images are subtracted from each other '
-        'to cancel out the influence of the fixed pattern noise. The variance is calculates like this:  '
-        'var = \\sum_{i}^{N} (I_1i - M1) - (I_2i - M2) / 2 N'
-        'where N is the total number of pixels, I_i the value of pixel at index i and M is the average pixel value of '
-        'the respective image. The noise measure "rmsnoise" is then calculated as the square root of this variance:  '
-        'rmsnoise = \\sqrt{var}.'
-    )
-
-    def __init__(self, test_runner):
-        AbstractTest.__init__(self, test_runner)
-        self.exit_code = 0
-
-    def run(self):
-
-        message_result = MessageTestResult(self.exit_code, self.INFO_MESSAGE)
-
-        frame1, frame2 = self.get_frames()
-        variance = self.calculate_pair_variance(frame1, frame2)
-        rmsnoise = math.sqrt(variance)
-
-        dict_result = DictTestResult(self.exit_code, {
-            'variance': round(variance, ndigits=self.NDIGITS),
-            'rmsnoise': round(rmsnoise, ndigits=self.NDIGITS)
-        })
-
-        fig = self.create_figure(frame1, frame2)
-        figure_description = (
-            'This figure shows the two frames which were captured for the purpose of calculating the noise '
-            'The first subplot shows the first frame, the second subplot shows the second frame and the third subplot '
-            'shows the image which results when subtracting all the pixel values of the first frame from those of the '
-            'second frame.'
-        )
-        figure_result = FigureTestResult(self.exit_code, self.context, fig, figure_description)
-
-        return CombinedTestResult(
-            message_result,
-            figure_result,
-            dict_result
-        )
-
-    def get_frames(self) -> Tuple[np.ndarray, np.ndarray]:
-        frame1_path = get_frame()
-        frame1 = import_raw(frame1_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())[0]
-
-        frame2_path = get_frame()
-        frame2 = import_raw(frame2_path, 1, self.config.get_sensor_width(), self.config.get_sensor_height())[0]
-
-        return frame1, frame2
-
-    @classmethod
-    def calculate_pair_variance(cls, frame1: np.ndarray, frame2: np.ndarray) -> float:
-        frame1_mean = np.mean(frame1)
-        frame2_mean = np.mean(frame2)
-
-        row_count = len(frame1)
-        column_count = len(frame1[0])
-        squared_sum = 0
-        for i in range(row_count):
-            for j in range(column_count):
-                squared_sum += ((frame1[i][j] - frame1_mean) - (frame2[i][j] - frame2_mean)) ** 2
-
-        variance = squared_sum / (2 * row_count * column_count)
-        return round(variance, ndigits=cls.NDIGITS)
-
-    @classmethod
-    def create_figure(cls, frame1: np.ndarray, frame2: np.ndarray) -> plt.Figure:
-        fig, (ax_frame1, ax_frame2, ax_diff) = plt.subplots(nrows=1, ncols=3, figsize=(20, 15))
-
-        ax_frame1.imshow(frame1)
-        ax_frame1.set_title('Frame 1')
-
-        ax_frame2.imshow(frame2)
-        ax_frame2.set_title('Frame 2')
-
-        frame_difference = frame2 - frame1
-        ax_diff.imshow(frame_difference)
-        ax_diff.set_title('Frame Difference (Frame2 - Frame1)')
-
-        return fig
-
-
-class RepeatedCalculatePairNoise(CalculatePairNoiseTest):
-
-    REPETITIONS = 5
-
-    name = 'repeated_calculate_pair_noise'
-    description = (
-        'Repeatedly calculates the noise by acquiring two separate frames, subtracting them and using the square root '
-        f'of the variance. Executes {REPETITIONS} times and displays the average and'
-    )
-
-    def __init__(self, test_runner: TestRunner):
-        CalculatePairNoiseTest.__init__(self, test_runner)
-
-    def run(self):
-        noise_values = []
-        for i in range(self.REPETITIONS):
-            frame1, frame2 = self.get_frames()
-            variance = self.calculate_pair_variance(frame1, frame2)
-            rmsnoise = math.sqrt(variance)
-            noise_values.append(rmsnoise)
-
-        stats = {
-            'mean noise': round(statistics.mean(noise_values), ndigits=self.NDIGITS),
-            'stdev noise': round(statistics.stdev(noise_values), ndigits=self.NDIGITS)
-        }
-        dict_result = DictTestResult(0, stats)
-
-        message_result = MessageTestResult(0, (
-            f'These results show the average noise measurement and the standard deviation of this noise value for a '
-            f'total of {self.REPETITIONS} measurements of the noise out of pairs of frames:'
-        ))
-
-        return CombinedTestResult(
-            message_result,
-            dict_result
-        )
-
-
-class CalculateSeriesNoiseTest(AbstractTest):
-
-    name = 'calculate_series_noise'
-    description = 'Calculates the camera noise from a series of images'
-
-    def __init__(self, test_runner: TestRunner):
-        AbstractTest.__init__(self, test_runner)
-
-    def run(self):
-        pass
 

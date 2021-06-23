@@ -1,11 +1,15 @@
 body {
     width: 100%;
     height: 100%;
-    margin: 0px;
+    margin: 0;
     background-color:  #e1e1e1;
     font-size: 1.2em;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     line-height: 1.6em;
+    /* Now this is interesting: This will force the scrollbar to be there even if it is not needed. This was actually
+       a bug. If the scrollbar wasn't there that screwed the width of the containers up and caused some weird jitter on
+       page change... */
+    overflow-y: scroll;
 }
 
 h2 {

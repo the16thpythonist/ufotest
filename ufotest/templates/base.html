@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <title>{% block title %}{% endblock %} - UfoTest</title>
     <link rel="stylesheet" type="text/css" href="{{ config.static('base.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ config.static('fa/css/all.css') }}">
+    <script defer src="{{ config.static('fa/js/all.js') }}"></script>
     {% endblock %}
 </head>
 <body>
@@ -13,6 +15,7 @@
         <span class="logo">UfoTest</span>
         <div class="nav-container">
             <a class="nav-item" href="{{ config.url('') }}">Home</a>
+            <a class="nav-item" href="{{ config.url('config') }}">Config</a>
             <a class="nav-item" href="{{ config.url('archive') }}">Test Archive</a>
             <a class="nav-item" href="{{ config.url('builds') }}">Build Archive</a>
         </div>
