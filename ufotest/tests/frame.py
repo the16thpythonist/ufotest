@@ -97,10 +97,10 @@ class AcquireSingleFrame(AbstractTest):
 
         frame_flat = frame.flatten()
         hist, _ = np.histogram(frame_flat, bins=list(range(0, cls.MAX_PIXEL_VALUE)))
-        bottom_quantile = np.quantile(hist, 0.1)
-        top_quantile = np.quantile(hist, 0.9)
+        bottom_quantile = int(np.quantile(hist, 0.1))
+        top_quantile = int(np.quantile(hist, 0.9))
 
-        hist_bins = list(range(np.min(frame_flat), np.max(frame_flat)))
+        hist_bins = list(range(int(np.min(frame_flat)), int(np.max(frame_flat))))
         ax_hist.hist(frame_flat, bins=hist_bins)
         ax_hist.set_title('Captured Frame - Histogram')
         ax_hist.set_xlabel('Pixel Values')
