@@ -97,8 +97,8 @@ class AcquireSingleFrame(AbstractTest):
 
         frame_flat = frame.flatten()
         hist, _ = np.histogram(frame_flat, bins=list(range(0, cls.MAX_PIXEL_VALUE)))
-        bottom_quantile = int(np.quantile(hist, 0.05))
-        top_quantile = int(np.quantile(hist, 0.95))
+        bottom_quantile = int(np.quantile(hist, 0.01))
+        top_quantile = int(np.quantile(hist, 0.99))
 
         hist_bins = list(range(int(np.min(frame_flat)) + 1, int(np.max(frame_flat))))
         ax_hist.hist(frame_flat, bins=hist_bins)
@@ -119,8 +119,8 @@ class AcquireSingleFrame(AbstractTest):
     def increase_frame_contrast(cls, frame: np.ndarray) -> np.ndarray:
         frame_flat = frame.flatten()
         hist, _ = np.histogram(frame_flat, bins=list(range(0, cls.MAX_PIXEL_VALUE)))
-        min_value = np.quantile(hist, 0.1)
-        max_value = np.quantile(hist, 0.9)
+        min_value = np.quantile(hist, 0.01)
+        max_value = np.quantile(hist, 0.99)
         difference = max_value - min_value
 
         # The absence of this section caused an error before. There is quite a reasonable probability, that this
