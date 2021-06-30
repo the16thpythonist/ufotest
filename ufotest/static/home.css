@@ -1,0 +1,31 @@
+.home-container {
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
+h3 {
+    font-size: 0.95em;
+}
+
+.recent-reports {
+    margin-top: 20px;
+}
+
+.overview {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.overview>* {
+    width: 50%;
+}
+
+.value {
+    font-family: monospace;
+    background: lightgray;
+    font-size: 1.1em;
+    padding: 3px;
+    border-radius: 2px;
+}

@@ -238,3 +238,50 @@ could be enabled like this:
     @Filter('camera_class', 10)
     def use_mock(value):
         return MockCamera
+
+
+``get_test_reports``
+~~~~~~~~~~~~~~~~~~~~
+
+Filter Hook
+
+kwargs (1):
+
+- value: A list of dicts, where each dict is the dict representation of a test report which was loaded from the
+  report.json file within the according report sub folder of the "archive" folder.
+
+This filter filters the return value of the function "util.get_test_reports". The subject value is a list of dicts,
+where each dict represents one test report which is saved within the "archive" folder of the ufotest installation.
+
+This hook can for example be used to modify the list of these test reports to exclude certain reports, add additional
+ones which are loaded by some external means or simply change the ordering of the reports.
+
+
+``get_build_reports``
+~~~~~~~~~~~~~~~~~~~~~
+
+Filter Hook
+
+kwargs (1):
+
+- value: A list of dicts, where each dict is the dict representation of a build report which was loaded from the
+  report.json file within the according report sub folder of the "builds" folder.
+
+This filter filters the return value of the function "util.get_build_reports". The subject value is a list of dicts,
+where each dict represents one build report which is saved within the "builds" folder of the ufotest installation.
+
+This hook can for example be used to modify the list of these build reports to exclude certain reports, add additional
+ones which are loaded by some external means or simply change the ordering of the reports.
+
+
+``home_recent_items``
+~~~~~~~~~~~~~~~~~~~~~
+
+Filter Hook
+
+kwargs (1):
+
+- value: integer
+
+This integer subject value defines how many recent items (test reports and build reports) will be displayed on on the
+home page of the web interface.

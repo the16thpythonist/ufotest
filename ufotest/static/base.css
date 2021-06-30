@@ -116,3 +116,37 @@ a.nav-item:visited {
     background-color: #fb8500;
     border-color: rgba(0, 0, 0, 0);
 }
+
+/* The following style rules define a general widget which can be used on any page: A two column layout. This is a main
+   wrapper box, which is supposed to contain exactly two children which will be aligned as two columns of equal width
+   within the main container */
+
+.two-col {
+    display: flex;
+    flex-direction: row;
+}
+
+.two-col>* {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    width: 50%;
+    padding: 5px;
+}
+
+
+.summary-box {
+    padding: 10px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: darkgray;
+}
+
+.summary-box>h3 {
+    margin-top: 0px;
+    margin-bottom: 10px;
+    border-style: solid;
+    border-width: 0;
+    border-bottom-width: 1px;
+    border-color: darkgray;
+}

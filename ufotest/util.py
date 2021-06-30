@@ -7,6 +7,8 @@ import random
 import re
 import subprocess
 import shutil
+import datetime
+import json
 import importlib.util
 from typing import Optional, Tuple, Dict, List
 from abc import ABC, abstractmethod
@@ -456,6 +458,102 @@ def clean_pci_read_output(output: str):
     cleaned = cleaned.lstrip(' ')
 
     return cleaned
+
+
+def get_test_reports() -> List[dict]:
+    """
+    Returns a list of all test reports, which are represented as dicts.
+
+    The test reports are represented as dicts and not as actual TestReport instances because they are loaded from
+    memory where they are represented as JSON files. Loading these JSON files will yield dicts.
+    The test reports will be sorted by the time they where created, where the most recent one will be the
+    first element of the list.
+
+    :return: A list of dicts
+    """
+    reports = []
+    archive_path = CONFIG.get_archive_path()
+    for root, folders, files in os.walk(archive_path):
+        # Each test run gets it's own sub folder in the archive folder
+        for folder in folders:
+            folder_path = os.path.join(root, folder)
+            # Within each of these test folders, the json version of the test report is saved in a file which is always
+            # called "report.json". Just like the according html file is always called "report.html" for example.
+            report_json_path = os.path.join(folder_path, 'report.json')
+
+            # We really need to check for the existence here because of the following case: A test run has been started
+            # but is not yet complete. In this case the test folder already exists, but the report does not. In this
+            # case attempting to open the file would cause an exception!
+            if os.path.exists(report_json_path):
+                with open(report_json_path, mode='r') as report_json_file:
+                    report = json.loads(report_json_file.read())
+                    reports.append(report)
+
+        break
+
+    # At this point, the reports within the list are generally still out of order because they were added in
+    # whatever order the filesystem iterated them. This means we need to sort them still. In this function this is done
+    # by using the start time
+    sorted_reports = sorted(
+        reports,
+        key=lambda r: datetime.datetime.fromisoformat(r['start_iso']),
+        reverse=True
+    )
+
+    # This filter hook offers the possibility to add additional, externally loaded test reports to this list or
+    # change the order of the list etc...
+    return CONFIG.pm.apply_filter(
+        'get_test_reports',
+        sorted_reports
+    )
+
+
+def get_build_reports() -> List[dict]:
+    """
+    Returns a list of all build reports, which are represented as dicts.
+
+    The build reports are represented as dicts and not as actual BuildReport instances because they are loaded from
+    memory where they are represented as JSON files. Loading these JSON files will yield dicts.
+    The test reports will be sorted by the time they where created, where the most recent one will be the
+    first element of the list.
+
+    :return: A list of dicts
+    """
+    reports = []
+    builds_path = CONFIG.get_builds_path()
+    for root, folders, files in os.walk(builds_path):
+        # Each test run gets it's own sub folder in the archive folder
+        for folder in folders:
+            folder_path = os.path.join(root, folder)
+            # Within each of these test folders, the json version of the test report is saved in a file which is always
+            # called "report.json". Just like the according html file is always called "report.html" for example.
+            report_json_path = os.path.join(folder_path, 'report.json')
+
+            # We really need to check for the existence here because of the following case: A test run has been started
+            # but is not yet complete. In this case the test folder already exists, but the report does not. In this
+            # case attempting to open the file would cause an exception!
+            if os.path.exists(report_json_path):
+                with open(report_json_path, mode='r') as report_json_file:
+                    report = json.loads(report_json_file.read())
+                    reports.append(report)
+
+        break
+
+    # At this point, the reports within the list are generally still out of order because they were added in
+    # whatever order the filesystem iterated them. This means we need to sort them still. In this function this is done
+    # by using the start time
+    sorted_reports = sorted(
+        reports,
+        key=lambda r: datetime.datetime.fromisoformat(r['start_iso']),
+        reverse=True
+    )
+
+    # This filter hook offers the possibility to add additional, externally loaded test reports to this list or
+    # change the order of the list etc...
+    return CONFIG.pm.apply_filter(
+        'get_build_reports',
+        sorted_reports
+    )
 
 
 # CLASSES

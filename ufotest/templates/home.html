@@ -2,13 +2,53 @@
 {% block title %}Home{% endblock %}
 {% block head %}
     {{ super() }}
-    <link rel="stylesheet" type="text/css" href="{{ config.static('main.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ config.static('home.css') }}">
 {% endblock %}
 {% block content %}
     <div class="home-container">
         <h2>Home</h2>
-            <div>
-                Nothing to put onto this page yet...
+        <div class="summary-box hardware-overview">
+            <h3>Hardware Overview</h3>
+            <div class="overview hardware">
+                {% for spec in hardware_summary %}
+                <div id="{{ spec['id'] }}">
+                    {{ spec['label'] }}:
+                    <span class="value">
+                        {{ spec['value'] }}
+                    </span>
+                </div>
+                {% endfor %}
             </div>
+        </div>
+        <div class="two-col recent-reports">
+            <div class="recent-tests">
+                <h3>Recent Test Reports</h3>
+                {% if recent_tests|length > 1 %}
+                {% for report in recent_tests %}
+                <div class="test-report">
+                    {{ report['name'] }}
+                </div>
+                {% endfor %}
+                {% else %}
+                <p>
+                    Looks like no test reports exist yet...
+                </p>
+                {% endif %}
+            </div>
+            <div class="recent-builds">
+                <h3>Recent Build Reports</h3>
+                {% if recent_builds|length > 1 %}
+                {% for report in recent_builds %}
+                <div class="build-report">
+                    {{ report['commit'] }}
+                </div>
+                {% endfor %}
+                {% else %}
+                <p>
+                    Looks like no build reports exist yet...
+                </p>
+                {% endif %}
+            </div>
+        </div>
     </div>
 {% endblock %}

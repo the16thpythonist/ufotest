@@ -10,6 +10,7 @@ from flask import Flask, request, send_from_directory, jsonify
 from ufotest.config import Config, get_path
 from ufotest.util import get_template
 from ufotest.util import cerror, cprint, cresult
+from ufotest.util import get_build_reports, get_test_reports
 from ufotest.exceptions import BuildError
 from ufotest.ci.build import BuildQueue, BuildLock, BuildRunner, BuildReport, build_context_from_request
 from ufotest.ci.mail import send_report_mail
@@ -160,8 +161,42 @@ server = Flask('UfoTest CI Server', static_folder=None)
 
 @server.route('/', methods=['GET'])
 def home():
+    """
+    This method returns the HTML content which will display the home page for the ufotest web interface.
+    On default the home page consists of various informative panels, which show the current state of the ufotest
+    project, the current installation, the current hardware and a list for both the most recent builds and the most
+    recent test reports.
+
+    :return: The rendered string HTML template
+    """
     template = get_template('home.html')
-    return template.render({}), 200
+
+    # The integer amount of how many items to be shown for both the most recent test and most recent build reports.
+    recent_items = CONFIG.pm.apply_filter('home_recent_items', 3)
+
+    context = {
+        'hardware_summary': [
+            {
+                'id': 'board-version',
+                'label': 'Board Version',
+                'value': '1.0'
+            },
+            {
+                'id': 'sensor-version',
+                'label': 'Sensor Version',
+                'value': '1.3.3.7'
+            },
+            {
+                'id': 'firmware-version',
+                'label': 'Firmware Version',
+                'value': 'missing'
+            }
+        ],
+        'recent_builds':        get_build_reports()[:recent_items],
+        'recent_tests':         get_test_reports()[:recent_items]
+    }
+
+    return template.render(context), 200
 
 
 @server.route('/config', methods=['GET'])
