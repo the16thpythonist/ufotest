@@ -8,7 +8,7 @@ import click
 from flask import Flask, request, send_from_directory, jsonify
 
 from ufotest.config import Config, get_path
-from ufotest.util import get_template
+from ufotest.util import get_template, get_version
 from ufotest.util import cerror, cprint, cresult
 from ufotest.util import get_build_reports, get_test_reports
 from ufotest.exceptions import BuildError
@@ -170,30 +170,91 @@ def home():
     :return: The rendered string HTML template
     """
     template = get_template('home.html')
+    template = CONFIG.pm.apply_filter('home_template', template)
 
     # The integer amount of how many items to be shown for both the most recent test and most recent build reports.
-    recent_items = CONFIG.pm.apply_filter('home_recent_items', 3)
+    recent_count = CONFIG.pm.apply_filter('home_recent_count', 5)
+
+    test_reports = get_test_reports()
+
+    recent_builds = get_build_reports()[:recent_count]
+    recent_tests = test_reports[:recent_count]
+
+    # So we derive the summary values about the state of the hardware and firmware from the most recent test report. On
+    # default the test reports returned by "get_test_reports" are sorted by recentness, which would mean that we would
+    # only need to get the first item from the respective list. BUT, a filter hook applies to the return value of these
+    # functions which could mean that possibly a filter is applied which changes the ordering, so to be sure that this
+    # is the most recent one, we sort it again.
+    if len(recent_tests) != 0:
+        most_recent_test_report = sorted(recent_tests, key=lambda d: d['start_iso'], reverse=True)[0]
+
+    if len(recent_builds) != 0:
+        most_recent_build_report = sorted(recent_builds, key=lambda d: d['start_iso'], reverse=True)[0]
+
+    status_summary = [
+        # UFOTEST INFORMATION
+        {
+            'id': 'ufotest-version',
+            'label': 'UfoTest Version',
+            'value': get_version()
+        },
+        {
+            'id': 'installation-folder',
+            'label': 'Installation Folder',
+            'value': CONFIG.get_path()
+        },
+        {
+            'id': 'report-count',
+            'label': 'Total Test Reports',
+            'value': len(test_reports)
+        },
+        {
+            'id': 'loaded-plugins',
+            'label': 'Loaded Plugins',
+            'value': len(CONFIG.pm.plugins)
+        },
+        False,
+        {
+            'id': 'repository',
+            'label': 'Source Repository',
+            'value': f'<a href="{CONFIG.get_repository_url()}">GitHub</a>'
+        },
+        {
+            'id': 'documentation',
+            'label': 'Project Documentation',
+            'value': f'<a href="{CONFIG.get_documentation_url()}">ReadTheDocs</a>'
+        },
+        False,
+        # FIRMWARE / BUILD INFORMATION
+        {
+            'id': 'firmware-version',
+            'label': 'Firmware Version',
+            'value': '1.0'
+        },
+        {
+            'id': 'recent-build',
+            'label': 'Recent Build',
+            'value': most_recent_build_report['start_iso'] if len(recent_builds) != 0 else 'No build yet'
+        },
+        # HARDWARE INFORMATION
+        False,
+        {
+            'id': 'hardware-version',
+            'label': 'Hardware Version',
+            'value': '1.0'
+        },
+        {
+            'id': 'sensor-dimensions',
+            'label': 'Sensor Dimensions',
+            'value': f'{CONFIG.get_sensor_width()} x {CONFIG.get_sensor_height()}'
+        }
+    ]
+    status_summary = CONFIG.pm.apply_filter('home_status_summary', status_summary)
 
     context = {
-        'hardware_summary': [
-            {
-                'id': 'board-version',
-                'label': 'Board Version',
-                'value': '1.0'
-            },
-            {
-                'id': 'sensor-version',
-                'label': 'Sensor Version',
-                'value': '1.3.3.7'
-            },
-            {
-                'id': 'firmware-version',
-                'label': 'Firmware Version',
-                'value': 'missing'
-            }
-        ],
-        'recent_builds':        get_build_reports()[:recent_items],
-        'recent_tests':         get_test_reports()[:recent_items]
+        'status_summary':       status_summary,
+        'recent_builds':        recent_builds,
+        'recent_tests':         recent_tests
     }
 
     return template.render(context), 200

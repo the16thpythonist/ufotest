@@ -564,7 +564,7 @@ Fixes
 - The "init" command for creating the installation folder now actually also creates the plugins
   folder.
 
-1.3.0 (xx.06.2021)
+1.3.0 (xx.07.2021)
 ------------------
 
 Fixes
@@ -580,19 +580,41 @@ Changes
   a central dict. Provides default implementations for the relevant abstract methods of
   "camera.AbstractCamera"
 - The "frame" command now uses the UfoCamera class to retrieve it's images.
-- Added filter hook "camera_class" which will be used to retrieve the AbstractCamera subclass to use to interface with
-  the actual camera hardware.
-- Added the action hook "pre_command_frame" which is called at the start of the "frame" CLI command.
 - Added the module "noise.py" to the default list of camera tests. It is supposed to contain all those test cases which
   are in some way concerned with the calculation of noise characteristics for the camera.
 - Added "tests.noise.CalculateDarkPhotonTransferCurve" which sweeps different values for the cameras exposure time
   and then calculates the noise for each one, plotting those results at the end.
 - Added "tests.noise.MeasureNoiseMixin" which can be used for easy access to a method which wraps the measurement of
   camera noise by taking two independent frames and then calculating the variance of the frame difference
-- Added "FontAwesome" Icons to the static folder of the project
-- Added "CodeMirror" JS code editor to the static folder
-- Web Interface: Added a new nav item "Config" which directs to a page where the config file can be viewed, edited and
+
+Hooks
+
+- Added the action hook "pre_command_frame" which is called at the start of the "frame" CLI command.
+- Added filter hook "camera_class" which will be used to retrieve the AbstractCamera subclass to use to interface with
+  the actual camera hardware.
+- Added filter hook "home_recent_count" for the int amount of recent tests and builds to be displayed on the home page
+  of the web interface.
+- Added filter hook "home_template" which allows to change the jinja template which is being used to display the home
+  page.
+- Added filter hook "home_status_summary" which allows to modify the individual data fields which are displayed
+  in the summary box of the homepage
+
+Web Interface
+
+- Added "FontAwesome" to the static assets. This is a CSS/JS library for adding Icon support to a web site. These icons
+  are supposed to be used for the web interface of ufotest.
+- Added "CodeMirror" to the static assets. This is a JS library which essentially adds a code editor widget, which can
+  be used to edit code of various languages complete with syntax highlighting... This will be used to implement the
+  TOML config file editor for the web interface.
+- Added a new nav item "Config" which directs to a page where the config file can be viewed, edited and
   then saved.
+- Added actual content for the home page. The home page now displays some summary information about the ufotest
+  software itself, the hardware and the firmware for the currently connected camera. The information about the camera
+  is derived from the details of the most recent test report. Additionally, the home page will display lists of the
+  most recent test and build reports.
+- Completely switched from plain CSS files to using SCSS for the static stylesheet assets of the web interface. These
+  will not be compiled in time though. They should be compiled during development so that the installable version of
+  ufotest can be shipped with the compiled CSS versions of those files.
 
 Documentation
 

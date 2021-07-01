@@ -1,40 +1,69 @@
 {% extends "base.html" %}
+
 {% block title %}Home{% endblock %}
+
 {% block head %}
     {{ super() }}
-    <link rel="stylesheet" type="text/css" href="{{ config.static('home.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ config.static('css/home.css') }}">
 {% endblock %}
+
 {% block content %}
     <div class="home-container">
         <h2>Home</h2>
-        <div class="summary-box hardware-overview">
-            <h3>Hardware Overview</h3>
-            <div class="overview hardware">
-                {% for spec in hardware_summary %}
+
+        {% block status_summary %}
+        <div class="summary-box software-overview">
+            <h3>Status Summary</h3>
+            <div class="overview">
+                {% for spec in status_summary %}
+                {% if spec %}
                 <div id="{{ spec['id'] }}">
                     {{ spec['label'] }}:
-                    <span class="value">
+                    <span class="tag" id="{{ spec['id'] }}">
                         {{ spec['value'] }}
                     </span>
                 </div>
+                {% else %}
+                <span class="separator"></span>
+                {% endif %}
                 {% endfor %}
             </div>
         </div>
+        {% endblock %}
+
         <div class="two-col recent-reports">
+
+            {% block recent_tests %}
             <div class="recent-tests">
                 <h3>Recent Test Reports</h3>
                 {% if recent_tests|length > 1 %}
                 {% for report in recent_tests %}
-                <div class="test-report">
-                    {{ report['name'] }}
-                </div>
+                <a class="test-report" href="{{ config.url('archive', report['folder_name'], 'report.html') }}">
+                    <div>
+                        <div class="test-report-info">
+                            <strong>{{ report['name'] }}</strong>
+                            <div>{{ report['start'] }}</div>
+                        </div>
+                        <div class="test-report-info">
+                            <div class="tag">suite</div>
+                            <div>~ {{ report['duration'] }} minutes</div>
+                        </div>
+                    </div>
+
+                    <div class="progress-bar">
+                        <span style="width: {{ report['success_ratio'] * 100 }}%"> </span>
+                    </div>
+                </a>
                 {% endfor %}
                 {% else %}
-                <p>
+                <p class="no-reports">
                     Looks like no test reports exist yet...
                 </p>
                 {% endif %}
             </div>
+            {% endblock %}
+
+            {% block recent_builds %}
             <div class="recent-builds">
                 <h3>Recent Build Reports</h3>
                 {% if recent_builds|length > 1 %}
@@ -44,11 +73,13 @@
                 </div>
                 {% endfor %}
                 {% else %}
-                <p>
+                <p class="no-reports">
                     Looks like no build reports exist yet...
                 </p>
                 {% endif %}
             </div>
+            {% endblock %}
+
         </div>
     </div>
 {% endblock %}

@@ -1,0 +1,213 @@
+@import 'variables';
+
+html {
+
+}
+
+body {
+    width: 100%;
+    height: 100%;
+    min-height: 720px;
+    margin: 0;
+    background-color: $background;
+    font-size: $base-font-size;
+    font-family: $base-font-family;
+    line-height: 1.6em;
+    /* Now this is interesting: This will force the scrollbar to be there even if it is not needed. This was actually
+       a bug. If the scrollbar wasn't there that screwed the width of the containers up and caused some weird jitter on
+       page change... */
+    overflow-y: scroll;
+}
+
+h2 {
+    margin-top: 40px;
+    border-style: solid;
+    border-width: 0;
+    border-bottom-width: $underline-width;
+    border-color: $main-blue;
+}
+
+/* THE HEADER
+   The header is part of the base template and is thus the same for every page.
+   the main header element is the .header-container, which spans the entire width of the page and which provided the
+   background color for the header. It contains the sub element .header which actually contains the content and limits
+   the centered width of this content.
+   The header content itself is the site logo on the left side and the nav elements on the right side. These nav
+   elements are hyperlinks to the individual important pages of the application.*/
+
+div.header-container {
+    width: 100%;
+    margin: 0;
+    margin-bottom: 80px;
+    background-color: $main-blue;
+}
+
+div.header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: $max-width;
+    min-width: $min-width;
+    font-size: 1.1em;
+}
+
+span.logo {
+    font-size: 1.3em;
+    font-family: 'Consolas', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
+    margin: 15px;
+    color: white;
+}
+
+div.nav-container {
+    display: flex;
+    flex-direction: row;
+    margin-right: 15px;
+}
+
+a.nav-item {
+    text-decoration: none;
+    color: white;
+    margin-left: 30px;
+    border-style: solid;
+    border-width: 0px;
+    border-bottom-width: 4px;
+    border-color: $main-blue;
+}
+
+a.nav-item:hover {
+    border-color: $main-orange;
+}
+
+/* BASE LAYOUT / CONTENT AREA
+   The base template also defines a main content block, which will then contain all the actual page content.
+   This .content container defines is horizontally centered and is limited to a certain width of the whole page. The
+   html body also has a somewhat gray background, whereas the content area has a white background */
+
+.content {
+    min-width: $min-width;
+    max-width: $max-width;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 60px;
+    margin-bottom: 60px;
+    background-color: white;
+    padding: 0;
+    padding-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* FOOTER
+   like the header, the footer is also part of every page. It appears at the bottom of each page. It has a darker gray
+   background and offers a footer content block for any child template to potentially fill it with useful content */
+
+.footer-container {
+    width: 100%;
+    background-color: $medium-gray;
+    font-size: 0.8em;
+    line-height: 1.4;
+}
+
+.footer {
+    max-width: $max-width;
+    min-width: $min-width;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+/* BUTTON ELEMENT
+   the .btn class defines a reusable style rule which creates a button look using the secondary colors */
+
+.btn {
+    color: white;
+    font-family: "Bitstream Vera Sans Mono", Monaco, "Courier New", Courier, monospace;
+    padding: 3px;
+    padding-left: 6px;
+    padding-right: 6px;
+    background-color: $main-orange;
+    border-style: solid;
+    border-width: 0;
+    border-bottom-width: 3px;
+    border-right-width: 2px;
+    border-color: $dark-orange;
+    border-radius: 2px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* When pressed (==active) the color inverts the border and background color to create a 3D like effect */
+.btn:active {
+    background-color: $dark-orange;
+    border-color: $main-orange;
+}
+
+.link {
+    color: $main-orange;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.tag {
+    font-family: monospace;
+    background-color: $barely-gray;
+    font-size: 1em;
+    line-height: 1.4;
+    padding: 3px;
+    padding-left: 8px;
+    padding-right: 8px;
+    border-radius: 3px;
+}
+
+/* TWO COLUMN CONTAINER
+   This reusable style rule defines a container which creates a two column layout. If the class .two-col is applied to
+   a container element, it must contain only two children (sub container) which will then be displayed as two equally
+   sized columns. */
+
+.two-col {
+    display: flex;
+    flex-direction: row;
+}
+
+.two-col>* {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    width: 50%;
+    padding: 10px;
+}
+
+/* SUMMARY BOXES
+   These are container elements which are supposed to neatly wrap information which acts as a summary. The container
+   boxes have a border and h3 elements can be used to assign a title to the box in general. Semantically these boxes
+   are supposed to subtly attract attention. .separator elements can be used to make a hard division between elements */
+
+.summary-box {
+    padding: 10px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: $light-gray;
+}
+
+.summary-box>h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    border-style: solid;
+    border-width: 0;
+    border-bottom-width: 1px;
+    border-color: $light-gray;
+}
+
+.summary-box .separator {
+    content: ' ';
+    height: 1px;
+    width: 100%;
+    background-color: $light-gray;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+

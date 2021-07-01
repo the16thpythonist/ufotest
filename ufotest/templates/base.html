@@ -4,7 +4,7 @@
     {% block head %}
     <meta charset="UTF-8">
     <title>{% block title %}{% endblock %} - UfoTest</title>
-    <link rel="stylesheet" type="text/css" href="{{ config.static('base.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ config.static('css/base.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ config.static('fa/css/all.css') }}">
     <script defer src="{{ config.static('fa/js/all.js') }}"></script>
     {% endblock %}
@@ -19,11 +19,30 @@
             <a class="nav-item" href="{{ config.url('archive') }}">Test Archive</a>
             <a class="nav-item" href="{{ config.url('builds') }}">Build Archive</a>
         </div>
+        </div>
     </div>
-    </div>
+
     <div class="content">
     {% block content %}
     {% endblock %}
     </div>
+
+    {% block footer %}
+    <div class="footer-container">
+        <div class="footer two-col">
+            <div>
+                {% block footer_content %}
+                &copy; 2021
+                {% endblock %}
+            </div>
+            <div>
+                <!-- Shameless self promotion :) -->
+                Developed by Jonas Teufel <br>
+                <a class="link" href="mailto:jonseb1998@gmail.com">jonseb1998@gmail.com</a>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+
 </body>
 </html>

@@ -274,7 +274,12 @@ This hook can for example be used to modify the list of these build reports to e
 ones which are loaded by some external means or simply change the ordering of the reports.
 
 
-``home_recent_items``
+``home_template``
+~~~~~~~~~~~~~~~~~
+
+Filter Hook
+
+``home_recent_count``
 ~~~~~~~~~~~~~~~~~~~~~
 
 Filter Hook
@@ -285,3 +290,9 @@ kwargs (1):
 
 This integer subject value defines how many recent items (test reports and build reports) will be displayed on on the
 home page of the web interface.
+
+
+``home_status_summary``
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Filter hook
