@@ -13,7 +13,8 @@ import importlib.util
 from typing import Optional, Tuple, Dict, List
 from abc import ABC, abstractmethod
 
-from jinja2 import Template, FileSystemLoader, Environment
+from jinja2 import Template, Environment
+from jinja2 import FileSystemLoader, ChoiceLoader
 
 from ufotest.config import *
 
@@ -433,7 +434,7 @@ def get_template(name: str) -> Template:
 
     :returns: The template object for the specified template
     """
-    return TEMPLATE_ENVIRONMENT.get_template(name)
+    return CONFIG.template_environment.get_template(name)
 
 
 def random_string(length: int, additional_letters: str = ' '):
@@ -474,6 +475,7 @@ def get_test_reports() -> List[dict]:
     reports = []
     archive_path = CONFIG.get_archive_path()
     for root, folders, files in os.walk(archive_path):
+
         # Each test run gets it's own sub folder in the archive folder
         for folder in folders:
             folder_path = os.path.join(root, folder)
@@ -579,3 +581,140 @@ class AbstractRichOutput(ABC):
     @abstractmethod
     def to_html(self) -> str:
         raise NotImplementedError()
+
+    @abstractmethod
+    def to_dict(self) -> dict:
+        raise NotImplementedError()
+
+
+class HTMLTemplateMixin(object):
+    """
+    This mixin can be used to provide a default implementation of the "to_html" method for the
+    AbstractRichOutput interface. This implementation uses a jinja template string to render the html version of the
+    object instance.
+
+    **USAGE**
+
+    Any class which inherits from this mixin has to define a static class member called "HTML_TEMPLATE" which is
+    supposed to be the string representation of the jinja template to be rendered for the HTML representation. Upon
+    calling the "to_html" method, this template will be passed a context where "self" references to the actual
+    object instance, which allows for all the instance attributes to be used in the template. Within the template
+    string all jinja syntax can be used. In fact, within the template the ufotest jinja environment is loaded, which
+    means that there is even access to the global context variable "config".
+
+    .. code-block:: python
+
+        class Custom(HTMLTemplateMixin):
+
+            HTML_TEMPLATE = "<p>{{ self.text }}</p>"
+
+            def __init__(self):
+                HTMLTemplateMixin.__init__(self)
+                self.text = "Hello World"
+
+
+        c = Custom()
+        c.to_html() # <p>Hello World</p>
+
+    **RECOMPILING**
+
+    Aside from this main functionality, the more important feature is that this mixin also enables the inheriting class
+    to be recompilable from the JSON / dict representation. For that, we first define this use case: Assuming we have
+    saved an objects attributes as a json file and now load it again such that all the attribute values are part of a
+    dict. Now we want to render the HTML template using this dict representation. For this case, the mixin adds it's
+    own implementation of "to_dict" which is used to convert it into json in the first place. This method saves the
+    template string as a json field. The static method "html_from_dict" can now be used on such a dict to render the
+    html template from it, without needing an actual object instance.
+
+    .. code-block:: python
+
+        class Custom(HTMLTemplateMixin):
+
+            HTML_TEMPLATE = "<p>{{ self.text }}</p>"
+
+            def __init__(self):
+                HTMLTemplateMixin.__init__(self)
+                self.text = "Hello World"
+
+            def to_dict(self):
+                # It is important that the mixins implementation of to_dict is considered here!
+                return {
+                    **HTMLTemplateMixin.to_dict(self),
+                    # It is also important that all the dict fields have the same name as the instance attributes
+                    'text': self.text
+                }
+
+        c = Custom()
+        c_dict = c.to_dict()
+        c_dict['text'] = 'Bye World'
+        HTMLTemplateMixin.html_from_dict(c_dict) # <p>Bye World</p>
+    """
+
+    TEMPLATE_FIELD_NAME = '_html_template'
+    """
+    :cvar TEMPLATE_FIELD_NAME: This is a string which contains the key name under which the html template is being
+        saved within the dict representation of the object
+    """
+
+    def get_html_template_string(self) -> str:
+        """
+        Returns the jinja html template string of the object instance.
+
+        **DESIGN CHOICE**
+
+        Why does this method exists? On first glance it is useless, because it only returns a static value. At any
+        position where this method is used, one could just use the actual value instead. This is correct, but this
+        method exists for possible future changes. It wraps access to the template string, which means that the actual
+        access to this template string can easily be changed. In the future it would be possible to replace the class
+        constant with a object attribute for the template string rather easily if that is desired. More conveniently,
+        having this method allows a subclass to potentially overwrite it with very custom behavior!
+
+        :returns str: The template string
+        """
+        template_string = self.HTML_TEMPLATE
+        return template_string
+
+    def to_html(self) -> str:
+        """
+        Returns the HTML string representation of the object which is based on the jinja html template.
+
+        :returns str: The rendered html string
+        """
+        CONFIG.template_environment.filters['html_from_dict'] = self.html_from_dict
+        template_string = self.get_html_template_string()
+        template = CONFIG.template_environment.from_string(template_string)
+        return template.render({'this': self})
+
+    def to_dict(self) -> dict:
+        """
+        Returns the dict representation which contains the important fields required for the HTMLTemplateMixin
+        functionality.
+
+        :returns dict:
+        """
+        template_string = self.get_html_template_string()
+        return {self.TEMPLATE_FIELD_NAME: template_string}
+
+    @classmethod
+    def html_from_dict(cls, data: dict) -> str:
+        """
+        Given a "data" dict, which was created by the "to_dict" method of a class which implements this mixin, this
+        method will use the template string which is saved in this dict and the other fields which represent the
+        original instance attributes to render and return the appropriate html representation.
+
+        :raises KeyError: If the given "data" dict does not actually originate from a class which implements this mixin
+            which is indicated by the fact that it wont contain the necessary field for the template string.
+
+        :returns str: The html representation according to the template string and the values contained in the dict.
+        """
+        if cls.TEMPLATE_FIELD_NAME not in data:
+            raise KeyError((
+                f'The subject dictionary does not contain the necessary key "{cls.TEMPLATE_FIELD_NAME}", which is '
+                f'required to compile it as a html string! Make sure that the dictionary was created by invoking the '
+                f'"to_dict" method of a class inheriting from {cls.__class__.__name__}!'
+            ))
+
+        template_string = data[cls.TEMPLATE_FIELD_NAME]
+        CONFIG.template_environment.filters['html_from_dict'] = cls.html_from_dict
+        template = CONFIG.template_environment.from_string(template_string)
+        return template.render({'this': data})

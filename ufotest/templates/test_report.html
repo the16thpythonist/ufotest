@@ -4,14 +4,14 @@
 
 {% block head %}
     {{ super() }}
-    <link rel="stylesheet" type="text/css" href="{{ config.static('report.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ config.static('css/report.css') }}">
 {% endblock %}
 
 {% block content %}
     <div class="title-container">
         <h1>Test Report</h1>
         <p>
-            {{ report.name }} @ {{ report.start }}
+            {{ this.name }} @ {{ this.start }}
         </p>
     </div>
 
@@ -26,10 +26,11 @@
             test one or more properties of the UFO test camera which is currently connected to the target machine.
         </p>
         <p class="documentation">
-            <a href="{{ report.repository_url }}">UfoTest</a> is an application which aims to implement unit testing
-            and CI functionality for the UFO camera hardware which was developed at the IPE. The Documentation for the
+            <a class="link" href="{{ this.repository_url }}">UfoTest</a>
+            is an application which aims to implement
+            unit testing and CI functionality for the UFO camera hardware which was developed at the IPE. The Documentation for the
             project can be found here:
-            <a href="{{ report.documentation_url }}">UfoTest Documentation</a>
+            <a class="link" href="{{ this.documentation_url }}">UfoTest Documentation</a>
         </p>
 
         <!-- THE SHORT SUMMARY OF THE TEST RUN -->
@@ -42,22 +43,40 @@
 
         <div class="summary">
             <div class="start-time">
-                <div>Start time</div><div>{{ report.start }}</div>
+                <div>Start time:</div>
+                <div>{{ this.start }}</div>
             </div>
             <div class="end-time">
-                <div>End time</div><div>{{ report.end }}</div>
+                <div>End time:</div>
+                <div>{{ this.end }}</div>
             </div>
             <div class="duration">
-                <div>Duration</div><div>{{ report.duration }} minutes</div>
+                <div>Duration:</div>
+                <div>{{ this.duration }} minutes</div>
             </div>
             <div class="platform">
-                <div>Host platform</div><div>{{ report.platform }}</div>
+                <div>Host platform:</div>
+                <div>{{ this.platform }}</div>
             </div>
-            <div class="version">
-                <div>UfoTest version</div><div>{{ report.version }}</div>
+            <div class="ufotest-version">
+                <div>UfoTest version:</div>
+                <div>{{ this.version }}</div>
+            </div>
+            <div>
+                <div>Firmware version:</div>
+                <div>{{ this.firmware_version }}</div>
+            </div>
+            <div class="hardware-version">
+                <div>Hardware version:</div>
+                <div>{{ this.hardware_version }}</div>
+            </div>
+            <div class="sensor-version">
+                <div>Sensor Version</div>
+                <div>{{ this.sensor_version }}</div>
             </div>
             <div class="results">
-                <div>Test results</div><div>{{ report.successful_count}} / {{ report.test_count }} ({{ report.success_ratio * 100 }}% success)</div>
+                <div>Test results</div>
+                <div>{{ this.successful_count}} / {{ this.test_count }} ({{ this.success_ratio * 100 }}% success)</div>
             </div>
         </div>
 
@@ -65,21 +84,21 @@
         <h2>Test Context</h2>
 
         <p class="context context-time">
-            The testing process was started at <strong>{{ report.start }}</strong> and ended
-            <strong>{{ report.end }}</strong>, which makes for a total duration of
-            <strong>{{ report.duration }} minutes</strong>.
+            The testing process was started at <strong>{{ this.start }}</strong> and ended
+            <strong>{{ this.end }}</strong>, which makes for a total duration of
+            <strong>{{ this.duration }} minutes</strong>.
         </p>
 
         <p class="context context-meta">
             This test run was executed on a host machine with the following platform specification:
-            <strong>{{ report.platform }}</strong>. The UfoTest software version was
-            <strong>{{ report.version}}</strong>. The software is currently configured to interface a sensor with the
-            dimensions of <strong>{{ report.sensor }} pixels</strong>.
+            <strong>{{ this.platform }}</strong>. The UfoTest software version was
+            <strong>{{ this.version }}</strong>. The software is currently configured to interface a sensor with the
+            dimensions of <strong>{{ this.sensor }} pixels</strong>.
         </p>
 
         <p class="context context-folder">
             The HTML and MARKDOWN versions of the report as well as the complete LOG file of the test process were
-            saved to the folder <strong>{{ report.folder_name }}</strong> within the main "archive" folder.
+            saved to the folder <strong>{{ this.folder_name }}</strong> within the main "archive" folder.
         </p>
 
         <!-- SHOWING THE TEST RESULTS -->
@@ -89,18 +108,18 @@
             This section explains the test results.
         </p>
 
-        {% for test_name, result in report.results.items() %}
+        {% for test_name, result in this.result_dicts.items() %}
         {%- if result.passing -%}
             <h3 class="test passing">{{ test_name }}</h3>
         {%- else %}
             <h3 class="test error">{{ test_name }}</h3>
         {% endif %}
-        {%- if report.get_test_description(test_name) != "" %}
+        {%- if this.test_descriptions[test_name] != "" %}
             <div class="test-description">
-                {{ report.get_test_description(test_name) }}
+                {{ this.test_descriptions[test_name] }}
             </div>
         {% endif %}
-            {{ result.to_html() }}
+            {{ result|html_from_dict }}
         {% endfor %}
     </div>
 {% endblock %}

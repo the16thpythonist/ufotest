@@ -511,12 +511,14 @@ class MockCamera(InternalDictMixin, AbstractCamera):
         height = self.config.get_sensor_height()
         frame_array = self.resize_image(width, height)
 
+        """
         # ~ Applying the exposure time to the image
         # The first effect of a higher exposure time is that the image gets brighter
         exposure_time = self.get_prop('exposure_time')
         frame_array *= np.sqrt(exposure_time / self.get_prop('min_exposure_time'))
         # The other effect is that there is more noise
         frame_array = self.add_gaussian_noise(frame_array, exposure_time)
+        """
 
         return frame_array.astype(np.uint16)
 

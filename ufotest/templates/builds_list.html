@@ -4,12 +4,16 @@
 
 {% block head %}
     {{ super() }}
-    <link rel="stylesheet" type="text/css" href="{{ config.static('list.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ config.static('css/list.css') }}">
 {% endblock %}
 
 {% block content %}
     <div class="list-container">
         <h2>Archived Build Reports</h2>
+
+        {% block reports %}
+
+        {% if reports|length > 0 %}
         {% for report in reports %}
         <a class='test-report' href="{{ config.url('builds', report['folder_name'], 'report.html') }}">
             <div class="item test-report">
@@ -25,6 +29,14 @@
             </div>
         </a>
         {% endfor %}
+        {% else %}
+        <div class="no-reports">
+            Seems like no build report has been created yet...
+        </div>
+        {% endif %}
+
+        {% endblock %}
+
     </div>
 {% endblock %}
 

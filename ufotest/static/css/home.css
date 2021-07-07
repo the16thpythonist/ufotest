@@ -74,8 +74,10 @@ p.no-reports {
   background: lightgray;
 }
 
-.progress-bar > span {
+.progress-bar > div {
   background-color: #74EB24;
+  height: 5px;
+  content: " ";
 }
 
 /*# sourceMappingURL=home.css.map */

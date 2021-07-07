@@ -564,8 +564,12 @@ Fixes
 - The "init" command for creating the installation folder now actually also creates the plugins
   folder.
 
-1.3.0 (xx.07.2021)
+2.0.0 (xx.07.2021)
 ------------------
+
+**THIS VERSION BREAKS BACKWARDS COMPATIBILITY.** The compatibility is probably violated in several places, but the most
+important change is probably a major change of how the test report html files are rendered. This will likely cause
+the web interface of existing installations to be unusable
 
 Fixes
 
@@ -586,6 +590,18 @@ Changes
   and then calculates the noise for each one, plotting those results at the end.
 - Added "tests.noise.MeasureNoiseMixin" which can be used for easy access to a method which wraps the measurement of
   camera noise by taking two independent frames and then calculating the variance of the frame difference
+- Changed the way the jinja template environment is managed: It is now also part of the main config singleton. And
+  a filter hook applies to the loaders which are registerd to this environment, allowing plugins to register custom
+  template folders.
+- Changed the test report and the test context to now also have fields sensor, hardware and firmware version.
+- Added a really convenient "--mock" option to the main ufotest command of the CLI. This will register a filter which
+  makes all subsequent code use the MockCamera class instead of the default UfoCamera class. By using this simple
+  option it should for example be possible to use every camera class compatible test case with the mock camera as well
+  from the command line.
+- Added "ci recompile" command to the CLI. This command will render the test report html files again using the
+  information within the report.json file. This command exists for the case that config changes for the web interface
+  have been made. On default these would not be reflected within the static test report html files.
+- Added "util.HTMLTemplateMixin" a mixin class which provides a default implementation of the "to_html" method.
 
 Hooks
 
@@ -598,6 +614,9 @@ Hooks
   page.
 - Added filter hook "home_status_summary" which allows to modify the individual data fields which are displayed
   in the summary box of the homepage
+- Added filter hook "template_loaders" which allows to register custom plugin template files for jinja2 templates, so
+  that they will be appropriately discovered by the main system. Only if this is used, the plugin templates can extend
+  the native ufotest templates, which they should!
 
 Web Interface
 
@@ -618,6 +637,7 @@ Web Interface
 
 Documentation
 
+- Added "plugin.rst": In the future this should contain a minimal tutorial for how to setup a ufotest plugin.
 - Extended "hooks.rst"
 - Docstrings for "testing.TestRunner"
 - Docstrings for "camera.AbstractCamera"
@@ -632,18 +652,10 @@ Bugs:
 Features:
 
 - A command which lists the currently active plugins
-- Frontend: An additional tab which allows to modify the config file...
 
 - Change the default URL for pcitool installation
 - Config file flash ID
 
-- Document camera properties "Notes"
-- Auto detect the operating system?
-- **Templating of the actual report files is done at compile time and not during the actual web request**. This means
-  that essentially all test reports become unusable when changing the hostname or generally anything within the config
-  which is relevant for the test report. One workaround to this would be to introduce a "recompile" command, which
-  generates all test reports from scratch. This means that every test report would also have to be saved as a "loadable"
-  format such as JSON. But that would generally be a good idea for machine processing...
 - helpful error message when forgetting the ".git" for any repository url
 - helpful error message when the wrong branch is specified for the CI repo or generally an error when the clone
   process fails!

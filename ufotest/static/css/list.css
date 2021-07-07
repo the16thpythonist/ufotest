@@ -1,0 +1,72 @@
+/* THE COLORS */
+/* LAYOUT RELATED */
+/* FONT RELATED */
+div.list-container {
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
+div.item {
+  display: flex;
+  flex-direction: column;
+  border-style: solid;
+  border-color: lightgray;
+  border-width: 1px;
+  margin: 0;
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+
+a.test-report {
+  text-decoration: None;
+  color: black;
+}
+
+.test-report > * {
+  margin-left: 10px;
+}
+
+h3 {
+  margin-bottom: 5px;
+  margin-top: 10px;
+}
+
+div.success-bar {
+  margin: 0;
+  margin-top: 10px;
+  content: " ";
+  background-color: lightgray;
+  width: 100%;
+  height: 10px;
+}
+
+div.success-bar > div {
+  margin: 0;
+  content: " ";
+  background-color: #74EB24;
+  height: 10px;
+}
+
+.info-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.title-container {
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.info-container > * {
+  flex-basis: 45%;
+}
+
+.no-reports {
+  color: #5C5C5C;
+  font-size: 1.2em;
+}
+
+/*# sourceMappingURL=list.css.map */

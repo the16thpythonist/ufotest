@@ -24,6 +24,7 @@ Content Overview
    current
    usage
    hooks
+   plugin
    tests
    ci
    camera

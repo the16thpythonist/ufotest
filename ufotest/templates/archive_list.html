@@ -4,27 +4,51 @@
 
 {% block head %}
     {{ super() }}
-    <link rel="stylesheet" type="text/css" href="{{ config.static('list.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ config.static('css/list.css') }}">
 {% endblock %}
 
 {% block content %}
     <div class="list-container">
         <h2>Archived Test Reports</h2>
+        {% block reports %}
+
+        {% if reports|length > 0 %}
         {% for report in reports %}
         <a class='test-report' href="{{ config.url('archive', report['folder_name'], 'report.html') }}">
             <div class="item test-report">
-                <h3>{{ report['name'] }}</h3>
-                <div class="time-container">
+                <div class="title-container">
+                    <h3>{{ report['name'] }}</h3>
+                    {% if report['test_descriptions']|length > 1 %}
+                    <span class="tag">Suite</span>
+                    {% endif %}
+                </div>
+
+                <div class="info-container version">
+                    <div class="ufotest-version">Ufotest Version: {{ report['version'] }}</div>
+                    <div class="firmware-version">Firmware Version: {{ report['firmware_version']|default(None) }}</div>
+                    <div class="hardware-version">Hardware Version: {{ report['hardware_version']|default(None) }}</div>
+                    <div class="sensor-version">Sensor Version: {{ report['sensor_version']|default(None) }} </div>
+                </div>
+
+                <div class="info-container time">
                     <div class="start-time">Start: {{ report['start'] }}</div>
+                    <div class="duration">Duration: {{ report['duration'] }} minutes</div>
                     <div class="end-time">End: {{ report['end'] }}</div>
                 </div>
-                <div>Version: {{ report['version'] }}</div>
+
                 <div>Successes: {{ report['successful_count'] }} / {{ report['test_count'] }} ({{ report['success_ratio'] * 100 }}%)</div>
-                <div class="success-bar-container">
-                    <div class="success-bar" style="width: {{ report['success_ratio'] * 100 }}%"></div>
+                <div class="success-bar">
+                    <div style="width: {{ report['success_ratio'] * 100 }}%"> </div>
                 </div>
             </div>
         </a>
         {% endfor %}
+        {% else %}
+        <div class="no-reports">
+            Seems like no test reports have been created yet...
+        </div>
+        {% endif %}
+
+        {% endblock %}
     </div>
 {% endblock %}

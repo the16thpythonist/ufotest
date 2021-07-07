@@ -84,7 +84,21 @@ kwargs(4):
 - display: The boolean flag of whether or not to display the frame
 
 This action hook is executed at the very beginning of the code for the "frame" CLI command, but after the generic
-``pre_command`` hook!
+``pre_{command}`` hook!
+
+``post_test_context_construction``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Action Hook:
+
+kwargs(2):
+
+- context: The TestContext instance
+- namespace: A dict which represents the global namespace of at the end of the TestContext constructor
+
+This action hook is executed as the last thing within the constructor of the TestContext class. Since both the test
+context instance itself and the namespace are available. This can be used to attach custom / dynamic attributes to each
+test context object, which can then possibly later be used to create custom sections in the test report...
 
 
 Filter Hooks
@@ -273,11 +287,64 @@ where each dict represents one build report which is saved within the "builds" f
 This hook can for example be used to modify the list of these build reports to exclude certain reports, add additional
 ones which are loaded by some external means or simply change the ordering of the reports.
 
-
 ``home_template``
 ~~~~~~~~~~~~~~~~~
 
 Filter Hook
+
+kwargs: (1):
+
+- value: Jinja template for the home page of the web interface.
+
+This filter applies to the jinja template which is loaded to represent the home page of the web interface. On default
+this value will load the template file "home.html" in the templates folder of the ufotest project. This filter allows a
+different template to be used, which can be used to implement a fully customized home page.
+
+When implementing a custom home page, it would be best if that custom template *extended* the base "home.html" template
+and not replace it entirely. The base home template defines a lot of blocks which can be selectively replaced by a child
+template. This should be the preferred method for small changes. For big changes, it is still important to at least
+extend the "base.html" template. This base template provides the basic layout for the ufotest web interface, which on
+the one hand is the correct import of all stylesheets and JS libraries and on the other hand the basic html
+skeleton for the header and footer.
+
+Note that to be able to replace a template one would first have to register the plugin's template folder with the
+active jinja environment loader!
+
+The following example shows how to replace the entire content summary box of the home template with a simple hello
+world string, but the rest of the page would stay the same:
+
+.. code-block:: html
+
+    <!-- templates/my_home.html -->
+    {% extends "home.html" %}
+
+    {% block summary_box %}
+        <p>
+            Hello World
+        </p>
+    {% endblock %}
+
+.. code-block:: python
+
+    # main.py
+    from ufotest.hooks import Filter
+    from ufotest.util import get_template
+
+    from jinja2 import FileSystemLoader
+
+    # This will modify the jinja environment such that it also finds the templates of this plugin
+    @Filter("template_loaders", 10)
+    def template_loaders(value):
+        value.append(FileSystemLoader("/my/plugin/path/templates"))
+        return value
+
+    @Filter("home_template", 10)
+    def home(value):
+        my_home = get_template("my_home.html")
+        return my_home
+
+To see the full context dict, which is ultimately passed to the rendering of the home template, see the source code of
+the respective function "ufotest.ci.server.home".
 
 ``home_recent_count``
 ~~~~~~~~~~~~~~~~~~~~~
@@ -291,8 +358,81 @@ kwargs (1):
 This integer subject value defines how many recent items (test reports and build reports) will be displayed on on the
 home page of the web interface.
 
-
 ``home_status_summary``
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Filter hook
+
+kwargs (1):
+
+- value: A list of dicts (and boolean) values where each dict element defines one of the values to be displayed in the
+  summary box of the home page of the web interface.
+
+This filter allows to modify which (and in which order) values are listed in the "Status Summary" box on the home page
+of the web interface. This box is supposed to contain the most important information about the current test setup. A
+plugin might have it's own values which are supposed to also be listed in this status summary. This can easily be done
+without modifying the whole template by using this hook. The subject value of this hook is a mixed list which consists
+of dicts and boolean values (only False to be specific). Each dict represents one value which will be shown in the
+status summary, for that the dict needs three fields "id", "label" and "value", where the id will be used as the html
+id of the element, label will be the short description before the value and value will be the content of the
+span element which actually shows the value.
+
+Furthermore, the list can also contain "False" boolean values. These will be rendered as horizontal separators within
+the box. This also implies that the order of the values is important!
+
+An example list would look like this:
+
+.. code-block:: python
+
+    status_summary = [
+        {
+            'id': 'sensor-temperature',
+            'label': 'Sensor Temperature',
+            'value': '33.4'
+        },
+        {
+            'id': 'board-temperature',
+            'label': 'Board Temperature',
+            'value': '43.2'
+        },
+        False,  # Seperator !
+        {
+            'id': 'firmware-version',
+            'label': 'Firmware Version',
+            'value': '1.2.5'
+        }
+    ]
+
+
+``template_loaders``
+~~~~~~~~~~~~~~~~~~~~
+
+Filter Hook
+
+kwargs (1):
+
+- value: A list of jinja template loaders which are supposed to manage the template loading for the main jinja
+  Environment object responsible for the web interface of ufotest.
+
+This filter is absolutely essential if the plugin intends to implement custom jinja template! This filter can be used
+to register the plugin specific template folders so that the templates within it can be found. The subject value is a
+list of template loaders. On default this list contains only a single loader, which is the main loader for the base
+ufotest routine itself. It should only ever be extended! These template loaders will then be passed to a jinja Choice
+loader and this is then used as the loader for the central ``TEMPLATE_ENVIRONMENT`` global variable.
+
+A custom template folder can be registered as simply as this:
+
+.. code-block:: python
+
+    # main.py
+    from ufotest.hooks import Filter
+
+    from jinja2 import FileSystemLoader
+
+
+    @Filter("template_loaders", 10)
+    def template_loaders(value):
+        my_loader = FileSystemLoader("path/to/my/templates")
+        value.append(my_loader)
+        return value
+

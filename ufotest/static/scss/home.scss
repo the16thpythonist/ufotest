@@ -73,7 +73,9 @@ p.no-reports {
     background: $light-gray;
 }
 
-.progress-bar>span {
+.progress-bar>div {
     background-color: $green;
+    height: 5px;
+    content: ' ';
 }
 

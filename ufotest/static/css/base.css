@@ -84,6 +84,7 @@ a.nav-item:hover {
 .content {
   min-width: 40%;
   max-width: 1200px;
+  min-height: 700px;
   margin-left: auto;
   margin-right: auto;
   margin-top: 60px;
@@ -112,6 +113,10 @@ a.nav-item:hover {
   margin-right: auto;
   padding-top: 15px;
   padding-bottom: 15px;
+}
+
+.footer .link {
+  color: #fb8500;
 }
 
 /* BUTTON ELEMENT
@@ -200,6 +205,14 @@ a.nav-item:hover {
   background-color: lightgray;
   margin-top: 10px;
   margin-bottom: 10px;
+}
+
+.green {
+  color: #74EB24;
+}
+
+.red {
+  color: #FA2E27;
 }
 
 /*# sourceMappingURL=base.css.map */

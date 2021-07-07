@@ -24,7 +24,9 @@ from ufotest.util import (update_install,
                           get_path,
                           check_vivado,
                           check_path)
+from ufotest.util import get_template
 from ufotest.util import cerror, cresult, ctitle, csubtitle, cprint, cparams
+from ufotest.util import HTMLTemplateMixin
 from ufotest.install import (mock_install_repository,
                              install_dependencies,
                              install_fastwriter,
@@ -54,8 +56,10 @@ pass_config = click.make_pass_decorator(Config)
 @click.group(invoke_without_command=True)
 @click.option('--version', is_flag=True, help='Print the version of the program')
 @click.option('--verbose', '-v', is_flag=True, help='Print additional console output for the command')
+@click.option('--conf', '-c', type=click.STRING, multiple=True, help='Overwrite config variables')
+@click.option('--mock', '-m', is_flag=True, help='Using the mock camera class for all actions')
 @click.pass_context
-def cli(ctx, version, verbose):
+def cli(ctx, version, verbose, conf, mock):
     """
     UfoTest command line interface
 
@@ -92,6 +96,20 @@ def cli(ctx, version, verbose):
 
         # This hook can be used to execute generic functionality before any command specific code is executed
         config.pm.do_action('pre_command', config=config, namespace=globals(), context=ctx)
+
+    for overwrite_string in conf:
+        try:
+            config.apply_overwrite(overwrite_string)
+        except Exception:
+            if config.verbose():
+                cerror((
+                    f'Could not apply config overwrite for value {overwrite_string}. Please check if the string is '
+                    f'formatted correctly. The correct formatting would be "key.subkey=value". Also check if the '
+                    f'variable even exists in the config file.'
+                ))
+
+    if mock:
+        config.pm.register_filter('camera_class', lambda value: MockCamera, 1)
 
 
 # -- Commands related to the installation of dependencies
@@ -307,7 +325,7 @@ def frame(config, output, display):
     # "get_frame" handles the whole communication process with the camera, it requests the frame, saves the raw data,
     # decodes it into an image and then returns the string path of the final image file.
     try:
-        camera_class = config.pm.apply_filter('get_camera_class', UfoCamera)
+        camera_class = config.pm.apply_filter('camera_class', UfoCamera)
         camera = camera_class(config)
         frame = camera.get_frame()
     except PciError as error:
@@ -698,10 +716,72 @@ def serve(verbose, host):
     server.run(port=port, host=host)
 
 
+@click.command('recompile', short_help='Updates all the HTML test reports')
+@pass_config
+def recompile(config):
+    """
+    This command recompiles all the static HTML files of the test reports.
+
+    All test reports are actually static HTML files, which are created from a template after the corresponding test run
+    finishes. This presents an issue if any web interface related changes are made to the config or if the html
+    templates are updated with a new release version. In such a case the test report html pages would not reflect the
+    changes. In this case, the "recompile" command can be used to recreate the static html files using the current
+    config / template versions.
+    """
+    # THE PROBLEM
+    # So this is the problem: Test reports are actually static html files. These html templates for each test reports
+    # are rendered once the test run finishes and then they are just html files. In contrary to dynamically creating
+    # the html content whenever the corresponding request is made. And I would like to keep it like this, because the
+    # it is easier to handle in other regards, but this poses the following problem: If certain changes are made to the
+    # server these are not reflected within the rest report html pages. The most pressing problem is if the URL changes
+    # This will break all links on the test report pages. Another issue is when a new version of ufotest introduces
+    # changes to the report template, which wont be reflected in older reports.
+    # THE IDEA
+    # The "recompile" command should fix this by recreating all the test report static html files with the current
+    # version of the report template based on the info in the report.json file
+
+    ctitle('RECOMPILE TEST REPORT HTML')
+    cparams({
+        'archive folder':       config.get_archive_path()
+    })
+
+    count = 0
+    for root, folders, files in os.walk(config.get_archive_path()):
+
+        for folder in folders:
+            folder_path = os.path.join(root, folder)
+            report_json_path = os.path.join(folder_path, 'report.json')
+            report_html_path = os.path.join(folder_path, 'report.html')
+
+            if not os.path.exists(report_json_path):
+                continue
+
+            with open(report_json_path, mode='r+') as file:
+                report_data = json.load(file)
+
+            with open(report_html_path, mode='w+') as file:
+                # "report_data" is only the dict representation of the test report. This is problematic because we
+                # cannot call the "to_html" method then. But the test report class and all the test result classes
+                # implement the HTMLTemplateMixin class, which enables to render the html template from just this dict
+                # representation using the static method "html_from_dict". This is possible because the dict itself
+                # saves the entire template string in one of its fields.
+                html = HTMLTemplateMixin.html_from_dict(report_data)
+                file.write(html)
+                cprint(f'Recompiled test report {folder}')
+            count += 1
+
+        break
+
+    cresult(f'Recompiled {count} test reports!')
+
+    sys.exit(0)
+
+
 # Registering the commands within the "ci" group. The ci group is a sub command group which contains the commands
 # relating to the "continuous integration" functionality.
 ci.add_command(build)
 ci.add_command(serve)
+ci.add_command(recompile)
 
 # Registering the commands with the "scripts" group.
 scripts.add_command(invoke_script)

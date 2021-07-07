@@ -12,7 +12,11 @@ pip3 install --user .
 # ufotest contains any new static assets and copies them to the actual ufotest installation folder.
 ufotest init --update
 
+#ufotest init -f
+#ufotest --mock test single_frame
+#ufotest --mock test single_frame
+
 # Now we start the web interface server
-ufotest ci serve
+ufotest --mock ci serve
 
 

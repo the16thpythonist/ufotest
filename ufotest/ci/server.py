@@ -12,6 +12,7 @@ from ufotest.util import get_template, get_version
 from ufotest.util import cerror, cprint, cresult
 from ufotest.util import get_build_reports, get_test_reports
 from ufotest.exceptions import BuildError
+from ufotest.camera import UfoCamera
 from ufotest.ci.build import BuildQueue, BuildLock, BuildRunner, BuildReport, build_context_from_request
 from ufotest.ci.mail import send_report_mail
 
@@ -191,6 +192,9 @@ def home():
     if len(recent_builds) != 0:
         most_recent_build_report = sorted(recent_builds, key=lambda d: d['start_iso'], reverse=True)[0]
 
+    camera_class = CONFIG.pm.apply_filter('camera_class', UfoCamera)
+    camera = camera_class(CONFIG)
+
     status_summary = [
         # UFOTEST INFORMATION
         {
@@ -247,6 +251,11 @@ def home():
             'id': 'sensor-dimensions',
             'label': 'Sensor Dimensions',
             'value': f'{CONFIG.get_sensor_width()} x {CONFIG.get_sensor_height()}'
+        },
+        {
+            'id': 'available',
+            'label': 'Camera Available',
+            'value': f'<i class="fas fa-circle {"green" if camera.poll() else "red"}"> </i>'
         }
     ]
     status_summary = CONFIG.pm.apply_filter('home_status_summary', status_summary)

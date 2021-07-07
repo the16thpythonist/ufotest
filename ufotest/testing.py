@@ -12,14 +12,15 @@ from contextlib import AbstractContextManager
 
 import matplotlib.pyplot as plt
 
-from ufotest.config import PATH, Config, get_path
+from ufotest.config import PATH, CONFIG, TEMPLATE_PATH
+from ufotest.config import Config, get_path
 from ufotest.util import (markdown_to_html,
                           dynamic_import,
                           create_folder,
                           get_template,
                           get_version,
-                          AbstractRichOutput,
                           random_string)
+from ufotest.util import AbstractRichOutput, HTMLTemplateMixin
 from ufotest.camera import UfoCamera, AbstractCamera
 from ufotest.util import csubtitle, cprint, cresult
 
@@ -97,6 +98,12 @@ class TestContext(AbstractContextManager):
         self.results: Dict[str, AbstractTestResult] = {}
         self.tests = {}
         self.name: Optional[str] = None
+
+        self.hardware_version = None
+        self.firmware_version = None
+        self.sensor_version = None
+
+        self.config.pm.do_action('post_test_context_construction', context=self, namespace=globals())
 
     def start(self, name: str):
         """
@@ -442,7 +449,7 @@ class _TestRunner(object):
         return test_suite
 
 
-class AbstractTestResult(AbstractRichOutput, ABC):
+class AbstractTestResult(HTMLTemplateMixin, AbstractRichOutput, ABC):
 
     def __init__(self, exit_code: int):
         self.exit_code = exit_code
@@ -460,9 +467,21 @@ class AbstractTestResult(AbstractRichOutput, ABC):
         return self.exit_code == 0
 
     @property
+    def html(self) -> str:
+        return self.to_html()
+
+    @property
     def execution_time(self) -> float:
         time_delta: datetime.timedelta = self.end_datetime - self.start_datetime
         return time_delta.total_seconds()
+
+    def to_dict(self):
+        return {
+            **HTMLTemplateMixin.to_dict(self),
+            'passing': self.passing,
+            'exit_code': self.exit_code,
+            'html': self.to_html()
+        }
 
 
 class ImageTestResult(AbstractTestResult):
@@ -476,7 +495,8 @@ class ImageTestResult(AbstractTestResult):
     system path does not solve anything. For this we would need to know the equivalent URL path.
 
     This is why the constructor needs the additional argument "url_base". It is supposed to define the base url at
-    which this image asset can be found.
+    which this image asset can be found. This would usually be the specific folder of the test report which creates the
+    image test result.
 
     **Example**
 
@@ -493,6 +513,13 @@ class ImageTestResult(AbstractTestResult):
         result = ImageTestResult(0, file_path, self.context.folder_url)
     """
 
+    HTML_TEMPLATE = (
+        '<div class="image-test-result">\n'
+        '    <img src="{{ config.url(this.url_base_clean, this.file_name) }}" alt="{{ this.file_name }}">\n'
+        '    <p>{{ this.description }}</p>\n'
+        '</div>'
+    )
+
     def __init__(self, exit_code: int, file_path: str, description: str, url_base: str = '/static'):
         AbstractTestResult.__init__(self, exit_code)
 
@@ -501,11 +528,23 @@ class ImageTestResult(AbstractTestResult):
         self.description = description
         self.config = Config()
 
+        # The workings of this class has been changed: Previously the url of the file was manually assembled using
+        # os.path.join, now though config.url() is used and that method does not like the slashes being part of the
+        # string, which is why we strip them here.
+        self.url_base_clean = self.url_base.lstrip('/').rstrip('/')
+
         # The file name is important here because ultimately this object also has to be converted into an HTML file and
         # within an html file the file system path is not so important. More important is the URL path. So to make this
         # work at all.
         self.file_name = os.path.basename(self.file_path)
-        self.file_url = os.path.join(url_base, self.file_name)
+
+    @property
+    def file_url(self):
+        """
+        Previously this property was just a instance variable, but this would cause problems if the configuration
+        in regards to the url changes during the lifetime of this object that would cause a wrong url to be returned.
+        """
+        return CONFIG.url(self.url_base_clean, self.file_name)
 
     # == AbstractRichOutput
 
@@ -516,17 +555,19 @@ class ImageTestResult(AbstractTestResult):
         return '[{}]({})\n\n{}'.format(self.file_name, self.file_path, self.description)
 
     def to_latex(self) -> str:
+        # NOT IMPORTANT YET
         return ''
 
-    def to_html(self) -> str:
-        return '\n'.join([
-            '<div class="image-test-result">',
-            '<img src="{}" alt="{}">'.format(self.file_url, self.file_name),
-            '<p>',
-            '{}'.format(self.description),
-            '</p>',
-            '</div>'
-        ])
+    def to_dict(self) -> dict:
+        return {
+            **AbstractTestResult.to_dict(self),
+            'description':      self.description,
+            'file_name':        self.file_name,
+            'file_path':        self.file_path,
+            'file_url':         self.file_url,
+            'url_base':         self.url_base,
+            'url_base_clean':   self.url_base_clean
+        }
 
 
 class FigureTestResult(ImageTestResult):
@@ -539,12 +580,29 @@ class FigureTestResult(ImageTestResult):
         self.figure_path = self.test_context.get_path(self.figure_name)
         # https://stackoverflow.com/questions/11837979/removing-white-space-around-a-saved-image-in-matplotlib
         # The parameters "bbox_inches" and "pad_inches" are supposed to reduce the whitespace around the plot.
-        figure.savefig(self.figure_path, bbox_inches='tight', pad_inches=0.0)
+        figure.savefig(self.figure_path, bbox_inches='tight', pad_inches=0.2)
 
-        ImageTestResult.__init__(self, exit_code, self.figure_path, description, url_base=self.test_context.folder_url)
+        ImageTestResult.__init__(
+            self,
+            exit_code,
+            self.figure_path,
+            description,
+            url_base=self.test_context.relative_url
+        )
 
 
 class DictTestResult(AbstractTestResult):
+
+    HTML_TEMPLATE = (
+        '<div class="dict-test-result">'
+        '   {% for key, value in this.data.items %}'
+        '   <div class="row">'
+        '       <div class="key">{{ key }}</div>'
+        '       <div class="value">{{ value }}</div>'
+        '   </div>'
+        '   {% endfor %}'
+        '</div>'
+    )
 
     def __init__(self, exit_code: int, data: dict, message: str = ''):
         AbstractTestResult.__init__(self, exit_code)
@@ -558,15 +616,6 @@ class DictTestResult(AbstractTestResult):
         rows = [row_format.format(str(key), str(value)) for key, value in self.data.items()]
         return '\n'.join(rows)
 
-    def to_html(self) -> str:
-        row_format = '<div class="row"><div class="key">{}</div><div class="value">{}</div></div>'
-        rows = [row_format.format(str(key), str(value)) for key, value in self.data.items()]
-        return '\n'.join([
-            '<div class="dict-test-result">',
-            '{}'.format('\n'.join(rows)),
-            '</div>'
-        ])
-
     def to_latex(self) -> str:
         return ''
 
@@ -575,8 +624,17 @@ class DictTestResult(AbstractTestResult):
         rows = [row_format.format(str(key), str(value)) for key, value in self.data.items()]
         return '\n'.join(rows)
 
+    def to_dict(self) -> dict:
+        return {
+            **AbstractTestResult.to_dict(self),
+            'message': self.message,
+            'data': self.data
+        }
+
 
 class MessageTestResult(AbstractTestResult):
+
+    HTML_TEMPLATE = '<div class="message-test-result">{{ this.message }}</div>'
 
     def __init__(self, exit_code: int, message: str):
         AbstractTestResult.__init__(self, exit_code)
@@ -594,8 +652,11 @@ class MessageTestResult(AbstractTestResult):
     def to_latex(self) -> str:
         return self.message
 
-    def to_html(self) -> str:
-        return '<div class="message-test-result">{}</div>'.format(self.message)
+    def to_dict(self) -> dict:
+        return {
+            **AbstractTestResult.to_dict(self),
+            'message': self.message
+        }
 
 
 class AssertionTestResult(AbstractTestResult):
@@ -661,12 +722,23 @@ class AssertionTestResult(AbstractTestResult):
     def to_html(self) -> str:
         return ""
 
+    def to_dict(self) -> dict:
+        return {}
+
 
 class CombinedTestResult(AbstractTestResult):
 
+    HTML_TEMPLATE = (
+        '{% for result_dict in this.result_dicts %}'
+        '{{ result_dict|html_from_dict }}'
+        '{% endfor %}'
+    )
+
     def __init__(self, *test_results):
         self.test_results = test_results
+        self.result_dicts = [test_result.to_dict() for test_result in self.test_results]
         self.exit_codes = [test_result.exit_code for test_result in self.test_results]
+
         exit_code = 1 if 1 in self.exit_codes else 0
         AbstractTestResult.__init__(self, exit_code)
 
@@ -682,8 +754,11 @@ class CombinedTestResult(AbstractTestResult):
     def to_latex(self) -> str:
         return '\\\\ \\\\ \n'.join(test_result.to_latex() for test_result in self.test_results)
 
-    def to_html(self) -> str:
-        return '\n\n'.join(test_result.to_html() for test_result in self.test_results)
+    def to_dict(self) -> dict:
+        return {
+            **AbstractTestResult.to_dict(self),
+            'result_dicts': self.result_dicts
+        }
 
 
 class AbstractTest(ABC):
@@ -786,11 +861,14 @@ class TestMetadata(AbstractRichOutput):
         return ""
 
 
-class TestReport(AbstractRichOutput):
+class TestReport(HTMLTemplateMixin, AbstractRichOutput):
 
     DATETIME_FORMAT = '%d.%m.%Y %H:%M'
 
     def __init__(self, test_context: TestContext):
+        AbstractRichOutput.__init__(self)
+        HTMLTemplateMixin.__init__(self)
+
         assert test_context.start_datetime is not None, \
             "The test context has to have been started before attempting to construct a test report from it"
 
@@ -816,10 +894,16 @@ class TestReport(AbstractRichOutput):
         self.duration = int((self.context.end_datetime - self.context.start_datetime).seconds / 60)
         self.tests = self.context.tests
 
+        self.hardware_version = self.context.hardware_version
+        self.firmware_version = self.context.firmware_version
+        self.sensor_version = self.context.sensor_version
+
         # derived attributes from config
         self.repository_url = self.config.get_repository_url()
         self.documentation_url = self.config.get_documentation_url()
         self.sensor = "{} x {} pixels".format(self.config.get_sensor_height(), self.config.get_sensor_width())
+
+        self.test_descriptions = {name: test.description for name, test in self.tests.items()}
 
         # calculated attributes
         self.test_count = len(self.results)
@@ -827,6 +911,8 @@ class TestReport(AbstractRichOutput):
         self.successful_count = len(self.successful_results)
         self.error_count = self.test_count - self.successful_count
         self.success_ratio = round(self.successful_count / self.test_count, 2)
+
+        self.result_dicts = {name: result.to_dict() for name, result in self.results.items()}
 
     def save(self, folder_path: str):
         # 1 -- SAVE MARKDOWN FILE
@@ -853,6 +939,7 @@ class TestReport(AbstractRichOutput):
 
     def to_dict(self) -> dict:
         return {
+            **HTMLTemplateMixin.to_dict(self),
             'platform':             self.platform,
             'version':              self.version,
             'sensor':               self.sensor,
@@ -866,18 +953,29 @@ class TestReport(AbstractRichOutput):
             'duration':             self.duration,
             'test_count':           self.test_count,
             'successful_count':     self.successful_count,
-            'success_ratio':        self.success_ratio
+            'success_ratio':        self.success_ratio,
+            # Added 1.3.0
+            'hardware_version':     self.hardware_version,
+            'firmware_version':     self.firmware_version,
+            'sensor_version':       self.sensor_version,
+            'test_descriptions':    self.test_descriptions,
+            'result_dicts':         self.result_dicts,
         }
 
     def to_json(self) -> str:
         data = self.to_dict()
         return json.dumps(data, sort_keys=True, indent=4)
 
-    # == ABSTRACT RICH OUTPUT
+    # -- IMPLEMENT "HTMLTemplateMixin"
 
-    def to_html(self) -> str:
-        template = get_template('test_report.html')
-        return template.render({'report': self})
+    def get_html_template_string(self) -> str:
+        template_path = os.path.join(TEMPLATE_PATH, 'test_report.html')
+        with open(template_path, mode='r') as file:
+            template_string = file.read()
+
+        return template_string
+
+    # -- IMPLEMENT "AbstractRichOutput"
 
     def to_markdown(self) -> str:
         template = get_template('test_report.md')

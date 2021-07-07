@@ -1,0 +1,41 @@
+@import 'variables';
+
+.config-editor {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.filename {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    font-size: 1.2em;
+    color: $light-text-color;
+    font-weight: bold;
+    padding: 15px;
+    background-color: $main-blue;
+    border-style: solid;
+    border-width: 0px;
+    border-bottom-width: 5px;
+    border-color: $dark-blue;
+}
+
+.filename>span {
+    margin-left: 20px;
+    vertical-align: middle;
+    line-height: 1;
+    padding-top: 5px;
+}
+
+i.fa-pen {
+    background-color: $light-text-color;
+    margin-right: 15px;
+}
+
+.CodeMirror {
+    padding: 10px;
+    line-height: 1.2;
+    font-size: 0.9em;
+    height: 100%;
+}

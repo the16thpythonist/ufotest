@@ -3,14 +3,15 @@ Unittests for the testing functionality of ufotest.
 """
 import inspect
 import unittest
+import json
 
+from ufotest.config import CONFIG
 from ufotest.util import random_string
 from ufotest.testing import (TestRunner,
                              TestContext,
                              AbstractTest,
-                             TestReport,
-                             MessageTestResult,
-                             AssertionTestResult)
+                             TestReport)
+from ufotest.testing import ImageTestResult, MessageTestResult, AssertionTestResult, CombinedTestResult
 from ufotest._testing import UfotestTestMixin
 
 
@@ -189,3 +190,104 @@ class TestAssertionTestResult(UfotestTestMixin, unittest.TestCase):
         # Now it needs to have one correct assertion and one error!
         self.assertEqual(2, len(test_result.assertions))
         self.assertEqual(1, test_result.error_count)
+
+
+class TestImageTestResult(unittest.TestCase):
+
+    def setUp(self):
+        # I have to do this, because some of the tests in this class have to modify some config values
+        CONFIG.reload()
+
+    # -- actual test cases
+
+    def test_construction_basically_works(self):
+        """
+        If a new instance can be created without producing an error
+        """
+        image_result = ImageTestResult(0, '', '', '')
+        self.assertIsInstance(image_result, ImageTestResult)
+
+    def test_to_html_basically_works(self):
+        """
+        If the to_html method can be invoked without producing an error
+        """
+        image_result = ImageTestResult(0, '/tmp/filename', 'my description', '')
+        html = image_result.to_html()
+        self.assertIsInstance(html, str)
+        self.assertNotEqual(html, '')
+        self.assertIn('filename', html)
+        self.assertIn('my description', html)
+
+    def test_export_to_json_load_and_then_render_as_html(self):
+        """
+        If it works to export the object instance as a json string, load that as a dict again and then directly render
+        the html string from that dict representation.
+        """
+        image_result = ImageTestResult(0, '/tmp/filename', 'my description', '')
+        json_string = json.dumps(image_result.to_dict(), indent=4)
+
+        loaded_dict = json.loads(json_string)
+        html = ImageTestResult.html_from_dict(loaded_dict)
+        self.assertNotEqual(html, '')
+        self.assertIn('filename', html)
+        self.assertIn('my description', html)
+        self.assertIn(CONFIG.get_hostname(), html)
+        self.assertIn(str(CONFIG.get_port()), html)
+
+    def test_recompiling_html_with_different_config(self):
+        """
+        If the recompiled version of the html template derived from the json / dict representation of the file actually
+        reflects changes of the config.
+        """
+        image_result = ImageTestResult(0, '/tmp/filename', 'my description', '')
+        json_string = json.dumps(image_result.to_dict(), indent=4)
+        loaded_dict = json.loads(json_string)
+
+        html_before = ImageTestResult.html_from_dict(loaded_dict)
+        self.assertIn(str(CONFIG.get_port()), html_before)
+
+        # Now we modify the config, so that it uses a different port and then load render the whole thing again.
+        # Since the html template of the image test result uses the current config instance to derive the url, this
+        # should affect the final html string!
+        CONFIG['ci']['port'] = '8900'
+        html_after = ImageTestResult.html_from_dict(loaded_dict)
+
+        # For one thing those two strings should not be the same!
+        self.assertNotEqual(html_before, html_after)
+        # Also it should contain the new port!
+        self.assertIn('8900', html_after)
+
+
+class TestCombinedTestResult(unittest.TestCase):
+
+    def test_construction_basically_works(self):
+        """
+        If a new instance can be created without producing an error
+        """
+        combined_result = CombinedTestResult()
+        self.assertIsInstance(combined_result, CombinedTestResult)
+
+    def test_to_html_basically_works(self):
+        message_result_1 = MessageTestResult(0, 'Hello')
+        message_result_2 = MessageTestResult(0, 'World')
+        combined_result = CombinedTestResult(message_result_1, message_result_2)
+        html = combined_result.to_html()
+        self.assertIsInstance(html, str)
+        self.assertNotEqual(html, '')
+        self.assertIn('Hello', html)
+
+    def test_export_to_json_load_and_then_render_as_html(self):
+        """
+        If it works to export the object instance as a json string, load that as a dict again and then directly render
+        the html string from that dict representation.
+        """
+        message_result_1 = MessageTestResult(0, 'Hello')
+        message_result_2 = MessageTestResult(0, 'World')
+        combined_result = CombinedTestResult(message_result_1, message_result_2)
+        json_string = json.dumps(combined_result.to_dict(), indent=4)
+
+        loaded_dict = json.loads(json_string)
+        html = CombinedTestResult.html_from_dict(loaded_dict)
+        self.assertIsInstance(html, str)
+        self.assertNotEqual(html, '')
+        self.assertIn('Hello', html)

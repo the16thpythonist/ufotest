@@ -6,6 +6,9 @@ import toml
 from pathlib import Path
 from typing import List, Optional
 
+from jinja2 import Environment
+from jinja2 import FileSystemLoader, ChoiceLoader
+
 from ufotest.plugin import PluginManager
 from ufotest.scripts import ScriptManager
 
@@ -269,6 +272,14 @@ class Config(metaclass=Singleton):
 
         self.pm: Optional[PluginManager] = None
         self.sm: Optional[ScriptManager] = None
+        # The template environment will be needed to load the jinja templates, which are used for example to create the
+        # initial config file during "init" and also for the web interface of ufotest. So actually we want to apply a
+        # filter on this so that plugins can add their own template folders to this environment, but the plugin manager
+        # is not initialized yet. BUT we need this to be initialized, since we are using it during "init" which by
+        # definition cannot have a plugin loader at all. In "prepare" we then replace this fallback version with the one
+        # where the filter applies.
+        self.template_environment: Environment = Environment(loader=FileSystemLoader(TEMPLATE_PATH))
+        self.template_environment.globals['config'] = self
 
     def prepare(self) -> None:
         """
@@ -290,6 +301,16 @@ class Config(metaclass=Singleton):
         self.sm = ScriptManager(self)
         self.sm.load_scripts()
 
+        # -- PREPARING TEMPLATE ENVIRONMENT
+        # The jinja ChoiceLoader allows to define multiple different loaders from where to get the templates from. This
+        # is perfect for the plugin scenario! So the filter here allows to add additional template loaders for plugin
+        # specific template folders and all of them are then put into a choice loader.
+        template_loaders = [FileSystemLoader(TEMPLATE_PATH)]
+        template_loaders = self.pm.apply_filter('template_loaders', template_loaders)
+        self.template_environment = Environment(loader=ChoiceLoader(template_loaders))
+        # The config has to be accessible from every template
+        self.template_environment.globals['config'] = self
+
     def is_prepared(self) -> bool:
         """
         Returns whether or not the plugin and script manager have been initialized
@@ -297,6 +318,17 @@ class Config(metaclass=Singleton):
         :returns: Whether or not the plugin and script manager are initialized
         """
         return self.pm is not None and self.sm is not None
+
+    def apply_overwrite(self, overwrite_string: str):
+        key_string, value = overwrite_string.split('=')
+        keys = key_string.split('.')
+
+        current = self.data
+        for key in keys:
+            current = current[key]
+
+        if not isinstance(current, dict):
+            current = value
 
     # IMPLEMENTING DICT FUNCTIONALITY
     # -------------------------------

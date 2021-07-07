@@ -4,7 +4,7 @@
 
 {% block head %}
     {{ super() }}
-    <link rel="stylesheet" type="text/css" href="{{ config.static('config.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ config.static('css/config.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ config.static('codemirror/codemirror.css') }}">
     <script src="{{ config.static('codemirror/codemirror.js') }}"></script>
     <script src="{{ config.static('codemirror/mode/toml/toml.js') }}"></script>
@@ -36,5 +36,18 @@
                 content: codeMirror.getValue()
             }));
         }
+
+        // Quality of life feature: Pressing CTRL+S will also save the config file. Just having the button is a little
+        // bit tedious because the config file is long and that makes a looong scroll down
+        // https://alligator.io/js/listening-to-keyboard/
+        // https://stackoverflow.com/questions/45849602/how-to-capture-ctrls-in-browser
+        document.addEventListener('keydown', function(event) {
+            if (!(event.key === 's' && event.ctrlKey)) return true
+
+            event.preventDefault();
+            saveConfig();
+
+            return false;
+        });
     </script>
 {% endblock %}

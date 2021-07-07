@@ -87,6 +87,35 @@ installation process:
     cat install.json
 
 
+Display single frame
+--------------------
+
+A single frame can be displayed by using the ``frame`` command. For testing purposes it is encouraged to also use the
+``--mock`` option for the base command. This will use the mock implementation of the camera interface and for the frame
+command specifically just display a static picture. Without the mock option, the default interface would be the
+UfoCamera implementation which would require a functional HiFlex FPGA board with UFO sensor to be installed in the PC.
+
+.. code-block:: console
+
+    ufotest --mock frame --display
+
+
+Starting the web interface
+--------------------------
+
+The web interface can be started using the ``serve`` command from the ``ci`` command subgroup.
+
+.. code-block:: console
+
+    ufotest --mock ci serve
+
+This will create a Flask web server on the default port **8030** of the local machine, which can be viewed with a
+web browser at ``http://localhost:8030``. The web interface can be used for the following tasks:
+
+- View a status summary of all the most important info on the home page
+- edit the config file
+- View all archived test and build reports
+
 Development
 ===========
 
@@ -113,6 +142,32 @@ development version, run in the ufotest folder:
 .. code-block:: console
 
     pip3 install .
+
+SCSS preprocessor
+~~~~~~~~~~~~~~~~~
+
+Since version 2.0.0, the web interface is developed using the SASS CSS preprocessor. To make changes to these style
+templates, ``sass`` should be installed on the system:
+
+.. code-block:: console
+
+    npm install -g sass
+
+
+Using ``local.sh``
+~~~~~~~~~~~~~~~~~~
+
+In the root folder of the ufotest repository, there is a utility bash script called ``local.sh`` This script will
+perform the following routine actions to install the local changes:
+
+- Compile all SCSS templates for the web interface
+- Use pip to install the new version of the code locally
+- run ``ufotest init --update`` to copy new static assets into the installation folder
+- Start the web interface server
+
+.. code-block:: console
+
+    bash local.sh
 
 Testing
 -------
@@ -166,6 +221,7 @@ Features
 - Automatic generation of test reports
 - standalone CI server which accepts github push event webhooks and automatically starts a new build from the remote
   repo to then execute a test suite
+- Wordpress like plugin system using action and filter hooks to extend the base system
 
 Credits
 -------

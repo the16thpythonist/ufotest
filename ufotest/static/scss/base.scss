@@ -89,6 +89,7 @@ a.nav-item:hover {
 .content {
     min-width: $min-width;
     max-width: $max-width;
+    min-height: 700px;
     margin-left: auto;
     margin-right: auto;
     margin-top: 60px;
@@ -118,6 +119,10 @@ a.nav-item:hover {
     margin-right: auto;
     padding-top: 15px;
     padding-bottom: 15px;
+}
+
+.footer .link {
+    color: $dark-orange;
 }
 
 /* BUTTON ELEMENT
@@ -209,5 +214,13 @@ a.nav-item:hover {
     background-color: $light-gray;
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+.green {
+    color: $green;
+}
+
+.red {
+    color: $red;
 }
 
