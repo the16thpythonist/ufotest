@@ -226,12 +226,17 @@ def run_command(command: str, cwd: Optional[str] = None) -> Tuple[int, str]:
     )
 
     output = completed_process.stdout.decode()
+    error = completed_process.sterr.decode()
     exit_code = completed_process.returncode
 
     if CONFIG.verbose():
         click.secho(f'[#] {command}', fg='cyan')
+
         if output:
             click.secho(f' >  {output}', fg='cyan')
+
+        if error:
+            click.secho(f' !  {error}', g='red')
 
     return exit_code, output
 
