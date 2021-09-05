@@ -404,6 +404,43 @@ An example list would look like this:
     ]
 
 
+``mock_camera_class``
+~~~~~~~~~~~~~~~~~~~~~
+
+Filter Hook:
+
+kwargs (1):
+
+- value: The class which is to be used as the mock camera implementation.
+
+This filter is applied when the main ufotest command ist invoked with the "--mock" option. The camera class returned by
+this filter hook will overwrite the main camera class used to execute any of the sub commands. On default the return
+value is the MockCamera implementation already provided with the ufotest package.
+
+Note that the returned class has to be a valid camera class, which means that at the very least it implements the main
+AbstractCamera interface!
+
+The main use case for this hook is probably to extend/modify the MockCamera class instead of completely replacing it by
+creating a custom subclass and then injecting this subclass through the hook:
+
+.. code-block:: python
+
+    from ufotest.hooks import Filter
+    from ufotest.camera import MockCamera
+
+    class CustomMockCamera(MockCamera):
+
+        def __init__(self, *args, **kwargs):
+            # Custom initialization code...
+            super(CustomMockCamera, self).__init__(*args, **kwargs)
+
+        # Custom methods...
+
+    @Filter('mock_camera_class')
+    def mock_camera_class(value):
+        return CustomMockCamera
+
+
 ``template_loaders``
 ~~~~~~~~~~~~~~~~~~~~
 

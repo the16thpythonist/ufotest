@@ -265,9 +265,13 @@ class Config(metaclass=Singleton):
         # This is why I have come up with the 'context' idea. I'll just have a global object where I save the necessary
         # values in and then I can access them in the email subroutine. And the config object is perfect since this
         # already is a global singleton! I'll just add the additional sub dict "context" which will work exactly as
-        # I have intended
+        # I have intended.
+        # Currently the following values are definitely part of the context dict:
+        # - verbose: boolean flag indicating the presence of the --verbose command line option
+        # - mock: boolean flag indicating the presence of the --mock command line option
         self.data['context'] = {
-            'verbose':          False
+            'verbose':          False,
+            'mock':             False
         }
 
         self.pm: Optional[PluginManager] = None

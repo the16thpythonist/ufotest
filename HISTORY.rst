@@ -575,6 +575,10 @@ Fixes
 
 - The "setup" and "teardown" script previously still used the old script system. Now they also use the camera class.
 - The tests now also use the Camera class which is passed to them by the test runner and not the old method
+- When using the "--mock" option, the "flash" command will not attempt to actually flash anything, the code is just
+  skipped
+- The "flash" step of the build process now properly replicates the main process command line options "mock" and
+  "verbose" when invoking the "flash" command in a sub shell.
 
 Changes
 

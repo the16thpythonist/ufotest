@@ -109,7 +109,19 @@ def cli(ctx, version, verbose, conf, mock):
                 ))
 
     if mock:
-        config.pm.register_filter('camera_class', lambda value: MockCamera, 1)
+        # The "--mock" option for the main ufotest command implies that the mock camera class is to be used for the
+        # execution of all sub commands. The first thing we need to do for this is to set the context flag "mock" to
+        # True. This flag can be used by sub commands to check if the mock option has been invoked.
+        # We could also check for the class of the camera, but that would be unreliable because technically a plugin
+        # could change the mock camera class!
+        config['context']['mock'] = True
+        # This is what I meant: The exact camera class used as the mock is also subject to change by filter hook. On
+        # default it will be MockCamera, but a plugin could decide to extend this class by subclassing or replace it
+        # with something completely different
+        mock_camera_class = config.pm.apply_filter('mock_camera_class', MockCamera)
+        # Then of course we modify the main "camera_class" filter to actually inject this mock camera class to be used
+        # in all following scenarios.
+        config.pm.register_filter('camera_class', lambda value: mock_camera_class, 1)
 
 
 # -- Commands related to the installation of dependencies
@@ -427,6 +439,15 @@ def flash(config, file: str) -> None:
     # -- ECHO CONFIGURATION
     ctitle('FLASHING BITFILE TO FPGA')
     click.secho('--| bitfile path: {}\n'.format(file))
+
+    # ~ SKIP FOR MOCK
+    # If the "--mock" option is active then we completely skip this command since presumably there is not actual
+    # camera connected to do the flashing.
+    # TODO: In the future we could add an action hook here to be able to inject come actual code for the case of
+    #       mock camera + flash command.
+    if config['context']['mock']:
+        cresult('Skip flash when due to --mock option being enabled')
+        sys.exit(0)
 
     # ~ CHECKING IF THE GIVEN FILE EVEN EXISTS
     file_path = os.path.abspath(file)

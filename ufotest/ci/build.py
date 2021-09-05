@@ -534,7 +534,17 @@ class BuildRunner(object):
         """
         # For the flashing process there already exists an CLI command within this very application. So the simplest
         # thing is to just invoke this command to do the flashing process here.
-        exit_code, output = run_command('ufotest flash {}'.format(self.context.bitfile_path))
+
+        # 05.09.2021: When invoking the flash command here we need to be careful to replicate the correct command line
+        # options. Specifically regarding the --mock command line option! If the main context (this code) is a mock
+        # process and we attempt to invoke the flash command without the --mock option it will attempt to actually
+        # flash a camera which is a nasty side effect at best and breaks the program worst case.
+        flash_command = 'ufotest {} {} flash {}'.format(
+            '--mock' if self.config['context']['mock'] else "",
+            '--verbose' if self.config['context']['verbose'] else "",
+            self.context.bitfile_path
+        )
+        exit_code, output = run_command(flash_command)
         if exit_code:
             raise BuildError('The hardware could not be properly flashed')
         click.secho('(+) New bitfile flashed to the hardware', fg='green')
