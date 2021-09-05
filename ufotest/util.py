@@ -236,7 +236,7 @@ def run_command(command: str, cwd: Optional[str] = None) -> Tuple[int, str]:
             click.secho(f' >  {output}', fg='cyan')
 
         if error:
-            click.secho(f' !  {error}', g='red')
+            click.secho(f' !  {error}', fg='red')
 
     return exit_code, output
 
