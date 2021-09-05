@@ -427,7 +427,7 @@ def teardown(config):
               help='Type of file to be used for flashing to the fpga board')
 @click.argument('file', type=click.STRING)
 @pass_config
-def flash(config, file: str) -> None:
+def flash(config, file: str, type: str) -> None:
     """
     Uses the given FILE to flash a new firmware configuration to the internal memory of the FPGA board, where FILE is
     the string absolute path of the file which contains a valid specification of the fpga configuration.
