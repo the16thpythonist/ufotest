@@ -243,9 +243,19 @@ def home():
         # HARDWARE INFORMATION
         False,
         {
+            'id': 'camera-class',
+            'label': 'Camera Class',
+            'value': str(camera_class.__name__)
+        },
+        {
+            'id': 'available',
+            'label': 'Camera Available',
+            'value': f'<i class="fas fa-circle {"green" if camera.poll() else "red"}"> </i>'
+        },
+        {
             'id': 'hardware-version',
             'label': 'Hardware Version',
-            'value': '1.0'
+            'value': camera.get_prop('hardware_version')
         },
         {
             'id': 'sensor-dimensions',
@@ -253,9 +263,9 @@ def home():
             'value': f'{CONFIG.get_sensor_width()} x {CONFIG.get_sensor_height()}'
         },
         {
-            'id': 'available',
-            'label': 'Camera Available',
-            'value': f'<i class="fas fa-circle {"green" if camera.poll() else "red"}"> </i>'
+            'id': 'sensor-version',
+            'label': 'Sensor Version',
+            'value': camera.get_prop('sensor_version')
         }
     ]
     status_summary = CONFIG.pm.apply_filter('home_status_summary', status_summary)

@@ -15,7 +15,7 @@ import numpy as np
 from PIL import Image
 
 from ufotest.config import CONFIG, Config, get_path
-from ufotest.util import execute_command, get_command_output, execute_script, run_command
+from ufotest.util import execute_command, get_command_output, execute_script, run_command, get_version
 from ufotest.util import cprint, cresult, cparams
 from ufotest.exceptions import PciError, FrameDecodingError
 
@@ -465,9 +465,11 @@ class MockCamera(InternalDictMixin, AbstractCamera):
     noise gets more with higher exposure time.
     """
     default_values = {
-        'exposure_time': 1,
-        'min_exposure_time': 1,
-        'max_exposure_time': 100
+        'exposure_time':        1,
+        'min_exposure_time':    1,
+        'max_exposure_time':    100,
+        'hardware_version':     get_version(),
+        'sensor_version':       get_version()
     }
 
     def __init__(self, config: Config):

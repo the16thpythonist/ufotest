@@ -14,7 +14,7 @@ ufotest init --update
 
 #ufotest init -f
 #ufotest --mock test single_frame
-#ufotest --mock test single_frame
+#ufotest --mock test -s full
 
 # Now we start the web interface server
 ufotest --mock ci serve

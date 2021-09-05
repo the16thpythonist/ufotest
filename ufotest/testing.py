@@ -73,6 +73,15 @@ class TestContext(AbstractContextManager):
         self.platform = platform.platform()
         self.version = get_version()  # the version of this software
 
+        # So there are multiple methods for loading tests and also places from where tests can be loaded. Honestly at
+        # this point I even think there are too many methods! So the first method is the the "static" tests folder.
+        # These are the test which come pre-installed with the ufotest package and which are always present. The
+        # "dynamic" method refers to the "test" folder in the installation folder of ufotest. Putting any python module
+        # in there will make them be interpreted as test modules. This is probably the way to go for very local ad hoc
+        # tests. Then there is the possibility to add folders when creating the TestContext object.
+        # And most recently this list of test folders (every python module in such a folder will be interpreted as a
+        # test module) can be modified with a filter hook. This is probably the prime way to add plugin specific tests
+        # as it allows to tie in plugin specific test folders easily!
         static_test_folder = os.path.join(PATH, 'tests')
         dynamic_test_folder = self.config.get_test_folder()
         self.test_folders = [
@@ -80,6 +89,10 @@ class TestContext(AbstractContextManager):
             dynamic_test_folder,
             *self.additional_test_folders
         ]
+        self.test_folders = self.config.pm.apply_filter(
+            'test_folders',
+            self.test_folders
+        )
 
         # -- The logging is supposed to be saved into a file within the correct archive folder for this test execution.
         self.logger = logging.Logger('TestContext')
@@ -586,7 +599,7 @@ class FigureTestResult(ImageTestResult):
             self,
             exit_code,
             self.figure_path,
-            description,
+            'Fig. ' + description,
             url_base=self.test_context.relative_url
         )
 

@@ -436,3 +436,36 @@ A custom template folder can be registered as simply as this:
         value.append(my_loader)
         return value
 
+
+
+``test_folders``
+~~~~~~~~~~~~~~~~
+
+Filter Hook:
+
+kwargs (1):
+
+- value: A list of string absolute paths.
+
+This filter allows to modify the list of folders from which test cases are loaded. The subject value is a list which
+contains the string absolute paths of all folders which are registered as test folders. This list is being created in
+the constructor of every new TestContext object and that is also where this hook is being applied.
+
+Modifying this hook should be the prime method of registering plugin specific tests within the ufotest system.
+This should best be done by creating an additional "tests" folder within the plugin folder and then adding the path of
+this test to the list of folders interpreted as containing test modules.
+
+.. code-block:: python
+
+    # main.py
+    import os
+    import pathlib
+    from ufotest.hooks import Filter
+
+    PATH = pathlib.Path(__FILE__).parent.absolute()
+
+    @Filter('test_folders', 10)
+    def test_folders(value):
+        folder_path = os.path.join(PATH, 'tests')
+        value.append(folder_path)
+        return value

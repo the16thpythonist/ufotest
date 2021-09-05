@@ -164,3 +164,23 @@ class TestMockPlugin(UfotestTestMixin, unittest.TestCase):
         value = 3
         filtered_value = self.config.pm.apply_filter('modify_value', value)
         self.assertEquals(value ** 2, filtered_value)
+
+
+class TestHooks(UfotestTestMixin, unittest.TestCase):
+
+    def test_test_folders(self):
+        """
+        If the filter hook "test_folders" actually works
+        """
+        from ufotest.testing import TestContext
+        # Here we register a hook which adds a new folder to the test folders and we want to see if we can then
+        # actually find this test folder in a new instance of TestContext
+        folder_path = '/tmp/test_folders'
+
+        @Filter('test_folders', 10)
+        def test_folders(value):
+            value.append(folder_path)
+            return value
+
+        test_context = TestContext(self)
+        self.assertIn(folder_path, test_context.test_folders)

@@ -240,15 +240,24 @@ def install_all(config, path, no_dependencies, save_json, skip):
 
 
 @click.command('init', short_help='Initializes the installation folder and config file for the app')
-@click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 @click.option('--force', '-f', is_flag=True, help='Deletes the current installation to reinstall')
 @click.option('--update', '-u', is_flag=True, help='Only update the static assets, leave data and configuration intact')
-def init(verbose, force, update):
-    """Initializes the installation folder for this application. This folder will be located at *$HOME/.ufotest*.
-    This init includes the creation of the necessary folder structure for the archive and the tests, as well as the
-    creation of the config file from a default template.
+def init(force, update):
     """
-    CONFIG['context']['verbose'] = verbose
+    Initializes the installation folder for this application.
+
+    This folder will be located at "$HOME/.ufotest". The init furthermore includes the creation of the necessary
+    sub folder structures within the installation folder as well as the creation of the default config file and all the
+    static assets for the web interface.
+
+    The --force flag can be used to *overwrite* an existing installation. It will delete the existing installation,
+    if one exists, and then create an entirely new installation.
+
+    The --update flag can be used to perform an update rather than a complete installation. This can be invoked with an
+    installation present and will not overwrite custom configuration files. The only thing which will be replaced
+    during such an update will be the static files. The new static files from the current system package version of
+    ufotest will be copied to the active installation folder.
+    """
 
     installation_path = get_path()
     ctitle('INITIALIZING UFOTEST INSTALLATION')
@@ -274,16 +283,24 @@ def init(verbose, force, update):
     else:
         cprint('    Installation folder does not yet exist')
 
-    init_install(verbose=verbose)
+    # This method actually executes the necessary steps.
+    init_install()
     cresult('UfoTest successfully initialized, use the --help option for further commands')
+
     sys.exit(0)
 
 
 @click.command('config', short_help='Edit the ufotest configuration file')
 @click.option('--editor', '-e', type=click.STRING, help='Specify the editor command used to open the config file')
-def config(editor):
+@pass_config
+def config(config, editor):
     """
-    Edit the ufotest configuration file
+    Edit the ufotest configuration file.
+
+    Invoking this command without any additional options will open the ufotest config file located at
+    "$HOME/.ufotest/config.toml" with the text editor currently set as default on the system.
+
+    The --editor option can be used to overwrite the system preference for any one editor
     """
     config_path = get_config_path()
     click.edit(filename=config_path, editor=editor)
@@ -298,7 +315,16 @@ def config(editor):
 @pass_config
 def frame(config, output, display):
     """
-    Capture a single frame from the camera, save it as a file and optionally display it to the user
+    Capture a single frame from the camera.
+
+    If this command is invoked without any additional options, the frame will be captured from the camera and then
+    saved to the location "/tmp/frame.png".
+
+    The output location for the image file can be overwritten by using the --output option to specify another path.
+
+    The --display flag can be used to additionally display the image to the user after the frame has been captured.
+    This feature requires a graphical interface to be available to the system. The frame will be opened in a seperate
+    matplotlib figure window.
     """
     config.pm.do_action(
         'pre_command_frame',
@@ -385,15 +411,18 @@ def teardown(config):
 
 
 @click.command('flash', short_help='Flash a new .BIT file to the FPGA memory')
-@click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
+@click.option('--type', '-t', type=click.Choice('bit'), default='bit',
+              help='Type of file to be used for flashing to the fpga board')
 @click.argument('file', type=click.STRING)
-def flash(verbose, file: str) -> None:
+@pass_config
+def flash(config, file: str) -> None:
     """
-    Flashes a given ".bit" FILE to the internal memory of the connected FPGA board
+    Uses the given FILE to flash a new firmware configuration to the internal memory of the FPGA board, where FILE is
+    the string absolute path of the file which contains a valid specification of the fpga configuration.
 
-    FILE will be the string path of the file to be used for the flashing process.
+    The --type option can be used to select which kind of configuration file to be flashed. currently only BIT files
+    are supported.
     """
-    CONFIG['context']['verbose'] = verbose
 
     # -- ECHO CONFIGURATION
     ctitle('FLASHING BITFILE TO FPGA')
@@ -452,9 +481,16 @@ def test(config, suite, test_id):
     TEST_ID is a string, which identifies a certain test procedure. To view all these possible identifiers consult the
     config file.
 
-    This command will execute either a single test case for the camera or a test suite, combines multiple test cases.
-    The results of these tests will generate a test report. This test report will be saved into the archive of all
-    test reports as a markdown and html file.
+    This command executes one or multiple camera test cases. These test cases interface with the camera to perform
+    various actions to confirm certain functionality of the camera and the fpga module. This process will most likely
+    take a good amount of time to finish. After all test cases are done, a test report will be generated and saved in
+    an according sub folder of the "archive"
+
+    The --suite flag can be used to execute a whole test suite (consisting of multiple test cases) instead. In case
+    this flag is passed, the TEST_ID argument will be interpreted as the string name identifier of the suite.
+
+    NOTE: To quickly assess a test case without actually having to interface with the camera itself it is possible to
+    use the --mock flag *on the ufotest base command* to use the mock camera to perform the test cases.
     """
     ctitle(f'RUNNING TEST{" SUITE" if suite else ""}')
     cparams({
@@ -635,10 +671,10 @@ def ci():
 
 
 @click.command('build', short_help='Applies newest commit from remote repository and then executes test suite')
-@click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 @click.option('--skip', '-s', is_flag=True, help='skip the cloning of the repository and flashing of the new bitfile')
 @click.argument('suite', type=click.STRING)
-def build(verbose, suite, skip) -> None:
+@pass_config
+def build(config, suite, skip) -> None:
     """
     Start a new CI build process using the test suite SUITE.
 
@@ -647,8 +683,6 @@ def build(verbose, suite, skip) -> None:
     that branch. After the repository has been cloned, the bit file within is used to flash a new configuration onto
     the FPGA hardware. Finally, the given test suite is executed and the results are being saved to the archive.
     """
-    CONFIG['context']['verbose'] = verbose
-
     # ~ PRINT CONFIGURATION
     ctitle('BUILDING FROM REMOTE REPOSITORY')
     cparams({
@@ -679,13 +713,20 @@ def build(verbose, suite, skip) -> None:
 
 
 @click.command('serve', short_help='Runs the CI server which serves the web interface and accepts build requests')
-@click.option('--verbose', '-v', is_flag=True, help='print additional console messages')
 @click.option('--host', '-h', type=click.STRING, default='0.0.0.0', help='the host address for the server')
-def serve(verbose, host):
+@pass_config
+def serve(config, host):
     """
-    Starts the CI web server. This web server serves the web interface for the application. Additionally it exposes an
-    API, which automatically starts a new build process when a remote repository with the ufo source code registers a
-    new push event.
+    Starts the CI web server.
+
+    This web server serves the web interface for the application. Locally and on default configuration. This web
+    interface can be accessed through a browser at "http://localhost:8030". The homepage of this interface can for
+    example be used to view a status summary for ufotest, view the html pages of both test and build reports as well
+    as editing the config file.
+
+    Additionally the running web server exposes a web API, which accepts incoming notifications from github or gitlab
+    code repositories to information about a new push event to the firmware repository of the camera. Following such a
+    push notification a new build and subsequent test execution will be triggered automatically.
     """
     # -- ECHO CONFIGURATION
     click.secho('\n| | STARTING CI SERVER | |', bold=True)

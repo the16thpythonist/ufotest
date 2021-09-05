@@ -558,6 +558,19 @@ def get_build_reports() -> List[dict]:
     )
 
 
+def force_aspect(ax, aspect: float = 1):
+    """
+    Sets the aspect ratio of the given matplotlib Axes object to the given float.
+
+    :param ax: A matplotlib Axes object which describes a plot
+    :param float aspect: The aspect ratio which to force on the graph
+    """
+    x_min, x_max = ax.get_xlim()
+    y_min, y_max = ax.get_ylim()
+    base = abs(x_max - x_min) / abs(y_max - y_min)
+    ax.set_aspect(aspect * base)
+
+
 # CLASSES
 # =======
 

@@ -76,6 +76,17 @@ div.image-test-result > img {
   max-width: 90%;
 }
 
+/* The image description will be a smaller gray text directly under the image */
+div.image-test-result > p {
+  width: 80%;
+  margin-top: 0;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 0.85em;
+  line-height: 1.4;
+  color: darkgray;
+}
+
 /* DictTestResult */
 div.dict-test-result {
   display: flex;

@@ -1,5 +1,6 @@
 title = "UfoTest Config"
 
+# ============================================== INSTALLATION ==========================================================
 # This "general" section will contain all the configuration, which is not directly related to any specific
 # topic
 [general]
@@ -125,11 +126,13 @@ title = "UfoTest Config"
             "gobject-introspection-devel"
         ]
 
+# =========================================== CAMERA SETTINGS =========================================================
 # The section for the camera is used to define some camera specific parameters, which will be needed by this program
 # to function properly
 [camera]
 
     model = 'cmv20000'
+    max_pixel_value = 4096
 
     [camera.cmv20000]
         # These two integers are used to pass the sensor dimensions to the program. These parameters are needed for the
@@ -169,6 +172,7 @@ title = "UfoTest Config"
         author="Python Foundation"
 
 
+# =================================================== TESTING ==========================================================
 # This section can be used to modify the behaviour of the camera test routines.
 [tests]
     # The ufotest CLI comes with some predefined tests already part of the package. But tests can also be dynamically
@@ -202,12 +206,10 @@ title = "UfoTest Config"
 
         # This test suite runs all the tests
         full = [
-            # Installation
-            'libuca_installed',
-            # Camera setup
-            'power_up',
-            # Frame acquisition
+            # Basic frame analytics
+            'frame_time',
             'single_frame'
+            # Noise analysis
         ]
 
 
