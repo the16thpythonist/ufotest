@@ -277,7 +277,7 @@ class ScriptManager(object):
                 })
             break
 
-        most_recent_build = max(builds, key=lambda b: datetime.datetime.fromisoformat(b['creation_time']))
+        most_recent_build = min(builds, key=lambda b: b['creation_time'])
         return most_recent_build['path']
 
     def invoke(self, script_name: str, args: Optional[Any] = None, use_fallback: bool = False) -> Any:
