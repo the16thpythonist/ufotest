@@ -580,12 +580,12 @@ class BuildRunner(object):
             self.context.branch,
             self.context.repository_url
         )
-        exit_code = execute_command(clone_command, False, cwd=UFOTEST_PATH)
+        exit_code, stdout = run_command(clone_command, cwd=UFOTEST_PATH)
         click.secho('(+) Cloned git repo: {}'.format(self.context.repository_path), fg='green')
 
         # -- CHECKOUT CORRECT COMMIT
         checkout_command = 'git checkout "{}"'.format(self.context.commit)
-        exit_code = execute_command(checkout_command, False, cwd=self.context.repository_path)
+        exit_code, stdout = run_command(checkout_command, cwd=self.context.repository_path)
         click.secho('(+) Checking out commit: {}'.format(self.context.commit))
 
         # -- GET THE COMMIT NAME
@@ -596,7 +596,8 @@ class BuildRunner(object):
         # cloned the repo. So this command here gets the commit name and returns it. We then update the commit name
         # within the context object with this actual name, so that we can use this later in the report.
         hash_command = 'git rev-parse HEAD'
-        commit_name = get_command_output(hash_command, cwd=self.context.repository_path).rstrip('\n')
+        exit_code, stdout = run_command(hash_command, cwd=self.context.repository_path)
+        commit_name = stdout.rstrip('\n')
         self.context.commit = commit_name
 
 
