@@ -54,6 +54,30 @@ add this line to the bashrc file like so:
 .. _pip: https://pip.pypa.io
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 
+
+For Raspberry Pi
+----------------
+
+For installation on a Raspberry Pi there can be issues with the installation regarding the numpy library which is a
+requirement of ufotest. In you are experiencing these issues, please first perform the installation as indicated above:
+
+.. code-block:: console
+
+    pip3 install --user ufotest
+
+Then make sure the following system packages are installed:
+
+.. code-block:: console
+
+    sudo apt-get insall python-dev python3-dev libatlas-base-dev
+
+And finally use pip to upgrade the numpy package to the newest version:
+
+.. code-block:: console
+
+    pip3 install --upgrade numpy
+
+
 From sources
 ------------
 

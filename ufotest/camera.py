@@ -482,7 +482,7 @@ class MockCamera(InternalDictMixin, AbstractCamera):
         self.image_path = get_path('static', 'mock.jpg')
         self.image = self.load_image(self.image_path)
 
-    @functools.lru_cache
+    @functools.lru_cache(maxsize=128)
     def load_image(self, image_path: str):
         """
         Uses pillow to load the image with the given *image_path* as a grayscale image object.
@@ -501,7 +501,7 @@ class MockCamera(InternalDictMixin, AbstractCamera):
         """
         return Image.open(image_path).convert('L')
 
-    @functools.lru_cache
+    @functools.lru_cache(maxsize=128)
     def resize_image(self, width, height):
         image = self.image.resize((width, height))
         frame_array = np.array(image, dtype=np.float64)
