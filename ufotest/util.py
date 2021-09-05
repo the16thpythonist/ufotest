@@ -226,7 +226,7 @@ def run_command(command: str, cwd: Optional[str] = None) -> Tuple[int, str]:
     )
 
     output = completed_process.stdout.decode()
-    error = completed_process.sterr.decode()
+    error = completed_process.stderr.decode()
     exit_code = completed_process.returncode
 
     if CONFIG.verbose():
