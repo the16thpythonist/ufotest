@@ -270,16 +270,15 @@ class ScriptManager(object):
 
             for folder in folders:
                 folder_path = os.path.join(root, folder)
-                json_path = os.path.join(folder_path, 'report.json')
-                with open(json_path, mode='r') as json_file:
-                    data = json.load(json_file)
-                    builds.append(data)
+                folder_stat = os.stat(folder_path)
+                builds.append({
+                    'path': folder_path,
+                    'creation_time': folder_stat.st_ctime
+                })
             break
 
-        # 'start_iso' contains the datetime of when the build started in ISO format and thus we need to convert it
-        # into a datetime instance first for the max to work properly
-        most_recent_build = max(builds, key=lambda b: datetime.datetime.fromisoformat(b['end_iso']))
-        return most_recent_build['folder']
+        most_recent_build = max(builds, key=lambda b: datetime.datetime.fromisoformat(b['creation_time']))
+        return most_recent_build['path']
 
     def invoke(self, script_name: str, args: Optional[Any] = None, use_fallback: bool = False) -> Any:
         """

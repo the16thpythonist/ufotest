@@ -579,6 +579,8 @@ Fixes
   skipped
 - The "flash" step of the build process now properly replicates the main process command line options "mock" and
   "verbose" when invoking the "flash" command in a sub shell.
+- Getting the most recent build is now based on the filesystem creation date of the folder and not the json report file
+  which may not exists yet at the moment of inquiry (This was a bug before)
 
 Changes
 
