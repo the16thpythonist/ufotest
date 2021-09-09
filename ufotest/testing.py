@@ -645,6 +645,41 @@ class DictTestResult(AbstractTestResult):
         }
 
 
+class DictListTestResult(AbstractTestResult):
+
+    HTML_TEMPLATE_NAME = 'dict_list_test_result.html'
+
+    def __init__(self, exit_code: int, data: Dict[Any, dict]):
+        super(DictListTestResult, self).__init__(exit_code)
+        self.data = data
+
+    # TODO: Write comment
+    def get_html_template_string(self) -> str:
+        template = get_template(self.HTML_TEMPLATE_NAME)
+        return template.render({'data': self.data})
+
+    # IMPLEMENT "AbstractRichOutput"
+    # ------------------------------
+    # Since markdown and latex conversion are not being used at the moment anyways we'll leave them empty for the time
+    # being, but the dict conversion is important! It is being used when creating the JSON test report version and that
+    # is being heavily used.
+
+    def to_dict(self) -> dict:
+        return {
+            **AbstractTestResult.to_dict(self),
+            'data': self.data
+        }
+
+    def to_string(self) -> str:
+        return ""
+
+    def to_markdown(self) -> str:
+        return ""
+
+    def to_latex(self) -> str:
+        return ""
+
+
 class MessageTestResult(AbstractTestResult):
 
     HTML_TEMPLATE = '<div class="message-test-result">{{ this.message }}</div>'

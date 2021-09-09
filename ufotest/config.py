@@ -38,56 +38,64 @@ SCRIPT_DEFINITIONS = [
         'path':             os.path.join(PATH, 'scripts', 'Reset_all.sh'),
         'class':            'BashScript',
         'description':      'Resets the camera to the default state',
-        'author':           'Michele Caselle <michele.caselle@kit.edu>'
+        'author':           'Michele Caselle <michele.caselle@kit.edu>',
+        'fallback':         True,
     },
     {
         'name':             'reset_tp',
         'path':             os.path.join(PATH, 'scripts', 'Reset_all_TP.sh'),
         'class':            'BashScript',
         'description':      'Resets the camera to the default state, using the Test Pattern configuration',
-        'author':           'Michele Caselle <michele.caselle@kit.edu>'
+        'author':           'Michele Caselle <michele.caselle@kit.edu>',
+        'fallback':         True,
     },
     {
         'name':             'status',
         'path':             os.path.join(PATH, 'scripts', 'status.sh'),
         'class':            'BashScript',
         'description':      'Reads out the internal status parameters of the camera',
-        'author':           'Michele Caselle <michele.caselle@kit.edu>'
+        'author':           'Michele Caselle <michele.caselle@kit.edu>',
+        'fallback':         True,
     },
     {
         'name':             'power_up',
         'path':             os.path.join(PATH, 'scripts', 'PWUp.sh'),
         'class':            'BashScript',
         'description':      'Enables the internal power supply of the camera sensor',
-        'author':           'Michele Caselle <michele.caselle@kit.edu>'
+        'author':           'Michele Caselle <michele.caselle@kit.edu>',
+        'fallback':         True,
     },
     {
         'name':             'power_down',
         'path':             os.path.join(PATH, 'scripts', 'PWDown.sh'),
         'class':            'BashScript',
         'description':      'Disables the internal power supply of the camera sensor',
-        'author':           'Michele Caselle <michele.caselle@kit.edu>'
+        'author':           'Michele Caselle <michele.caselle@kit.edu>',
+        'fallback':         True
     },
     {
         'name':             'pcie_init',
         'path':             os.path.join(PATH, 'scripts', 'pcie_init.sh'),
         'class':            'BashScript',
         'description':      'Identifies the fpga and initiates the driver for the connection',
-        'author':           'Michele Caselle <michele.caselle@kit.edu>'
+        'author':           'Michele Caselle <michele.caselle@kit.edu>',
+        'fallback':         True
     },
     {
         'name':             'reset_fpga',
         'path':             os.path.join(PATH, 'scripts', 'reset_fpga.sh'),
         'class':            'BashScript',
         'description':      'Resets the fpga',
-        'author':           'Michele Caselle <michele.caselle@kit.edu>'
+        'author':           'Michele Caselle <michele.caselle@kit.edu>',
+        'fallback':         True,
     },
     {
         'name':             'reset_dma',
         'path':             os.path.join(PATH, 'scripts', 'dma.sh'),
         'class':            'BashScript',
         'description':      'Resets the dma engine of the fpga',
-        'author':           'Michele Caselle <michele.caselle@kit.edu>'
+        'author':           'Michele Caselle <michele.caselle@kit.edu>',
+        'fallback':         True
     },
     {
         'name':             'hello_world',
@@ -96,7 +104,8 @@ SCRIPT_DEFINITIONS = [
         'description':      ('Only echos the single string line "Hello World!". This script does not serve any real '
                              'purpose for the camera. It is only used for testing purposes. With this simple script '
                              'it is possible to test if the scripts are discovered properly and if bash works.'),
-        'author':           'Jonas Teufel <jonseb1998@gmail.com>'
+        'author':           'Jonas Teufel <jonseb1998@gmail.com>',
+        'fallback':         True
     }
 ]
 

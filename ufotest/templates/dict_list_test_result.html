@@ -1,0 +1,17 @@
+<div class="dict-list-test-result">
+    {% for name, info in data.items() %}
+        <div class="element">
+            <div class="element-title">{{ info._title }}</div>
+            <div class="element-content">
+                {% for key, value in info.items() %}
+                    {% if key|first != '_' %}
+                        <div class="item">
+                            <div class="item-key">{{ key }}: </div>
+                            <div class="item-value">{{ value }}</div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+</div>

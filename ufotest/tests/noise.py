@@ -5,6 +5,7 @@ from typing import List
 import numpy as np
 import matplotlib.pyplot as plt
 
+from ufotest.util import cprint, cerror
 from ufotest.config import CONFIG
 from ufotest.testing import (AbstractTest,
                              TestRunner,
@@ -207,6 +208,8 @@ class CalculateDarkPhotonTransferCurve(MeasureNoiseMixin, AbstractTest):
         noises = []
         for exposure_time in self.exposure_times:
             self.camera.set_prop('exposure_time', exposure_time)
+            cprint(f'SET EXPOSURE TIME: {exposure_time}')
+
             _noises = []
             for i in range(self.reps):
                 try:
@@ -214,6 +217,9 @@ class CalculateDarkPhotonTransferCurve(MeasureNoiseMixin, AbstractTest):
                     _noises.append(noise)
                 except (PciError, FrameDecodingError):
                     error_count += 1
+                    cerror(f'Failed to acquire noise for exposure_time={exposure_time} ({i+1}/{self.reps})')
+
+                cprint(f'Sample ({i + 1}/{self.reps})')
 
             noises.append(_noises)
 

@@ -5,7 +5,7 @@ import datetime
 import warnings
 import subprocess
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Type
 from abc import abstractmethod
 
 
@@ -117,7 +117,47 @@ class MockScript(AbstractScript):
 
 
 class ScriptManager(object):
+    """
+    The script manager is responsible for wrapping all interactions with the external camera scripts.
 
+    **BACKGROUND**
+
+    The main purpose of the ufotest program is to interface with a camera hardware and perform various tests with it
+    to confirm that it is working properly. HOW to actually interface with this camera is not part of ufotest however.
+    These implementation details are left to the developers of the camera hardware. Ufotest assumes that the interfacing
+    options are wrapped in scripts (any external, callable program) which are provided alongside the actual hardware.
+    These scripts are loaded by ufotest and it is expected that calling them will achieve some sort of higher level
+    function like resetting the camera or etc. Access and interaction with these scripts is managed by the ScriptManager
+
+    During the ufotest runtime, usually only one script manager instance is created as part of the "Config" singleton
+    during the start up phase of the program, after the config file was being read.
+
+    **CONTINUOUS INTEGRATION**
+
+    Ufotest also provides CI functionality: The source code for the camera firmware is periodically fetched from a
+    remote repository, flashed to the local camera hardware and a test suite is repeated to check for errors with the
+    new firmware version.
+
+    Additionally, the external scripts which are used to interact with the camera can also be part of the CI system.
+    The scripts can also be placed into the very same source repository and then they will be fetched for each new
+    build as well. If they are properly registered in the config file, the script manager will load these versions of
+    the most recent build and run the test suite using those!
+
+    This is only an option however, if some scripts are not registered for the source repo or for some reason missing
+    in some commit or another, the script manager will use a *fallback* version instead. These fallback versions are
+    part of the ufotest installation and can be changed through a plugin.
+
+    :ivar Dict[str, AbstractScript] fallback_scripts: A dict, whose keys are the unique string names of the scripts and
+        the values are subclass instances of AbstractScript, which describe the script in question. This value
+        specifically contains all the *fallback* scripts, which come with the ufotest installation itself. By usual
+        circumstances, this dict should contain ALL the necessary scripts.
+
+    :ivar Dict[str, AbstractScript] scripts: A dict, whose keys are the unique string names of the scripts and
+        the values are subclass instances of AbstractScript, which describe the script in question. It should contain
+        ALL the necessary scripts as well, because it starts out as a copy of the fallback_scripts dict, but if a
+        more recent build version of a script is available, the corresponding entry of this dict is replaced with that
+        build version.
+    """
     # DESIGN DECISION
     # Explicitly pass in all relevant parameters?
     # + More separation of concerns
@@ -217,6 +257,7 @@ class ScriptManager(object):
             # This method returns the absolute path to the build folder of the most recent build. That is the build
             # from which we want to use the scripts. If NONE builds exist yet, this raises a LookupError!
             build_folder_path = self.most_recent_build_folder()
+
             # Given the folder path of a build folder, this method uses the ci script definitions to load all the
             # appropriate script wrapper instances into the self.scripts dict from this build.
             self.load_build_scripts(build_folder_path)
@@ -240,6 +281,11 @@ class ScriptManager(object):
             # so we'll need to change that to be the absolute paths within the folder we determined earlier
             script_path = os.path.join(repository_path, script_definition['relative_path'])
             script_definition['path'] = script_path
+
+            # 06.09.2021: For testing the script system, we require insight as to which scripts are fallback versions
+            # and which have actually been loaded from a build. Thus we attach additional properties to these build
+            # versions. These properties can then later be checked in the "data" property of the script objects.
+            script_definition['fallback'] = False
 
             self.register_script(script_definition)
 
