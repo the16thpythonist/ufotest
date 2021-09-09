@@ -482,7 +482,7 @@ def flash(config, file: str, type: str) -> None:
         command=CONFIG['install']['vivado_command'],
         file=file_path
     )
-    exit_code = run_command(flash_command)
+    exit_code, _ = run_command(flash_command)
     if not exit_code:
         cresult('Flashed FPGA with: {}'.format(file_path))
         sys.exit(0)

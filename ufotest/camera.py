@@ -211,7 +211,10 @@ class UfoCamera(InternalDictMixin, AbstractCamera):
     """
 
     default_values = {
-        'exposure_time': 1
+        'exposure_time': 1,
+        'hardware_version': '-',
+        'firmware_version': '-',
+        'sensor_version': '-'
     }
 
     def __init__(self, config: Config):

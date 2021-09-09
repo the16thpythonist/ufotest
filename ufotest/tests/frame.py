@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 
+from ufotest.util import cprint, cresult
 from ufotest.util import setup_environment, random_string, force_aspect
 from ufotest.camera import save_frame, import_raw, get_frame, UfoCamera
 from ufotest.config import CONFIG
@@ -71,8 +72,15 @@ class AcquireSingleFrame(AbstractTest):
         setup_environment()
 
         # -- REQUESTING FRAME FROM CAMERA
+        # The "capture_frame" method will query the camera object to get a frame in the format of a numpy 2D array and
+        # then save this into the self.frame property and a flattened 1D version of the frame to the self.frame_flat
+        # variable
         self.capture_frame()
+        cprint(f'captured frame with {len(self.frame_flat)} pixels')
+
+        # -- CREATING THE HISTOGRAM
         self.calculate_histogram()
+        cprint(f'created histogram')
 
         fig_frame = self.create_frame_figure()
         fig_frame_description = (
@@ -90,6 +98,8 @@ class AcquireSingleFrame(AbstractTest):
             f'version of the histogram, where the borders of the plot are adjusted to start at the 1st percentile and '
             f'end at the 99th percentile.'
         )
+
+        cprint('saved final figures')
 
         return CombinedTestResult(
             FigureTestResult(0, self.context, fig_frame, fig_frame_description),

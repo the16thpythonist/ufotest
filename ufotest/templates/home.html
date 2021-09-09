@@ -40,11 +40,11 @@
                 {% for report in recent_tests %}
                 <a class="test-report" href="{{ config.url('archive', report['folder_name'], 'report.html') }}">
                     <div>
-                        <div class="test-report-info">
+                        <div class="report-info">
                             <strong>{{ report['name'] }}</strong>
                             <div>{{ report['start'] }}</div>
                         </div>
-                        <div class="test-report-info">
+                        <div class="report-info">
                             <div class="tag">suite</div>
                             <div>~ {{ report['duration'] }} minutes</div>
                         </div>
@@ -68,9 +68,23 @@
                 <h3>Recent Build Reports</h3>
                 {% if recent_builds|length > 1 %}
                 {% for report in recent_builds %}
-                <div class="build-report">
-                    {{ report['commit'] }}
-                </div>
+                <a class="build-report" href="{{ config.url('builds', report['folder_name'], 'report.html') }}">
+                    <div>
+                        <div class="report-info">
+                            <strong>{{ report['repository_name'] }}</strong>
+                            <div>{{ report['start'] }}</div>
+                        </div>
+                        <div class="report-info">
+                            <div class="tag">build</div>
+                            <div>Commit: {{ report['commit'][:8] }}</div>
+                        </div>
+                    </div>
+
+                    <div class="progress-bar">
+                        <div style="width: 0;"> </div>
+                    </div>
+
+                </a>
                 {% endfor %}
                 {% else %}
                 <p class="no-reports">

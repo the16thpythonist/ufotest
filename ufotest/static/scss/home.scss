@@ -43,7 +43,7 @@ p.no-reports {
     font-weight: bold;
 }
 
-.test-report {
+.test-report, .build-report {
     display: flex;
     flex-direction: column;
     border-style: solid;
@@ -53,13 +53,13 @@ p.no-reports {
     text-decoration: none;
 }
 
-.test-report>* {
+.test-report>*, .build-report>* {
     margin: 10px;
     text-decoration: none;
     color: black;
 }
 
-.test-report-info {
+.report-info {
     display: flex;
     flex-direction: row;
     justify-content: space-between;

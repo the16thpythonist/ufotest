@@ -262,7 +262,7 @@ class ScriptManager(object):
             # appropriate script wrapper instances into the self.scripts dict from this build.
             self.load_build_scripts(build_folder_path)
         except LookupError:
-            pass
+            print('No build folder has been found!')
 
     def load_build_scripts(self, build_folder_path: str):
         # First of all within the build folder we need the path of the actual cloned repository folder. This repo
@@ -281,6 +281,11 @@ class ScriptManager(object):
             # so we'll need to change that to be the absolute paths within the folder we determined earlier
             script_path = os.path.join(repository_path, script_definition['relative_path'])
             script_definition['path'] = script_path
+            # 09.06.2021: There was a bug, where the script system falsely said that build scripts could be loaded,
+            # but the files themselves didnt even exist. Thus we additionally check here if the files exist before
+            # "promising" to the rest of the system that they do.
+            if not os.path.exists(script_path):
+                continue
 
             # 06.09.2021: For testing the script system, we require insight as to which scripts are fallback versions
             # and which have actually been loaded from a build. Thus we attach additional properties to these build
@@ -323,7 +328,7 @@ class ScriptManager(object):
                 })
             break
 
-        most_recent_build = min(builds, key=lambda b: b['creation_time'])
+        most_recent_build = max(builds, key=lambda b: b['creation_time'])
         return most_recent_build['path']
 
     def invoke(self, script_name: str, args: Optional[Any] = None, use_fallback: bool = False) -> Any:
@@ -350,7 +355,13 @@ class ScriptManager(object):
             script = self.scripts[script_name]
 
         # Returning the result of the actual script invocation.
-        return script.invoke(args)
+        script_result: dict = script.invoke(args)
+        # If verbose is enabled we also want to print the output of the script process
+        if self.config.verbose() and 'stdout' in script_result:
+            print(f'SCRIPT: {script_name}')
+            print(f'{script_result["stdout"]}')
+
+        return script_result
 
     def get(self, script_name: str, use_fallback: bool = False) -> AbstractScript:
         if use_fallback:

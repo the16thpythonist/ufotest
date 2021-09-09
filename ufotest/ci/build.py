@@ -1,5 +1,6 @@
 from __future__ import annotations
 import os
+import sys
 import click
 import datetime
 import shutil
@@ -10,6 +11,7 @@ from typing import Optional
 
 from ufotest.config import Config, get_path, get_builds_path
 from ufotest.exceptions import raise_if, IncompleteBuildError, BuildError
+from ufotest.util import cprint, cresult, cerror
 from ufotest.util import (AbstractRichOutput,
                           get_repository_name,
                           execute_command,
@@ -17,7 +19,6 @@ from ufotest.util import (AbstractRichOutput,
                           get_command_output,
                           get_template,
                           get_version)
-from ufotest.util import cprint, cresult
 from ufotest.testing import TestRunner, TestReport, TestContext
 
 
@@ -468,6 +469,10 @@ class BuildRunner(object):
             # -- SETTING THE END TIME
             self.context.end_datetime = datetime.datetime.now()
 
+        except BuildError:
+            exception_type, exception_value, exception_traceback = sys.exc_info()
+            cerror(f'{exception_type.__name__}: {exception_value}')
+
         except ZeroDivisionError as e:
             pass
 
@@ -485,15 +490,36 @@ class BuildRunner(object):
             If this flag is set, only the test step of the build process will be executed. This is mainly intended
             for testing and mock executions. Defaults to False.
         """
-        if not test_only:
-            self.clone()
-            self.copy_bitfile()
-            self.flash()
-        else:
-            # TODO: make this better
-            self.context.bitfile_path = ''
+        try:
+            if not test_only:
+                # ~ CLONING THE REMOTE REPO
+                self.clone()
+
+                # ~ COPY THE BITFILE INTO THE REPORT FOLDER
+                self.copy_bitfile()
+
+                # ~ COPY REPOSITORY INTO REPORT FOLDER
+                # copy_repository copies the whole folder structure of the source repo which has just been cloned into
+                # the build folder. In the long run this could cause issues if the source repo is very big... But it is
+                # necessary to keep track of the script build versions
+                self.copy_repository()
+
+                # ~ FLASH THE NEW FIRMWARE TO THE HARDWARE
+                self.flash()
+            else:
+                # TODO: make this better
+                self.context.bitfile_path = ''
+
+        except BuildError:
+            exception_type, exception_value, exception_traceback = sys.exc_info()
+            cerror(f'{exception_type.__name__}: {exception_value}')
+
+        # Reloading the script manager seems important at this point because we obviously want the new
+        # scripts from this very build to be used later on during the test suite
+        self.config.sm.load_scripts()
 
         self.test()
+
         self.context.complete()
 
     def test(self) -> None:
@@ -547,7 +573,15 @@ class BuildRunner(object):
         exit_code, output = run_command(flash_command)
         if exit_code:
             raise BuildError('The hardware could not be properly flashed')
+
         click.secho('(+) New bitfile flashed to the hardware', fg='green')
+
+    def copy_repository(self):
+        repository_source_path = self.context.repository_path
+        repository_destination_path = os.path.join(self.context.folder_path, self.context.repository_name)
+
+        shutil.copytree(repository_source_path, repository_destination_path)
+        cprint(f'Copied source repository to path: "{repository_destination_path}"')
 
     def copy_bitfile(self):
         """Copies the bitfile from the cloned repo to the build folder for this build.

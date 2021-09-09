@@ -6,7 +6,7 @@
 sass --verbose ./ufotest/static/scss:./ufotest/static/css
 
 # Install the new version of he package
-pip3 install --user .
+python3 -m pip install --user .
 
 # This line will execute the init command in "update" mode, where ufotest checks if the installed python version for
 # ufotest contains any new static assets and copies them to the actual ufotest installation folder.
@@ -14,7 +14,7 @@ ufotest init --update
 
 #ufotest init -f
 #ufotest --mock test single_frame
-ufotest --mock test "loaded_scripts"
+ufotest --mock test --suite "routine"
 
 # Now we start the web interface server
 ufotest --mock ci serve

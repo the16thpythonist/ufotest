@@ -106,7 +106,10 @@ class CalculatePairNoiseTest(AbstractTest):
         message_result = MessageTestResult(self.exit_code, self.INFO_MESSAGE)
 
         frame1 = self.camera.get_frame()
+        cprint('Captured frame 1')
         frame2 = self.camera.get_frame()
+        cprint('Captured frame 2')
+
         variance = calculate_pair_variance(frame1, frame2)
         rmsnoise = math.sqrt(variance)
 
@@ -114,6 +117,7 @@ class CalculatePairNoiseTest(AbstractTest):
             'variance': round(variance, ndigits=self.NDIGITS),
             'rmsnoise': round(rmsnoise, ndigits=self.NDIGITS)
         })
+        cprint('Calculated noise')
 
         fig = self.create_figure(frame1, frame2)
         figure_description = (
@@ -123,6 +127,7 @@ class CalculatePairNoiseTest(AbstractTest):
             'second frame.'
         )
         figure_result = FigureTestResult(self.exit_code, self.context, fig, figure_description)
+        cprint('Created figures')
 
         return CombinedTestResult(
             message_result,

@@ -581,6 +581,10 @@ Fixes
   "verbose" when invoking the "flash" command in a sub shell.
 - Getting the most recent build is now based on the filesystem creation date of the folder and not the json report file
   which may not exists yet at the moment of inquiry (This was a bug before)
+- When the flashing process during a build fails, the build is not discarded but saved as a report nonetheless. The
+  test suite is still executed.
+- A build script is not promised to be existing on the assumption that it "should" alone. The script manager now
+  actually checks if the script file exists.
 
 Changes
 
@@ -608,6 +612,8 @@ Changes
   information within the report.json file. This command exists for the case that config changes for the web interface
   have been made. On default these would not be reflected within the static test report html files.
 - Added "util.HTMLTemplateMixin" a mixin class which provides a default implementation of the "to_html" method.
+- During a build, the cloned repository itself is now also completely copied into the build archive folder. This is
+  necessary to retrieve the scripts from that version later on.
 
 Hooks
 
@@ -656,6 +662,10 @@ TODO
 Bugs:
 
 Features:
+
+- Add a widget to the home screen which shows how many GB the whole system is using.
+
+- Make the builds be able to fail with a build error and properly highlight this in the ui!
 
 - A command which lists the currently active plugins
 

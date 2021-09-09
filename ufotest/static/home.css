@@ -43,7 +43,7 @@ h3 {
 }
 
 
-.test-report {
+.test-report, .build-report {
     display:flex;
     flex-direction: column;
     border-style: solid;

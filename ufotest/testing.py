@@ -1,11 +1,13 @@
 from __future__ import annotations
 import os
 import re
+import sys
 import json
 import inspect
 import platform
 import datetime
 import logging
+import traceback
 from abc import ABC, abstractmethod
 from typing import Tuple, Dict, List, Type, Any, Optional
 from contextlib import AbstractContextManager
@@ -14,6 +16,7 @@ import matplotlib.pyplot as plt
 
 from ufotest.config import PATH, CONFIG, TEMPLATE_PATH
 from ufotest.config import Config, get_path
+from ufotest.util import csubtitle, cprint, cresult, cerror
 from ufotest.util import (markdown_to_html,
                           dynamic_import,
                           create_folder,
@@ -22,7 +25,6 @@ from ufotest.util import (markdown_to_html,
                           random_string)
 from ufotest.util import AbstractRichOutput, HTMLTemplateMixin
 from ufotest.camera import UfoCamera, AbstractCamera
-from ufotest.util import csubtitle, cprint, cresult
 
 
 class TestContext(AbstractContextManager):
@@ -202,7 +204,7 @@ class TestRunner(object):
         # This camera instance will be the most important value to which each test case will have to have access to.
         self.camera_class = self.config.pm.apply_filter('camera_class', UfoCamera)
         self.camera = self.camera_class(self.config)
-        self.camera.set_up()
+        #self.camera.set_up()
 
     def load_modules(self) -> None:
         """
@@ -608,7 +610,7 @@ class DictTestResult(AbstractTestResult):
 
     HTML_TEMPLATE = (
         '<div class="dict-test-result">'
-        '   {% for key, value in this.data.items %}'
+        '   {% for key, value in this.data.items() %}'
         '   <div class="row">'
         '       <div class="key">{{ key }}</div>'
         '       <div class="value">{{ value }}</div>'
@@ -787,7 +789,7 @@ class CombinedTestResult(AbstractTestResult):
         self.result_dicts = [test_result.to_dict() for test_result in self.test_results]
         self.exit_codes = [test_result.exit_code for test_result in self.test_results]
 
-        exit_code = 1 if 1 in self.exit_codes else 0
+        exit_code = int(any(self.exit_codes))
         AbstractTestResult.__init__(self, exit_code)
 
     # IMPLEMENT "AbstractRichOutput"
@@ -826,7 +828,17 @@ class AbstractTest(ABC):
         try:
             test_result = self.run()
         except Exception as e:
+            exception_type, exception_value, exception_traceback = sys.exc_info()
             test_result = MessageTestResult(1, 'Test Execution failed with error "{}"'.format(str(e)))
+
+            # 09.09.2021: This is important for debugging!
+            # At least if verbose is enabled we also print the error with the traceback to the console. Because
+            # more often than not an error within a test turned out to be a bug in the test code rather than the
+            # the hardware actually not working
+            if self.config.verbose():
+                cerror(f'{exception_type.__name__}: {exception_value}')
+                traceback.print_stack(file=sys.stdout)
+
         end_datetime = datetime.datetime.now()
 
         test_result.start_datetime = start_datetime
