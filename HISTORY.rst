@@ -614,6 +614,15 @@ Changes
 - Added "util.HTMLTemplateMixin" a mixin class which provides a default implementation of the "to_html" method.
 - During a build, the cloned repository itself is now also completely copied into the build archive folder. This is
   necessary to retrieve the scripts from that version later on.
+- The test report template now creates a table of contents of sorts which consists of links that point to the
+  corresponding section of the html page with the detailed report about each test case
+- Added a new test case "loaded_scripts" which checks if all scripts are indeed loaded as a build version from the
+  remote repository.
+- Added a new test case "scripts_syntax" which checks the syntax of all loaded scripts.
+- Extended the abstract base class AbstractScript with a default method "check_syntax" which can be overwritten by the
+  specific subclass implementations to implement custom syntax check routines for the corresponding script types. Did
+  this to enable it being used in the "scripts_syntax" test case. Already implemented it for the BashScript type. Also
+  this is optional with a default implementation.
 
 Hooks
 

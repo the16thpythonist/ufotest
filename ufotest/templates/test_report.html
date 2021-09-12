@@ -104,16 +104,23 @@
         <!-- SHOWING THE TEST RESULTS -->
         <h2>Test Results</h2>
 
-        <p>
-            This section explains the test results.
-        </p>
+        <p>Overview of the test cases:</p>
+
+        <!-- Test "Table of contents" -->
+        <div class="test-toc">
+            {% for test_name, result in this.result_dicts.items() %}
+                <a class="{% if result.passing %}passing{% else %}error{% endif %}" href="#{{ test_name }}">
+                    {{ test_name }}
+                </a>
+            {% endfor %}
+        </div>
+
+        <p>Specific test reports:</p>
 
         {% for test_name, result in this.result_dicts.items() %}
-        {%- if result.passing -%}
-            <h3 class="test passing">{{ test_name }}</h3>
-        {%- else %}
-            <h3 class="test error">{{ test_name }}</h3>
-        {% endif %}
+            <h3 class="test {% if result.passing %}passing{% else %}error{% endif %}" id="{{ test_name }}">
+                {{ test_name }}
+            </h3>
         {%- if this.test_descriptions[test_name] != "" %}
             <div class="test-description">
                 {{ this.test_descriptions[test_name] }}

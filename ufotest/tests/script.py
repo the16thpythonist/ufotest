@@ -9,6 +9,36 @@ from ufotest.scripts import ScriptManager
 from ufotest.testing import AbstractTest, TestRunner
 from ufotest.testing import MessageTestResult, DictListTestResult
 from ufotest.util import cprint
+from ufotest.util import run_command
+
+
+class ScriptTest(AbstractTest):
+
+    BOOLEAN_COLORS = {
+        True: 'lightgreen',
+        False: 'lightcoral'
+    }
+
+    def __init__(self, test_runner: TestRunner):
+        super(ScriptTest, self).__init__(test_runner)
+
+        self.script_manager = self.config.sm
+        self.script_infos = {}
+
+    def format_boolean_span(self, content: str, status: bool) -> str:
+        """
+        Creates a HTML span element using the given *content* and styling it with color according to the additional
+        boolean *status* value.
+
+        :param str content: The actual string content which is supposed to be placed within the span tags
+        :param bool status: The boolean status value which determines the styling of the span element
+
+        :returns: The html string
+        """
+        return '<span style="color: {};">{}</span>'.format(
+            self.BOOLEAN_COLORS[status],
+            content
+        )
 
 
 class LoadedScriptsTest(AbstractTest):
@@ -100,3 +130,61 @@ class LoadedScriptsTest(AbstractTest):
 
         return DictListTestResult(exit_code, self.script_infos)
 
+
+class ScriptSyntaxTest(ScriptTest):
+
+    name = 'scripts_syntax'
+
+    description = (
+        'This test checks if any of the loaded scripts has a syntax error. The test will fail if even one of the '
+        'loaded scripts has a syntax error. A script is also declared to have an error if the script file could not '
+        'be found at all. Only if a script has an error, the error message will appear in the listing below.'
+    )
+
+    def __init__(self, test_runner: TestRunner):
+        super(ScriptSyntaxTest, self).__init__(test_runner)
+
+        self.script_manager: ScriptManager = self.config.sm
+
+    def run(self):
+
+        for script_name, script in self.script_manager.scripts.items():
+
+            # For each script in the list of all scripts loaded by the script manager we are going to assemble a
+            # script_info dict, which will be the basis for a DictListTestResult. On default we assume that the script
+            # has no errors, then test all the possible ways an error could occur and override the default False in
+            # those cases.
+            script_info = {
+                '_name': script_name,
+                'has_error': False,
+                'method': script.syntax_check_method,
+                'error': 'none'
+            }
+
+            # ~ FILE ACCESSIBLE
+            # A first source for an error could be that the file cannot be accessed at all. This is obviously much
+            # worse than a syntax error, because it means there is something fundamentally wrong with the
+            script_path = script.data['path']
+            if not script_info['has_error'] and not os.path.exists(script_path):
+                script_info['has_error'] = True
+                script_info['error'] = f'No script exists at the path "{script_path}"'
+
+            # ~ SYNTAX ERROR
+            # Conveniently the bash system itself offers a very easy way of checking script syntax, the script file
+            # simply has to be invoked with "bash -n".
+            syntax_ok, error_message = script.check_syntax()
+            if not script_info['has_error'] and not syntax_ok:
+                script_info['has_error'] = True
+                script_info['error'] = f'{error_message}'
+
+            # At the end we can determine the status of the script by whether or not the has_error flag has been set
+            # during the previous checks. We have to negate the flag because format_boolean_span will format True as
+            # green (=good) and False as red (=bad)
+            script_info['_title'] = self.format_boolean_span(script_name, not script_info['has_error'])
+            self.script_infos[script_name] = script_info
+
+            cprint(f'Checked syntax of {script_name}')
+
+        # The test will be considered as failed if even a single script has a syntax error!
+        exit_code = int(any([script_info['has_error'] for script_info in self.script_infos.values()]))
+        return DictListTestResult(exit_code, self.script_infos)

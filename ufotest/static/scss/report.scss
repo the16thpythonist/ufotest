@@ -43,14 +43,26 @@ h3.test {
     color: gray;
 }
 
-h3.test.passing {
+.report-container .passing {
     border-color: $green;
     color: $green;
 }
 
-h3.test.error {
+.report-container .error {
     border-color: $red;
     color: $red;
+}
+
+.test-toc {
+    display: flex;
+    flex-direction: column;
+}
+
+.test-toc>a {
+    text-decoration: none;
+    opacity: 0.95;
+    margin-left: 20px;
+    margin-bottom: 10px;
 }
 
 div.test-description {

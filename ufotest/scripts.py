@@ -5,7 +5,7 @@ import datetime
 import warnings
 import subprocess
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Type
+from typing import List, Dict, Any, Optional, Tuple
 from abc import abstractmethod
 
 
@@ -49,13 +49,47 @@ class AbstractScript(object):
     script. Aside from that there are no hard requirements. The method accepts one argument, which could be anything
     depending on what is needed for that specific class. And the method should return the outcome of the script
     execution in some way. If it is a multitude of information preferably as a dict.
+
+    A subclass *may* overwrite the "check_syntax" method. The purpose of this method is to provide additional (optional)
+    functionality for scripts. This method should allow to perform a simple syntax check of the script without having
+    to actually invoke it. This is an optional feature and can be used to verify the functionality of the scripts
+    with an additional test case for example. The method is supposed to return a tuple (bool, str) where the first
+    element is the boolean value of whether the syntax is ok (=True) or has errors (=False). The second element is a
+    string which gives a description of the syntax error if one is present. An empty string should be returned if no
+    error is found.
+    This method has a default implementation which always returns true. Implementation for a custom subclass is
+    optional but encouraged.
+
+    If a subclass does indeed implement such a syntax check. The subclass should also override the string value of
+    the "syntax_check_method" class variable. This class variable should contain a short descriptive string which
+    explains *how* the syntax check is performed for this script type.
     """
+
     def __init__(self, script_definition: Dict[str, Any]):
         self.data = script_definition
+
+    # -- REQUIRED OVERRIDE
+    # These following methods absolutely have to be implemented by a subclass!
 
     @abstractmethod
     def invoke(self, args: Optional[Any] = None) -> Any:
         raise NotImplementedError
+
+    # -- OPTIONAL OVERRIDE
+    # These methods can be overwritten by a subclass to add additional functionality
+
+    # This class variable simply provided as descriptive string, which outlines in short what kind of method was used
+    # to perform a syntax check (IF! the syntax checking was implemented)
+    syntax_check_method = 'Syntax is not being checked for this script type'
+
+    def check_syntax(self) -> Tuple[bool, str]:
+        """
+        This method can be implemented by a subclass to implement syntax checking for custom script types. The method
+        has to return a tuple, where the first element is a boolean which indicates if the syntax is OK (=True) or
+        has errors (=False). The second element is a string which contains the exact syntax error message if an error
+        was found.
+        """
+        return True, ''
 
 
 class BashScript(AbstractScript):
@@ -63,6 +97,7 @@ class BashScript(AbstractScript):
     This class represents a wrapper for storing the information about a bash script. It does not expect the passed
     script_definition to have any additional fields aside from those basic ones required for all AbstractScripts.
     """
+
     def __init__(self, script_definition: Dict[str, Any]):
         AbstractScript.__init__(self, script_definition)
 
@@ -91,6 +126,39 @@ class BashScript(AbstractScript):
             'stderr':       completed_process.stderr.decode(),
             'exit_code':    completed_process.returncode
         }
+
+    # -- IMPLEMENTING OPTIONAL SYNTAX CHECKING
+
+    syntax_check_method = 'bash -n {script_path}'
+
+    def check_syntax(self) -> Tuple[bool, str]:
+        """
+        Checks the syntax of the bash script.
+
+        **IMPLEMENTATION**
+
+        Luckily syntax checking of bash scripts is really easy. One can simply invoke the default "bash" command with
+        the "-n" option, pass the absolute path of the command and that will perform a syntax check. If the command
+        exits with return code 0 then there is no issue otherwise it will print an error message.
+
+        :returns Tuple[bool, str]: The first element indicates whether or not the syntax is ok and the second element
+            is a string which contains the error message in case there is an error, otherwise an empty string.
+        """
+        syntax_command = f'bash -n {self.path}'
+        completed_process = subprocess.run(
+            syntax_command,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+
+        stdout = completed_process.stdout.decode()
+        stderr = completed_process.stderr.decode()
+
+        if not completed_process.returncode:
+            return True, ''
+        else:
+            return False, stdout + stderr
 
 
 class MockScript(AbstractScript):
