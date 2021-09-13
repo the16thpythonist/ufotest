@@ -285,6 +285,7 @@ class Config(metaclass=Singleton):
 
         self.pm: Optional[PluginManager] = None
         self.sm: Optional[ScriptManager] = None
+
         # The template environment will be needed to load the jinja templates, which are used for example to create the
         # initial config file during "init" and also for the web interface of ufotest. So actually we want to apply a
         # filter on this so that plugins can add their own template folders to this environment, but the plugin manager
@@ -321,8 +322,15 @@ class Config(metaclass=Singleton):
         template_loaders = [FileSystemLoader(TEMPLATE_PATH)]
         template_loaders = self.pm.apply_filter('template_loaders', template_loaders)
         self.template_environment = Environment(loader=ChoiceLoader(template_loaders))
+
         # The config has to be accessible from every template
         self.template_environment.globals['config'] = self
+
+        # 13.09.2021: This action hook is actually pretty powerful. We are simply passing a reference to the template
+        # environment into this, which mainly allows for two things: Modifying the template_environment.globals dict to
+        # add more globally available variables or the template_environment.filters dict which allows to add custom
+        # filters!
+        self.pm.do_action('modify_template_environment', self.template_environment)
 
     def is_prepared(self) -> bool:
         """

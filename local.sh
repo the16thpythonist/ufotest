@@ -13,7 +13,7 @@ python3 -m pip install --user .
 ufotest init --update
 
 #ufotest init -f
-ufotest --verbose --mock test scripts_syntax
+#ufotest --verbose --mock test single_frame
 #ufotest --verbose --mock test --suite "full"
 
 # Now we start the web interface server

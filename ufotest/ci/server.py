@@ -3,6 +3,7 @@ import json
 import time
 import smtplib
 import datetime
+import shutil
 
 import click
 from flask import Flask, request, send_from_directory, jsonify
@@ -11,6 +12,7 @@ from ufotest.config import Config, get_path
 from ufotest.util import get_template, get_version
 from ufotest.util import cerror, cprint, cresult
 from ufotest.util import get_build_reports, get_test_reports
+from ufotest.util import get_folder_size, format_byte_size
 from ufotest.exceptions import BuildError
 from ufotest.camera import UfoCamera
 from ufotest.ci.build import BuildQueue, BuildLock, BuildRunner, BuildReport, build_context_from_request
@@ -270,10 +272,22 @@ def home():
     ]
     status_summary = CONFIG.pm.apply_filter('home_status_summary', status_summary)
 
+    # ~ CALCULATING DISK USAGE
+    # TODO: The unit is hardcoded. This could be part of the config. Super low prio though
+    used_space = get_folder_size(CONFIG.get_path())
+
+    # https://stackoverflow.com/questions/48929553/get-hard-disk-size-in-python
+    _, _, free_space = shutil.disk_usage('/')
+
     context = {
         'status_summary':       status_summary,
         'recent_builds':        recent_builds,
-        'recent_tests':         recent_tests
+        'recent_tests':         recent_tests,
+        # 13.09.2021: I decided that displaying the amount of used space would be a good idea for the home screen,
+        # because now the complete source repo content is saved for each build report and depending how large the
+        # source repo is (gigabytes?) This could fill up the disk rather quickly...
+        'used_space':           used_space,
+        'free_space':           free_space
     }
 
     return template.render(context), 200

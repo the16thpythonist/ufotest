@@ -27,6 +27,7 @@ from ufotest.util import (update_install,
 from ufotest.util import get_template
 from ufotest.util import cerror, cresult, ctitle, csubtitle, cprint, cparams
 from ufotest.util import HTMLTemplateMixin
+from ufotest.util import format_byte_size
 from ufotest.install import (mock_install_repository,
                              install_dependencies,
                              install_fastwriter,
@@ -92,7 +93,14 @@ def cli(ctx, version, verbose, conf, mock):
     # plugin manager need certain config values! Thus ufotest could never be installed. Now we will treat the
     # installation command "init" as a special case which does not need the use the plugin system.
     if ctx.invoked_subcommand != 'init':
+        # "prepare" sets up the correct jinja environment and initializes the plugin manager and the
+        # script manager
         config.prepare()
+
+        # Usually I wouldnt want to have to add the custom filters here but, sadly I have to due to pythons import
+        # system. I would have liked to do it in "prepare" but in that module i cannot import anything from util (where
+        # the actual method comes from) since util imports from that module...
+        config.template_environment.filters['format_byte_size'] = format_byte_size
 
         # This hook can be used to execute generic functionality before any command specific code is executed
         config.pm.do_action('pre_command', config=config, namespace=globals(), context=ctx)

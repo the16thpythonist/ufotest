@@ -9,11 +9,10 @@
 
 {% block content %}
     <div class="home-container">
-        <h2>Home</h2>
 
         {% block status_summary %}
+        <h2>Status Summary</h2>
         <div class="summary-box software-overview">
-            <h3>Status Summary</h3>
             <div class="overview">
                 {% for spec in status_summary %}
                 {% if spec %}
@@ -27,6 +26,22 @@
                 <span class="separator"></span>
                 {% endif %}
                 {% endfor %}
+            </div>
+        </div>
+        {% endblock %}
+
+        <h3>Disk Usage</h3>
+        {% block disk_usage %}
+        <div class="disk-usage">
+            <div class="two-col">
+                <div id="used-space">
+                    {{ used_space | format_byte_size('GB') }}
+                </div>
+                <div
+                    id="free-space"
+                    style="color:{% if free_space < 10737418240 %}lightcoral{% else %}lightgreen{% endif %};">
+                    {{ free_space | format_byte_size('GB') }}
+                </div>
             </div>
         </div>
         {% endblock %}

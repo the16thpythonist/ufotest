@@ -623,6 +623,12 @@ Changes
   specific subclass implementations to implement custom syntax check routines for the corresponding script types. Did
   this to enable it being used in the "scripts_syntax" test case. Already implemented it for the BashScript type. Also
   this is optional with a default implementation.
+- The home page now shows an additional widget for the disk usage of ufotest. Two fields: one for the used disk space
+  and one for the remaining available disk space on the host PC. This change was prompted by the fact, that now the
+  entire source repo is saved for every build. This *could* explode the disk usage rapidly so better to keep an eye on
+  it.
+- Added a custom jinja filter "format_byte_size" which converts an integer amount of bytes into a pretty formatted
+  string of another byte related unit.
 
 Hooks
 
@@ -638,6 +644,8 @@ Hooks
 - Added filter hook "template_loaders" which allows to register custom plugin template files for jinja2 templates, so
   that they will be appropriately discovered by the main system. Only if this is used, the plugin templates can extend
   the native ufotest templates, which they should!
+- Added action hook "modify_template_environment" which can be used to modify the main jinja Environment instance which
+  is used to render all the templates. This allows a plugin for example to define custom template globals and filters.
 
 Web Interface
 

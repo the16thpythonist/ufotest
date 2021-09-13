@@ -21,15 +21,18 @@ from ufotest.config import *
 # GLOBAL VARIABLES
 VERSION_PATH = os.path.join(PATH, 'VERSION')
 
-TEMPLATE_LOADER = FileSystemLoader(TEMPLATE_PATH)
-TEMPLATE_ENVIRONMENT = Environment(loader=TEMPLATE_LOADER)
-TEMPLATE_ENVIRONMENT.globals['config'] = Config()
+
+#TEMPLATE_LOADER = FileSystemLoader(TEMPLATE_PATH)
+#TEMPLATE_ENVIRONMENT = Environment(loader=TEMPLATE_LOADER)
+#TEMPLATE_ENVIRONMENT.globals['config'] = Config()
+
 
 SCRIPTS = {}
 
+# == FUNCTIONS
 
-# FUNCTIONS
-# =========
+# -- OUTPUT RELATED
+
 
 def cerror(message: str) -> None:
     """Outputs the *message* as an error to the console.
@@ -79,6 +82,78 @@ def cprint(message: str) -> None:
     :param message: The message to be printed
     """
     click.secho(f'... {message}')
+
+
+# -- OS RELATED
+
+
+def get_folder_size(folder_path: str) -> int:
+    """
+    Returns the size of an entire recursive directory tree as an integer in bytes.
+    https://www.thepythoncode.com/article/get-directory-size-in-bytes-using-python
+
+    :param str folder_path: The absolute path to the folder which is to be measured
+
+    :return: The integer amount of bytes which all contents of the folder collectively take up
+    """
+    total = 0
+
+    try:
+        for entry in os.scandir(folder_path):
+            if entry.is_file():
+                total += entry.stat().st_size
+            elif entry.is_dir():
+                total += get_folder_size(entry.path)
+
+        return total
+
+    except NotADirectoryError:
+        return os.path.getsize(folder_path)
+
+    except PermissionError:
+        return 0
+
+
+def format_byte_size(value: int, unit: str = 'B', factor: int = 1024, include_unit=True) -> str:
+    """
+    Given an integer *value*, this function formats the number which is assumed to be a size in bytes into a different
+    byte related unit such as kilobytes, megabytes etc.
+
+    :param int value: The actual integer amount of bytes to be converted into another unit
+    :param int factor: The factor which seperates two denominations of units. By default this is 1024 which is correct
+        when working with bytes. Should not be changed.
+    :param str unit: The string identifier of the unit to be converted to. May only be one of the following strings:
+        B, KB, MB, GB, TB. Default is B (Bytes)
+    :param bool include_unit: A boolean flag which determines whether or not the unit string should be included in the
+        final returned string value.
+
+    :returns: The string representation of the formatted value, now (potentially) in the new unit. The numeric value
+        within the string will have two decimals accuracy
+    """
+    unit = unit.upper()
+    unit_factors = {
+        'B': factor ** 0,
+        'KB': factor ** 1,
+        'MB': factor ** 2,
+        'GB': factor ** 3,
+        'TB': factor ** 4
+    }
+
+    # It is important to raise an appropriate error message. In this case if the unit string identifier is not valid.
+    if unit not in unit_factors.keys():
+        raise ValueError(f'You have passed {unit} to specific the unit to format a byte value. This is not a valid '
+                         f'unit identifier! Please use one of the following: {", ".join(unit_factors.keys())}')
+
+    value_string = f'{value / unit_factors[unit]:.2f}'
+
+    # Optional flag of whether or not to include the unit in the final string output
+    if include_unit:
+        value_string += f' {unit}'
+
+    return value_string
+
+
+# -- OTHERS
 
 
 def get_repository_name(repository_url: str) -> str:
@@ -736,3 +811,4 @@ class HTMLTemplateMixin(object):
         CONFIG.template_environment.filters['html_from_dict'] = cls.html_from_dict
         template = CONFIG.template_environment.from_string(template_string)
         return template.render({'this': data})
+
