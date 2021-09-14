@@ -1,4 +1,6 @@
 import time
+import shutil
+import psutil
 from typing import List, Dict, Any
 from collections import defaultdict
 
@@ -8,6 +10,7 @@ import matplotlib.pyplot as plt
 from ufotest.testing import AbstractTest, FigureTestResult, MessageTestResult, CombinedTestResult, TestRunner
 from ufotest.camera import get_frame
 from ufotest.exceptions import PciError, FrameDecodingError
+from ufotest.util import get_folder_size, format_byte_size
 
 
 class RepeatedResetTest(AbstractTest):
@@ -221,3 +224,48 @@ class RepeatedFrameTest(AbstractTest):
         return fig
 
 
+class DiskUsageTest(AbstractTest):
+
+    FREE_SPACE_THRESHOLD_GB = 10.0
+
+    name = 'disk_usage'
+
+    description = (
+        f'This is a simple test, which will fail if the free space of the disk where ufotest is currently installed '
+        f'goes below the critical threshold of {FREE_SPACE_THRESHOLD_GB} GB. This will serve as a warning to clean up '
+        f'old entries of the test and build archive. If this test fails it is advised that you log into the ufotest '
+        f'system and delete the oldest entries, which are no longer needed.'
+    )
+
+    def __init__(self, test_runner: TestRunner):
+        super(DiskUsageTest, self).__init__(test_runner)
+
+    def run(self):
+        # https://stackoverflow.com/questions/48929553/get-hard-disk-size-in-python
+        ufotest_used = get_folder_size(self.config.get_path())
+        total, used, free = shutil.disk_usage('/')
+        threshold = self.FREE_SPACE_THRESHOLD_GB * 1024 ** 3
+
+        message = (
+            f'At the moment, the ufotest installation consumes <strong>{format_byte_size(ufotest_used, "GB")}</strong> '
+            f'of memory. The disk has a total of <strong>{format_byte_size(total, "GB")}</strong> of space, of which '
+            f'<strong>{format_byte_size(used, "GB")}</strong> are currently being used in total. This leaves a total '
+            f'of <strong>{format_byte_size(free, "GB")}</strong> free space. <br>'
+        )
+
+        if free > threshold:
+            message += (
+                '<span style="color: lightgreen;">This is still enough free space and you do not have to be concerned. '
+                '</span>'
+            )
+            exit_code = 0
+
+        else:
+            message += (
+                '<span style="color: lightcoral;">This is not much remaining space and you are strongly advised to log '
+                'into the system administration of the machine, where ufotest is currently installed and running to '
+                'delete the oldest and unneeded entries of both the test and the build archives!</span>'
+            )
+            exit_code = 1
+
+        return MessageTestResult(exit_code, message)

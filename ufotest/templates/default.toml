@@ -206,10 +206,19 @@ title = "UfoTest Config"
 
         # This test suite runs all the tests
         full = [
+            # The script system
+            'loaded_scripts',
+            'scripts_syntax',
+            # Basic setup stuff
+            'disk_usage',
+            'repeated_reset',
+            'repeated_frames',
             # Basic frame analytics
             'frame_time',
-            'single_frame'
+            'single_frame',
             # Noise analysis
+            'calculate_pair_noise',
+            'dark_photon_transfer_curve'
         ]
 
 

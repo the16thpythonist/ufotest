@@ -684,7 +684,7 @@ class DictListTestResult(AbstractTestResult):
 
 class MessageTestResult(AbstractTestResult):
 
-    HTML_TEMPLATE = '<div class="message-test-result">{{ this.message }}</div>'
+    HTML_TEMPLATE = '<div class="message-test-result">{{ this.message | safe }}</div>'
 
     def __init__(self, exit_code: int, message: str):
         AbstractTestResult.__init__(self, exit_code)
