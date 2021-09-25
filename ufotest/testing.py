@@ -204,7 +204,7 @@ class TestRunner(object):
         # This camera instance will be the most important value to which each test case will have to have access to.
         self.camera_class = self.config.pm.apply_filter('camera_class', UfoCamera)
         self.camera = self.camera_class(self.config)
-        #self.camera.set_up()
+        self.camera.set_up()
 
     def load_modules(self) -> None:
         """
@@ -236,6 +236,7 @@ class TestRunner(object):
             for file_name in (file_name for file_name in files if '.py' in file_name):
                 file_path = os.path.join(root, file_name)
                 module_name = file_name.replace('.py', '')
+                module_name = f'ufotest.tests.{module_name}'
 
                 module = dynamic_import(module_name, file_path)
                 self.modules[module_name] = module

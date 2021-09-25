@@ -518,6 +518,10 @@ class BuildRunner(object):
         # scripts from this very build to be used later on during the test suite
         self.config.sm.load_scripts()
 
+        # Something else that is important at this point is to run the setup routine for the camera again
+        # since it now has a new configuration flashed
+        self.test_runner.camera.set_up()
+
         self.test()
 
         self.context.complete()

@@ -98,6 +98,14 @@ SCRIPT_DEFINITIONS = [
         'fallback':         True
     },
     {
+        'name':             'fpga_bitprog',
+        'path':             os.path.join(PATH, 'scripts', 'fpga_conf_bitprog.tcl'),
+        'class':            'TclScript',
+        'description':      'The .tcl file needed to flash the BIT file to the hardware',
+        'author':           'Michele Caselle <michele.caselle@kit.edu>',
+        'fallback':         True
+    },
+    {
         'name':             'hello_world',
         'path':             os.path.join(PATH, 'scripts', 'hello_world.sh'),
         'class':            'BashScript',

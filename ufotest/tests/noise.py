@@ -1,6 +1,10 @@
 import math
 import statistics
-from typing import List
+from collections import defaultdict
+from typing import List, Dict
+from multiprocessing import Pool
+import multiprocessing as mp
+#from pathos.multiprocessing import ProcessingPool as Pool
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -183,6 +187,19 @@ class RepeatedCalculatePairNoise(MeasureNoiseMixin, AbstractTest):
         )
 
 
+def calculate_noise(measurement_tuple):
+
+    _exposure_time, _frame1, _frame2 = measurement_tuple
+    _variance = calculate_pair_variance(_frame1, _frame2)
+    _noise = np.sqrt(_variance)
+
+    return _exposure_time, _noise
+
+
+calculate_noise.__module__ = 'ufotest.tests.noise'
+calculate_noise.__qualname__ = 'calculate_noise'
+
+
 class CalculateDarkPhotonTransferCurve(MeasureNoiseMixin, AbstractTest):
 
     name = 'dark_photon_transfer_curve'
@@ -197,7 +214,7 @@ class CalculateDarkPhotonTransferCurve(MeasureNoiseMixin, AbstractTest):
         'of the "noise" without any external image information.'
     )
 
-    def __init__(self, test_runner: TestRunner, start: int = 1, end: int = 5, step: int = 1, reps: int = 3):
+    def __init__(self, test_runner: TestRunner, start: int = 1, end: int = 100, step: int = 10, reps: int = 3):
         MeasureNoiseMixin.__init__(self)
         AbstractTest.__init__(self, test_runner)
 
@@ -207,28 +224,42 @@ class CalculateDarkPhotonTransferCurve(MeasureNoiseMixin, AbstractTest):
         self.reps = reps
 
         self.exposure_times = list(range(self.start, self.end + 1, self.step))
+        self.frames = []
+
+        self.noises = defaultdict(list)
 
     def run(self):
         error_count = 0
-        noises = []
+
+        p = mp.Process(target=calculate_noise)
+        p.start()
+
         for exposure_time in self.exposure_times:
             self.camera.set_prop('exposure_time', exposure_time)
-            cprint(f'SET EXPOSURE TIME: {exposure_time}')
+            cprint(f'set exposure time: {exposure_time}')
 
-            _noises = []
             for i in range(self.reps):
                 try:
-                    noise = self.measure_noise()
-                    _noises.append(noise)
+                    frame1 = self.camera.get_frame()
+                    frame2 = self.camera.get_frame()
+                    self.frames.append((exposure_time, frame1, frame2))
+                    cprint(f'Acquired two frames for exp time: {exposure_time}')
+
                 except (PciError, FrameDecodingError):
                     error_count += 1
-                    cerror(f'Failed to acquire noise for exposure_time={exposure_time} ({i+1}/{self.reps})')
+                    cprint(f'Failed to acquire frames for exp time: {exposure_time}')
 
-                cprint(f'Sample ({i + 1}/{self.reps})')
+        # TODO: Some weird problem with pickle and imporing. Does not work. I think Ill have to design a worker object
+        #       manually
+        # https://zetcode.com/python/multiprocessing/ unten use Queue and worker
+        with Pool(4) as pool:
+            noises = pool.map(calculate_noise, self.frames)
+            for (exposure_time, noise) in noises:
+                self.noises[exposure_time].append(noise)
 
-            noises.append(_noises)
+        cprint('Calculated noises in parallel')
 
-        ptc_fig = self.create_ptc_figure(self.exposure_times, noises)
+        ptc_fig = self.create_ptc_figure(self.exposure_times, self.noises)
 
         description = (
             f'Mean noise measurements. The exposure time was varied from {self.start}ms to a maximum of {self.end} ms '
@@ -243,7 +274,7 @@ class CalculateDarkPhotonTransferCurve(MeasureNoiseMixin, AbstractTest):
         )
 
     @classmethod
-    def create_ptc_figure(cls, exposure_times: List[int], noises_list: List[List[float]]):
+    def create_ptc_figure(cls, exposure_times: List[int], noises_dict: Dict[int, List[float]]):
         """
         Creates the actual matplotlib figure for the curve, given the exposure time and the list of the noise
         measurements. Returns the matplotlib.Figure object.
@@ -256,8 +287,9 @@ class CalculateDarkPhotonTransferCurve(MeasureNoiseMixin, AbstractTest):
         """
         fig, (ax_ptc) = plt.subplots(nrows=1, ncols=1, figsize=(20, 15))
 
-        noise_means = [statistics.mean(noises) if noises else 0 for noises in noises_list]
-        noise_stdevs = [statistics.stdev(noises) if noises else 0 for noises in noises_list]
+        noises_list = [noises_dict[e] for e in exposure_times]
+        noise_means = [statistics.mean(noises) if len(noises) > 0 else 0 for noises in noises_list]
+        noise_stdevs = [statistics.stdev(noises) if len(noises) > 1 else 0 for noises in noises_list]
 
         ax_ptc.set_title('Dark Photon Transfer Curve')
         ax_ptc.set_xlabel('Exposure time')

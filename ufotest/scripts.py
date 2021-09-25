@@ -161,6 +161,21 @@ class BashScript(AbstractScript):
             return False, stdout + stderr
 
 
+# TODO: I have no clue what those actually do...
+class TclScript(AbstractScript):
+
+    def __init__(self, script_definition: Dict[str, Any]):
+        AbstractScript.__init__(self, script_definition)
+
+        self.name = self.data['name']
+        self.path = self.data['path']
+        self.author = self.data['author']
+        self.description = self.data['description']
+
+    def invoke(self, args: Optional[Dict] = None) -> dict:
+        return {}
+
+
 class MockScript(AbstractScript):
     """
     This is a mock implementation of AbstractScript mainly intended for testing purposes. It expects one additional

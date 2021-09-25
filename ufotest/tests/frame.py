@@ -1,6 +1,8 @@
 import os
 import time
+import math
 from typing import Optional, Tuple
+from itertools import zip_longest
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -107,6 +109,7 @@ class AcquireSingleFrame(AbstractTest):
         )
 
     def capture_frame(self):
+        self.camera.set_prop('exposure_time', 25)
         self.frame = self.camera.get_frame()
         self.frame_flat = self.frame.flatten()
 
@@ -338,3 +341,76 @@ class SingleFrameStatistics(AbstractTest):
         return fig
 
 
+class ExposureTimeImagesTest(AbstractTest):
+
+    COLUMN_COUNT = 3
+    MAX_PIXEL_VALUE = 4095
+    EXPOSURE_TIME_VALUES = list(range(0, 101, 5))
+
+    name = 'exposure_time_images'
+
+    description = (
+        f'This test varies the exposure time between the following values: '
+        f'{", ".join(map(str, EXPOSURE_TIME_VALUES))}. For each '
+        f'exposure time, one frame is taken from the camera and all the resulting frames are shown in a figure. This '
+        f'is merely a visual indication of sorts about whether the exposure time setting works.'
+    )
+
+    def __init__(self, test_runner: TestRunner):
+        super(ExposureTimeImagesTest, self).__init__(test_runner)
+        self.frames = {}
+
+    def run(self):
+        # The idea of the test is to set the exposure time to different values and then simple show all
+        # the images which have been taken
+        for exposure_time in self.EXPOSURE_TIME_VALUES:
+            try:
+                self.camera.set_prop('exposure_time', exposure_time)
+                frame = self.camera.get_frame()
+                self.frames[exposure_time] = frame
+                cprint(f'Acquired frame for exp time: {exposure_time}')
+
+            except (FrameDecodingError, PciError):
+                self.frames[exposure_time] = None
+                cprint(f'Failed for exp time: {exposure_time}')
+
+        fig = self.create_frames_figure()
+        description = 'none'
+
+        return FigureTestResult(0, self.test_runner.context, fig, description)
+
+    def create_frames_figure(self) -> plt.Figure:
+        row_count = math.ceil(len(self.frames) / self.COLUMN_COUNT)
+        fig, rows = plt.subplots(ncols=self.COLUMN_COUNT, nrows=row_count, figsize=(20, 5 * row_count))
+        # "rows" is a list of lists, where each sub list contains the column Axes objects for that row. Here
+        # we flatten it and turn it into just a single list of Axes instances
+        axs = [axes for sublist in rows for axes in sublist]
+
+        norm = mcolors.Normalize(vmin=0, vmax=self.MAX_PIXEL_VALUE)
+        for (exposure_time, frame), ax in zip_longest(self.frames.items(), axs, fillvalue=(None, None)):
+
+            # Disable the axis ticks, not needed for images
+            ax.tick_params(
+                axis='x',
+                which='both',
+                bottom=False,
+                top=False,
+                labelbottom=False
+            )
+            ax.tick_params(
+                axis='y',
+                which='both',
+                left=False,
+                right=False,
+                labelleft=False
+            )
+
+            if frame is None:
+                fig.delaxes(ax)
+
+            else:
+                average = np.mean(frame)
+                ax.imshow(frame, norm=norm)
+                ax.set_title(f'Exposure time: {exposure_time} - avg: {average:0.2f}')
+
+        return fig

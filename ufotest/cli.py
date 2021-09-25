@@ -423,11 +423,35 @@ def setup(config):
 @pass_config
 def teardown(config):
     """
-    Executes the teardonw routine for the camera, which includes all the steps required to properly end the usage.
+    Executes the teardown routine for the camera, which includes all the steps required to properly end the usage.
     """
     camera_class = config.pm.apply_filter('camera_class', UfoCamera)
     camera: AbstractCamera = camera_class(config)
     camera.tear_down()
+
+
+@click.command('status', short_help="Outputs whether or not the camera is usable")
+@pass_config
+def status(config):
+    """
+    Polls the camera to check if it is available for frame requests. This command outputs a single integer which is a 1
+    if the camera does indeed work properly and is accepting frame requests and a 0 if the camera does not.
+
+    More specifically this command instantiates a camera class and calls the "poll" method on it. The implementation of
+    how exactly the status is derived varies between camera class implementations. Also note that if verbosity is
+    enables, the poll method may produce additional console output.
+    """
+    camera_class = config.pm.apply_filter('camera_class', UfoCamera)
+    camera: AbstractCamera = camera_class(config)
+    status_result = camera.poll()
+
+    # For this command no fancy output, we are literally only printing the integer status
+    # representation so that this command could be used in a pipeline or the like
+    click.echo(int(status_result))
+
+    # The status is True if the camera works and False if it does not work. That is exactle the other way around that
+    # the command exit codes work. This should be 1 in case of a problem.
+    sys.exit(not status_result)
 
 
 @click.command('flash', short_help='Flash a new .BIT file to the FPGA memory')
@@ -486,8 +510,10 @@ def flash(config, file: str, type: str) -> None:
         cprint('Vivado setup completed')
 
     # ~ FLASHING THE BIT FILE
-    flash_command = "{command} -nolog -nojournal -mode batch -source fpga_conf_bitprog.tcl -tclargs {file}".format(
+    flash_command = "{setup} ; {command} -nolog -nojournal -mode batch -source {tcl} -tclargs {file}".format(
+        setup=CONFIG['install']['vivado_settings'],
         command=CONFIG['install']['vivado_command'],
+        tcl=CONFIG.sm.scripts['fpga_bitprog'].path,
         file=file_path
     )
     exit_code, _ = run_command(flash_command)
@@ -866,6 +892,7 @@ cli.add_command(install_all)
 cli.add_command(frame)
 cli.add_command(setup)
 cli.add_command(teardown)
+cli.add_command(status)
 cli.add_command(list_scripts)
 cli.add_command(flash)
 cli.add_command(test)

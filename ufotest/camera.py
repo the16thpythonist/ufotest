@@ -2,12 +2,13 @@
 A module containing the functionality related to interacting with the camera
 """
 import os
+import re
 import time
 import copy
 import functools
 import subprocess
 from abc import abstractmethod
-from typing import Optional, Any
+from typing import Optional, Any, List, Dict
 
 import shutil
 import click
@@ -265,10 +266,22 @@ class UfoCamera(InternalDictMixin, AbstractCamera):
         :return: bool
         """
         result = self.config.sm.invoke('status')
-        if self.config.verbose():
-            cprint(result['stdout'])
+        output = result['stdout']
 
-        return result['exit_code']
+        if self.config.verbose():
+            cprint(output)
+
+        # This method will parse the string output of the status script and return a dict, whose keys are the register
+        # identifiers and the values are lists with 4 items which are the string versions of the 8 hex values each
+        # that make up the register value.
+        registers = self.parse_status_to_dict(output)
+
+        # I am using the very simple method michele has taught me and I am only checking the 9050 register for the
+        # occurrence of the very specific bit sequences ffff and 1111 which tell that frames should be able to be
+        # taken!
+        status = 'ffff' in registers['9050'][0] and '1111' in registers['9050'][2]
+
+        return status
 
     def set_up(self):
         """
@@ -296,27 +309,46 @@ class UfoCamera(InternalDictMixin, AbstractCamera):
     def reset(self):
         pass
 
-    def set_exposure_time(self, value: int):
+    def set_exposure_time(self, value: int, r=np.linspace(41216, 41550, 101)):
         """
         *KIND OF* sets the exposure time of the camera. At the current point in time, this method does modify the
         exposure time of the camera, but which value in ms it actually is, is unclear. Supported are int values up to
-        12. Generally the higher the value the higher the exposure time.
+        100. Generally the higher the value the higher the exposure time.
 
         :return void:
         """
-        self.pci_write('9000', 'a001')
-        time.sleep(0.2)
-        self.pci_read('9010', 1)
-        time.sleep(0.2)
+        hex_value = hex(int(r[value])).lstrip('0x')
+        self._set_exposure_time(hex_value)
 
-        hex_value = hex(41216 + 2 ** value).lstrip('0x')
+    def _set_exposure_time(self, hex_value: str):
         self.pci_write('9000', hex_value)
-        time.sleep(0.2)
+        time.sleep(0.1)
         self.pci_read('9010', 1)
-        time.sleep(0.2)
+        time.sleep(0.1)
 
     # -- Helper methods --
     # These methods wrap camera specific functionality which is required to implement the more top level behavior
+
+    def parse_status_to_dict(self, status_output: str) -> Dict[str, List[str]]:
+        # This regex pattern parses the output of the status script. The success of this is strongly coupled with how
+        # this output is generated! So this would be subject to change should the output ever change format!
+        # It extracts the 4 digit register string identifier and the 4 register contents after that.
+
+        # For testing: https://regex101.com/
+        # Example output which this would match:
+        # f6209000:  00009601  00000000    d0dad0da  00000000
+        # f6209010:  000b9601  00000000    00000000  00000000
+        # f6209020:  00000100  00000000    00000000  00000000
+        pattern = re.compile(r'f[0-9,a-z]{3}(.{4}):\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)')
+
+        # The output will be a dict where the key is the string representation of the register identifier and the value
+        # is a list with always 4 items which contains the individual register values each being a string of 8 hex
+        # values!
+        result = {}
+        for (register, byte1, byte2, byte3, byte4) in re.findall(pattern, status_output):
+            result[register] = [byte1, byte2, byte3, byte4]
+
+        return result
 
     def decode_frame(self):
         """
