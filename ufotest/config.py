@@ -11,6 +11,7 @@ from jinja2 import FileSystemLoader, ChoiceLoader
 
 from ufotest.plugin import PluginManager
 from ufotest.scripts import ScriptManager
+from ufotest.devices import DeviceManager
 
 # The path of the this very python package and the path to the default TOML config file, which will be copied during
 # the installation of this project
@@ -19,6 +20,10 @@ PATH = Path(__file__).parent.absolute()
 TEMPLATE_PATH = os.path.join(PATH, 'templates')
 STATIC_PATH = os.path.join(PATH, 'static')
 CONFIG_TEMPLATE_PATH = os.path.join(TEMPLATE_PATH, 'default.toml')
+
+# This path points to the folder within the python ufotest package which contains the default plugin modules which come
+# shipped with the package.
+DEFAULT_PLUGINS_PATH = os.path.join(PATH, 'plugins')
 
 # This will be the string path to the HOME folder of the user which is currently executing the script
 HOME_PATH = str(Path.home())
@@ -293,6 +298,7 @@ class Config(metaclass=Singleton):
 
         self.pm: Optional[PluginManager] = None
         self.sm: Optional[ScriptManager] = None
+        self.dm: Optional[DeviceManager] = None
 
         # The template environment will be needed to load the jinja templates, which are used for example to create the
         # initial config file during "init" and also for the web interface of ufotest. So actually we want to apply a
@@ -339,6 +345,10 @@ class Config(metaclass=Singleton):
         # add more globally available variables or the template_environment.filters dict which allows to add custom
         # filters!
         self.pm.do_action('modify_template_environment', self.template_environment)
+
+        # -- INITIALIZING DEVICE MANAGER
+        self.dm = DeviceManager()
+        self.pm.do_action('register_devices', self.dm)
 
     def is_prepared(self) -> bool:
         """

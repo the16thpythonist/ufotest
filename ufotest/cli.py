@@ -873,6 +873,12 @@ def recompile(config):
     sys.exit(0)
 
 
+# TODO: Which commands do I even want?
+@click.group('devices', short_help='devices related command group')
+def devices():
+    pass
+
+
 # Registering the commands within the "ci" group. The ci group is a sub command group which contains the commands
 # relating to the "continuous integration" functionality.
 ci.add_command(build)

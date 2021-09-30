@@ -392,7 +392,7 @@ def init_install(verbose=False) -> str:
     # -- PLUGINS FOLDER
     # This folder will contain the individual plugins folders for ufotest
     plugins_path = os.path.join(folder_path, 'plugins')
-    os.mkdir(plugins_path)
+    shutil.copytree(DEFAULT_PLUGINS_PATH, plugins_path)
     if verbose:
         click.secho('   Created the "plugins" folder for ufotest')
 

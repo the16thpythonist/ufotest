@@ -12,6 +12,7 @@ recursive-include ufotest/scripts *.sh
 recursive-include ufotest/tests *
 recursive-include ufotest/templates *
 recursive-include ufotest/static *
+recursive-include ufotest/plugins *
 
 recursive-include tests *
 recursive-exclude * __pycache__

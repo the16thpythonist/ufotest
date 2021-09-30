@@ -1,4 +1,6 @@
 import math
+import time
+import random
 import statistics
 from collections import defaultdict
 from typing import List, Dict
@@ -187,17 +189,193 @@ class RepeatedCalculatePairNoise(MeasureNoiseMixin, AbstractTest):
         )
 
 
-def calculate_noise(measurement_tuple):
+class CalculateMultiNoiseTest(AbstractTest):
 
-    _exposure_time, _frame1, _frame2 = measurement_tuple
-    _variance = calculate_pair_variance(_frame1, _frame2)
-    _noise = np.sqrt(_variance)
+    FRAME_COUNT = 10
+    name = 'calculate_multi_noise'
+    description = (
+        f'Calculates the noise with a slightly different procedure: Takes {FRAME_COUNT} frames from the camera '
+        f'and then calculates the variance for every pixel. The final variance and thus noise is calculated as the '
+        f'mean over all those pixel specific variances'
+    )
 
-    return _exposure_time, _noise
+    def __init__(self, test_runner: TestRunner):
+        super(CalculateMultiNoiseTest, self).__init__(test_runner)
+        self.frames = []
+        self.frame_array = None
+
+        self.variance_frame = np.zeros(shape=(self.config.get_sensor_height(), self.config.get_sensor_width()))
+        self.noise_frame = np.zeros(shape=(self.config.get_sensor_height(), self.config.get_sensor_width()))
+
+    def run(self):
+        # ~ Getting the frames from the camera
+        for i in range(self.FRAME_COUNT):
+            try:
+                frame = self.camera.get_frame()
+                self.frames.append(frame)
+            except (FrameDecodingError, PciError) as e:
+                cprint(f'Failed to acquire frame {i + 1}')
+
+        # ~ Calculating the noise
+        self.frame_array = np.zeros(shape=(
+            self.config.get_sensor_height(),
+            self.config.get_sensor_width(),
+            len(self.frames)
+        ))
+        for index, frame in enumerate(self.frames):
+            self.frame_array[:, :, index] = frame
+
+        cprint(f'Assembled {len(self.frames)} frames into a 3d numpy array')
+        cprint(f'max: {np.max(self.frame_array)} - min: {np.min(self.frame_array)}')
+
+        self.variance_frame = np.var(self.frame_array, axis=2)
+        self.noise_frame = np.sqrt(self.variance_frame)
+
+        variance = np.mean(self.variance_frame)
+        noise = np.sqrt(variance)
+
+        fig = self.create_variance_figure()
+
+        return CombinedTestResult(
+            FigureTestResult(0, self.test_runner.context, fig, ''),
+            DictTestResult(0, {
+                'variance': f'{variance:0.2f}',
+                'noise': f'{noise:0.2f}'
+            })
+        )
+
+    def create_variance_figure(self):
+        fig, (variance_ax, noise_ax) = plt.subplots(nrows=1, ncols=2, figsize=(10, 15))
+
+        variance_ax.imshow(self.variance_frame, vmin=0, vmax=500)
+        variance_ax.set_title('Pixel specific variance')
+
+        variance_ax.text(500, 500, f'min: {np.min(self.variance_frame):0.2f} - max: {np.max(self.variance_frame):0.2f}',
+                         bbox={'facecolor': 'white', 'alpha': 0.5, 'pad': 10})
+
+        noise_ax.imshow(self.noise_frame, vmin=0, vmax=30)
+        noise_ax.set_title('Pixel specific noise')
+
+        return fig
 
 
-calculate_noise.__module__ = 'ufotest.tests.noise'
-calculate_noise.__qualname__ = 'calculate_noise'
+class CalculateNoiseWorker(mp.Process):
+
+    def __init__(self, task_queue: mp.Queue, result_queue: mp.Queue):
+        super(CalculateNoiseWorker, self).__init__()
+        self.task_queue = task_queue
+        self.result_queue = result_queue
+
+    def run(self):
+        while not self.task_queue.empty():
+            # The elements of the task queue are tuples, where the first element is the exposure time which was used
+            # for that experiment and the remaining two elements are the np arrays frame objects which were taken from
+            # the camera at that exposure time.
+            exposure_time, frame1, frame2 = self.task_queue.get()
+
+            variance = calculate_pair_variance(frame1, frame2)
+            print(f"variance {variance}")
+            noise = np.sqrt(variance)
+
+            # The result will be a tuple whose first element is again the exposure time and the second element is the
+            # resulting noise value which was calculated
+            result = (exposure_time, noise)
+            self.result_queue.put(result)
+
+
+class CalculateNoiseMultiProcessing(AbstractTest):
+
+    MEASUREMENT_COUNT = 10
+    WORKER_COUNT = 4
+
+    name ='calculate_noise_parallel'
+    description = (
+        f'This test case simply investigates the advantages of the multiprocessing implementation of the noise '
+        f'calculation. The operation of calculating the noise for a pair of frames is very costly. If many such '
+        f'calculations have to be made, multiprocessing may be an appropriate means of speeding up the process.'
+        f'This test compares a purely sequential calculation of {MEASUREMENT_COUNT} noise values with using '
+        f'{WORKER_COUNT} worker processes instead'
+    )
+
+    def __init__(self, test_runner: TestRunner):
+        super(CalculateNoiseMultiProcessing, self).__init__(test_runner)
+
+        # Now I think requesting all the frames for the calculation from the camera would be kind of a waste of time,
+        # because in the end this test is not about the actual noise values but the calculation. But on the other hand
+        # I also dont want to use the same two frames for all of the experiments, because I fear that could influence
+        # the speed, due to favorably filled computation caches or something like that.
+        # Thus we will request TEN frames from the camera and then pick two at random for each calculation
+        self.frames = []
+
+        # This will be the list with the task tuples.
+        self.tasks = []
+
+        self.sequential_time = 0
+        self.parallel_time = 0
+
+    def run(self):
+        # At first we request the frames from the camera and then we do the random picking to assemble them into as many
+        # frame pairs as we need.
+        for i in range(10):
+            try:
+                frame = self.camera.get_frame()
+                self.frames.append(frame)
+            # It does not matter if it is less than 10 frames by a few
+            except:
+                pass
+
+        for i in range(self.MEASUREMENT_COUNT):
+            frame1 = random.choice(self.frames)
+            frame2 = random.choice(self.frames)
+            self.tasks.append((0, frame1, frame2))
+
+        cprint(f'Acquired {len(self.frames)} frames from the camera')
+
+        self.calculate_sequential()
+        self.calculate_parallel()
+
+        improvement = (self.parallel_time / self.sequential_time) * 100
+        average = self.parallel_time / self.MEASUREMENT_COUNT
+
+        message = (
+            f'Sequential processing of {self.MEASUREMENT_COUNT} noise calculations took <strong>'
+            f'{self.sequential_time:0.2f}</strong> seconds and parallel processing took <strong>'
+            f'{self.parallel_time:0.2f}</strong> seconds. That is {improvement:0.2f} percent of the time. For '
+            f'a parallel processing with {self.WORKER_COUNT} this makes an average time of <strong>'
+            f'{average:0.2f}</strong> seconds per noise calculation.'
+        )
+
+        return MessageTestResult(0, message)
+
+    def calculate_sequential(self):
+        start_time = time.time()
+        for exp, frame1, frame2 in self.tasks:
+            variance = calculate_pair_variance(frame1, frame2)
+            noise = np.sqrt(variance)
+
+        end_time = time.time()
+        self.sequential_time = end_time - start_time
+        cprint(f'Sequential time: {self.sequential_time}')
+
+    def calculate_parallel(self):
+        start_time = time.time()
+
+        task_queue = mp.Queue()
+        [task_queue.put(task) for task in self.tasks]
+        result_queue = mp.Queue()
+
+        workers = []
+        for i in range(self.WORKER_COUNT):
+            worker = CalculateNoiseWorker(task_queue, result_queue)
+            worker.start()
+            workers.append(worker)
+            cprint(f'Started worker {i + 1}')
+
+        [worker.join() for worker in workers]
+        end_time = time.time()
+
+        self.parallel_time = end_time - start_time
+        cprint(f'Parallel time: {self.parallel_time}')
 
 
 class CalculateDarkPhotonTransferCurve(MeasureNoiseMixin, AbstractTest):
@@ -214,7 +392,7 @@ class CalculateDarkPhotonTransferCurve(MeasureNoiseMixin, AbstractTest):
         'of the "noise" without any external image information.'
     )
 
-    def __init__(self, test_runner: TestRunner, start: int = 1, end: int = 100, step: int = 10, reps: int = 3):
+    def __init__(self, test_runner: TestRunner, start: int = 3, end: int = 100, step: int = 5, reps: int = 10):
         MeasureNoiseMixin.__init__(self)
         AbstractTest.__init__(self, test_runner)
 
@@ -224,16 +402,13 @@ class CalculateDarkPhotonTransferCurve(MeasureNoiseMixin, AbstractTest):
         self.reps = reps
 
         self.exposure_times = list(range(self.start, self.end + 1, self.step))
-        self.frames = []
+        self.tasks = []
 
         self.noises = defaultdict(list)
 
     def run(self):
+        # ~ Fetching all the images from the camera first
         error_count = 0
-
-        p = mp.Process(target=calculate_noise)
-        p.start()
-
         for exposure_time in self.exposure_times:
             self.camera.set_prop('exposure_time', exposure_time)
             cprint(f'set exposure time: {exposure_time}')
@@ -242,20 +417,30 @@ class CalculateDarkPhotonTransferCurve(MeasureNoiseMixin, AbstractTest):
                 try:
                     frame1 = self.camera.get_frame()
                     frame2 = self.camera.get_frame()
-                    self.frames.append((exposure_time, frame1, frame2))
+                    self.tasks.append((exposure_time, frame1, frame2))
                     cprint(f'Acquired two frames for exp time: {exposure_time}')
 
                 except (PciError, FrameDecodingError):
                     error_count += 1
                     cprint(f'Failed to acquire frames for exp time: {exposure_time}')
 
-        # TODO: Some weird problem with pickle and imporing. Does not work. I think Ill have to design a worker object
-        #       manually
-        # https://zetcode.com/python/multiprocessing/ unten use Queue and worker
-        with Pool(4) as pool:
-            noises = pool.map(calculate_noise, self.frames)
-            for (exposure_time, noise) in noises:
-                self.noises[exposure_time].append(noise)
+        # ~ Calculating the noises in parallel
+        task_queue = mp.Queue()
+        [task_queue.put(task) for task in self.tasks]
+        result_queue = mp.Queue()
+
+        worker_count = 4
+        workers = []
+        for i in range(worker_count):
+            worker = CalculateNoiseWorker(task_queue, result_queue)
+            worker.start()
+            workers.append(worker)
+
+        [worker.join() for worker in workers]
+
+        while not result_queue.empty():
+            exposure_time, noise = result_queue.get()
+            self.noises[exposure_time].append(noise)
 
         cprint('Calculated noises in parallel')
 
@@ -298,3 +483,40 @@ class CalculateDarkPhotonTransferCurve(MeasureNoiseMixin, AbstractTest):
         ax_ptc.errorbar(exposure_times, noise_means, yerr=noise_stdevs, color='#FF5328')
 
         return fig
+
+
+class CalculateDarkPhotonTransferCurve2(AbstractTest):
+
+    name = 'dark_photon_transfer_curve_alt'
+    description = '---'
+
+    def __init__(self, test_runner: TestRunner):
+        super(CalculateDarkPhotonTransferCurve2, self).__init__(test_runner)
+
+    def run(self):
+
+        for exposure_time in [3, 7, 9, 22, 45, 53]:
+            self.camera.set_prop('exposure_time', exposure_time)
+            frames = []
+            for i in range(30):
+                try:
+                    frames.append(self.camera.get_frame())
+                except (PciError, FrameDecodingError) as e:
+                    print(e.__class__)
+
+            frame_array = np.zeros(shape=(
+                self.config.get_sensor_height(),
+                self.config.get_sensor_width(),
+                len(frames)
+            ))
+            for index, frame in enumerate(frames):
+                frame_array[:, :, index] = frame
+
+            variance = np.mean(np.var(frame_array, axis=2) / len(frames))
+            noise = np.sqrt(variance)
+            cprint(f'{variance} - {noise}')
+
+        return MessageTestResult(0, "a")
+
+# TODO: Why do I get PCIErrors with higher exposure times
+# TODO: Make the device manager better.

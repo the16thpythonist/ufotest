@@ -629,6 +629,9 @@ Changes
   it.
 - Added a custom jinja filter "format_byte_size" which converts an integer amount of bytes into a pretty formatted
   string of another byte related unit.
+- Added the "devices.py" module, which contains the code to manage additional external devices.
+- Added "devices.DeviceManager" class
+- Added "devices.AbstractDevice" class
 
 Hooks
 
@@ -646,6 +649,8 @@ Hooks
   the native ufotest templates, which they should!
 - Added action hook "modify_template_environment" which can be used to modify the main jinja Environment instance which
   is used to render all the templates. This allows a plugin for example to define custom template globals and filters.
+- Added the action hook "register_devices", which can be used to register device objects to the
+  DeviceManager.
 
 Web Interface
 

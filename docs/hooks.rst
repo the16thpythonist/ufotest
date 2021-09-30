@@ -151,6 +151,17 @@ This action hook is executed as the last thing within the constructor of the Tes
 context instance itself and the namespace are available. This can be used to attach custom / dynamic attributes to each
 test context object, which can then possibly later be used to create custom sections in the test report...
 
+``register_devices``
+~~~~~~~~~~~~~~~~~~~~
+
+Action Hook
+
+kwargs(1):
+
+- device_manager: The main DeviceManager instance of the config file
+
+This hook is invoked
+
 
 Filter Hooks
 ------------
