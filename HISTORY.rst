@@ -585,6 +585,7 @@ Fixes
   test suite is still executed.
 - A build script is not promised to be existing on the assumption that it "should" alone. The script manager now
   actually checks if the script file exists.
+- PluginManager did not expand the env vars in the plugin folder path!
 
 Changes
 

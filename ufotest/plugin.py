@@ -73,7 +73,7 @@ class PluginManager:
       plugins
     """
     def __init__(self, plugin_folder_path: str = ''):
-        self.plugin_folder_path = plugin_folder_path
+        self.plugin_folder_path = os.path.expandvars(plugin_folder_path)
 
         self.plugins = {}
 
