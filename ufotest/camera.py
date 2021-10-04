@@ -295,6 +295,13 @@ class UfoCamera(InternalDictMixin, AbstractCamera):
 
         :return: void
         """
+        # 04.10.2021: I recently added support for a usb relay board which is managed by the device manager. The main
+        # intent behind it was that it could serve as a hard reset for the camera board by cutting the power line.
+        # A hard reset will be useful here because sometimes the camera has a few hickups which are not solved by
+        # software resets.
+        if self.config.dm.supports('hard_reset_camera'):
+            self.config.dm.invoke('hard_reset_camera')
+
         self.config.sm.invoke('pcie_init', args={'prefix': 'sudo', 'postfix': ''})
         time.sleep(0.5)
         self.config.sm.invoke('reset_fpga')

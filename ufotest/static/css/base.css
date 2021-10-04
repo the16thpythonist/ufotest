@@ -215,4 +215,13 @@ a.nav-item:hover {
   color: #FA2E27;
 }
 
+/* GENERIC STYLE RULES
+   pass
+ */
+.content-container {
+  padding-top: 5px;
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
 /*# sourceMappingURL=base.css.map */

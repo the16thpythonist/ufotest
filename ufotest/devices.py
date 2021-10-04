@@ -1,4 +1,4 @@
-from typing import Callable, Type
+from typing import Callable, Type, List, Dict
 
 
 # == CUSTOM EXCEPTION CLASSES
@@ -42,10 +42,7 @@ class DeviceMeta(type):
             exposed_functions = getattr(klass, 'exposed_functions')
             for name, element in dct.items():
                 if hasattr(element, '__expose__'):
-                    exposed_functions[name] = {
-                        'name':                 element.name,
-                        'description':          element.description
-                    }
+                    exposed_functions[name] = element.__expose__
 
         return klass
 
@@ -76,16 +73,20 @@ class AbstractDevice(metaclass=DeviceMeta):
 
 class Expose:
 
-    def __init__(self, name: str, description: str):
+    def __init__(self, name: str, description: str, args: Dict[str, str], aliases: List[str] = []):
         self.func = None
         self.name = name
         self.description = description
+        self.aliases = aliases
+
+        self.names = [self.name] + self.aliases
 
     def __call__(self, func: Callable):
         self.func = func
-        self.func.__expose__ = True
-        self.func.name = self.name
-        self.func.description = self.description
+        self.func.__expose__ = {
+            'names':                self.names,
+            'description':          self.description,
+        }
 
         return func
 
@@ -108,11 +109,12 @@ class DeviceManager:
         # ~ Registering the exposed methods
         for function_name, function_data in device.exposed_functions.items():
             function = getattr(device, function_name)
-            self.functions[function_data['name']] = {
-                'func':         function,
-                'name':         function_data['name'],
-                'description':  function_data['description']
-            }
+            for name in function_data['names']:
+                self.functions[name] = {
+                    'func':         function,
+                    'name':         name,
+                    'description':  function_data['description']
+                }
 
     def supports(self, function_name: str):
         return function_name in self.functions

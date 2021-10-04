@@ -24,6 +24,7 @@ PATH = get_path()
 ARCHIVE_PATH = os.path.join(PATH, 'archive')
 BUILDS_PATH = os.path.join(PATH, 'builds')
 STATIC_PATH = os.path.join(PATH, 'static')
+PLUGINS_PATH = os.path.join(PATH, 'plugins')
 
 
 class BuildAdapterGitlab(object):
@@ -293,6 +294,8 @@ def home():
     return template.render(context), 200
 
 
+# == THE CONFIG WEB EDITOR
+
 @server.route('/config', methods=['GET'])
 def config():
     template = get_template('config.html')
@@ -319,6 +322,22 @@ def save_config():
     except:
         return 'There has been an error', 400
 
+
+# == THE PLUGINS WEB VIEW
+
+@server.route('/plugins', methods=['GET'])
+def plugins():
+    template = get_template('plugins.html')
+
+    return template.render({}), 200
+
+
+@server.route('/plugins/<path:path>')
+def plugin_documentation(path):
+    return send_from_directory(PLUGINS_PATH, path)
+
+
+# == GITHUB/GITLAB PUSH EVENTS
 
 @server.route('/push/github', methods=['POST'])
 def push_github():

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Ufotest Plugins{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" type="text/css" href="{{ config.static('css/plugin.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="content-container">
+        <h2>Loaded plugins: {{ config.pm.plugins|length }}</h2>
+
+        <div class="plugins-list">
+            {% for name, module in config.pm.plugins.items() %}
+            <div class="plugin-item">
+                <div class="plugin-name">{{ name }}</div>
+                <div class="plugin-description">{{ module.__doc__|escape }}</div>
+                <div class="plugin-documentation">
+                    <a class="link" href="{{ config.url('plugins', name, 'README.html') }}">Documentation</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

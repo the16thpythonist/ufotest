@@ -4,7 +4,7 @@ Module containing the functions to access the configuration of ufotest.
 import os
 import toml
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Any
 
 from jinja2 import Environment
 from jinja2 import FileSystemLoader, ChoiceLoader
@@ -324,6 +324,7 @@ class Config(metaclass=Singleton):
         # be loaded.
         self.pm = PluginManager(plugin_folder_path=self.get_plugin_folder())
         self.pm.load_plugins()
+        self.pm.do_action('pre_prepare', config=self, namespace=globals())
 
         # -- LOADING SCRIPTS
         self.sm = ScriptManager(self)
@@ -348,7 +349,9 @@ class Config(metaclass=Singleton):
 
         # -- INITIALIZING DEVICE MANAGER
         self.dm = DeviceManager()
-        self.pm.do_action('register_devices', self.dm)
+        self.pm.do_action('register_devices', config=self, device_manager=self.dm)
+
+        self.pm.do_action('post_prepare', config=self, namespace=globals())
 
     def is_prepared(self) -> bool:
         """
@@ -379,6 +382,31 @@ class Config(metaclass=Singleton):
         self.data[key] = value
 
     def __contains__(self, item):
+        """
+        Implements the "in" contains-operator for the config object.
+
+        Using a normal string with this operation will result in the default dict behavior: the method will return the
+        boolean value of whether or not the internal data dict (which was loaded from the config toml file) contains
+        a first level key of the given name.
+
+        Additionally a list or a tuple can be passed to check if the data dict contains a structure of sub dictionaries.
+        Each element of the sequence will be interpreted as a nested key to check for. The method will return true if
+        the whole structure is present in the data dict and thus the config file and false otherwise.
+
+        :returns: boolean
+        """
+        # For list or tuple, a whole sub-dict structure of keys is checked
+        if isinstance(item, list) or isinstance(item, tuple):
+            current_data = self.data
+            for element in item:
+                if not isinstance(element, dict) or element not in current_data.keys():
+                    return False
+                else:
+                    current_data = current_data[element]
+
+            return True
+
+        # For everything else, mainly string, the normal dict check is performed.
         return item in self.data.keys()
 
     def keys(self):
@@ -531,6 +559,19 @@ class Config(metaclass=Singleton):
         return os.path.join(ufotest_path, 'builds')
 
     # == UTILITY METHODS
+
+    def get_query(self, key_query: List[str]):
+        current = self.data
+        for key in key_query:
+            current = current[key]
+
+        return current
+
+    def get_data_or_default(self, key_query: List[str], default: Any) -> Any:
+        if key_query in self:
+            return self.get_query(key_query)
+        else:
+            return default
 
     def reload(self):
         """

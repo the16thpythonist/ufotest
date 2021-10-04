@@ -151,6 +151,48 @@ This action hook is executed as the last thing within the constructor of the Tes
 context instance itself and the namespace are available. This can be used to attach custom / dynamic attributes to each
 test context object, which can then possibly later be used to create custom sections in the test report...
 
+``post_prepare``
+~~~~~~~~~~~~~~~~
+
+Action Hook
+
+kwargs (2):
+- config: A reference to the config singleton
+- namespace: A dict which represents the global namespace in the "prepare" method of the Config class
+
+This action hook is triggered at the very end of the prepare routine of the config singleton.
+This method initialized the plugin manager, the script manager and the device manager.
+
+``pre_prepare``
+~~~~~~~~~~~~~~~
+
+Action Hook
+
+kwargs (2):
+- config: A reference to the config singleton
+- namespace: A dict which represents the global namespace in the "prepare" method of the Config class
+
+This action hook is triggered at the very beginning of the prepare routine of the config singleton, right after the
+plugin manager was initialized. This is probably the earliest point to inject custom code into the ufotest system.
+
+This method initialized the plugin manager, the script manager and the device manager.
+
+This hook could for example be used to add custom methods to the config singleton!
+
+.. code-block:: python
+
+    from ufotest.hooks import Action
+
+
+    @Action('pre_prepare')
+    def add_custom_config_method(config, namespace):
+        setattr(config, 'get_hello_world', lambda: 'hello world!')
+
+    # Later on this method can be used
+    @Action('pre_command_frame')
+    def some_custom_code(config, *args):
+        print(config.get_hello_world())
+
 ``register_devices``
 ~~~~~~~~~~~~~~~~~~~~
 

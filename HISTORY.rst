@@ -633,6 +633,10 @@ Changes
 - Added the "devices.py" module, which contains the code to manage additional external devices.
 - Added "devices.DeviceManager" class
 - Added "devices.AbstractDevice" class
+- Added a default plugin "ashata_relay_board", which adds support for a usb relay board device. I decided that all
+  devices, may they be default or not, should only ever be added by the means of a plugin. This usb relay board will
+  be primarily used to hard reset the camera fpga board by cutting the power line, but I suppose it will be convenient
+  for other things in the future as well.
 
 Hooks
 
@@ -669,6 +673,9 @@ Web Interface
 - Completely switched from plain CSS files to using SCSS for the static stylesheet assets of the web interface. These
   will not be compiled in time though. They should be compiled during development so that the installable version of
   ufotest can be shipped with the compiled CSS versions of those files.
+- Added a new primary nav item and a web page view "Plugins". This page lists all the loaded plugins and displays their
+  short description (which is given as the main modules DOC string) as well as a link to the README.rst file for the
+  plugin
 
 Documentation
 
