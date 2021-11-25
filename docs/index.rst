@@ -1,6 +1,11 @@
 Welcome to ufotest's documentation!
 ======================================
 
+:code:`ufotest` is a framework for continuous automated hardware testing.
+
+.. image :: ../images/screenshot_home.png
+  :alt: Screenshot homepage web interface
+
 Section Overview
 ----------------
 Explanations for the top level sections of this documentation
@@ -9,6 +14,8 @@ Explanations for the top level sections of this documentation
     The Github README of the project
 *Quickstart*
     Most common instructions to install, setup & configure the application and execute the first test
+*Getting Started*
+    More in depth explanations of how to setup and configure the system
 *Command Line Reference*
     Available command line controls
 *Concepts*
@@ -25,7 +32,8 @@ Explanations for the top level sections of this documentation
    :caption: Contents:
 
    readme
-    quickstart
+   getting_started
+   quickstart
    _index
 
 

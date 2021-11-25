@@ -8,14 +8,14 @@ Installation
 ------------
 
 Prerequisites: Ufotest is only tested on SUSE and Ubuntu operating systems. It is also assumed that both
-`python3>=3.6` and `pip>=19.0.0` are already installed.
+:code:`python3>=3.6` and :code:`pip>=19.0.0` are already installed.
 
 Ufotest can be installed directly from PyPi or from Github.
 
 .. note::
 
-    However ufotest is installed, the `--user` flag is absolutely necessary when installing with pip.
-    Also avoid installing with `sudo`, or the command line interface may not be accessible
+    However ufotest is installed, the :code:`--user` flag is absolutely necessary when installing with pip.
+    Also avoid installing with :code:`sudo`, or the command line interface may not be accessible
 
 .. code-block:: console
 
@@ -42,7 +42,7 @@ Setup
 -----
 
 After the python package has been installed, the actual ufotest installation folder has to be created. On
-default this folder will be created as `$HOME/.ufotest`
+default this folder will be created as :code:`$HOME/.ufotest`
 
 .. code-block:: console
 
@@ -69,9 +69,9 @@ The config file can be edited using a text editor or with this command:
 Running a test case
 -------------------
 
-A test case can be executed using the `ufotest test` command of the command line interface.
+A test case can be executed using the :code:`ufotest test` command of the command line interface.
 
-Without any connected/configured hardware to test, the `--mock` option can be used to sample a frame
+Without any connected/configured hardware to test, the :code:`--mock` option can be used to sample a frame
 from the mock implementation of the hardware.
 
 .. code-block:: console
