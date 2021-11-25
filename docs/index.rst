@@ -1,39 +1,35 @@
 Welcome to ufotest's documentation!
 ======================================
 
-Content Overview
+Section Overview
 ----------------
+Explanations for the top level sections of this documentation
 
-- **ufotest** This is the readme file, as it can also be seen on the Github repository of the project
-- **Installation** Will provide information on how to install the project. (Also contains information on how to install
-  the dependencies for the UFO camera manually)
-- **Usage** This section will explain what kind of commands the CLI tool offers and how they are used.
-- **Camera Testing** This section introduces custom test classes and how to dynamically include them to be usable
-  for the test command.
-- **UFO Camera** Some notes about the UFO camera / HighFlex FPGA board itself, which is not directly related to the
-  CLI project.
-- **Source Code Documentation** Contains the information about all the source code of the project based on the
-  python docstrings.
+*ufotest*
+    The Github README of the project
+*Quickstart*
+    Most common instructions to install, setup & configure the application and execute the first test
+*Command Line Reference*
+    Available command line controls
+*Concepts*
+    Additional resources about the software architecture for developers
+*Plugin Development Guide*
+    Guide to develop custom plugins to extend ufotest
+*Hook Reference*
+    Listing of all available hooks for plugin development
+*Troubleshooting*
+    Common errors and how to solve them
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    readme
-   installation
-   current
-   usage
-   hooks
-   plugin
-   tests
-   ci
-   camera
-   modules
-   authors
-   history
+    quickstart
+   _index
+
 
 Indices and tables
 ==================
 * :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+
