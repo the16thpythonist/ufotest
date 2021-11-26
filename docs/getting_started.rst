@@ -13,10 +13,12 @@ Setting up
 Configuration
 -------------
 
+Some text
+
 .. toctree::
     :maxdepth: 1
     :caption: Content
-    ../guides/config_public_hostname
+    guides/config_public_hostname
 
 Working with Plugins
 --------------------
@@ -29,6 +31,9 @@ Custom Test cases
 Automated Builds
 ----------------
 
+some text
+
 .. toctree::
     :maxdepth: 1
-    ./guides/automated_github_webhook
+    guides/automated_github_webhook
+    guides/automated_gitlab_webhook
