@@ -30,15 +30,16 @@ Explanations for the top level sections of this documentation
     Advanced topics not common enough for the getting started guide
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+    :maxdepth: 2
+    :caption: Contents:
 
-   readme
-   quickstart
-   getting_started
-   cli_reference
-   concepts
-   _index
+    readme
+    quickstart
+    getting_started
+    cli_reference
+    concepts
+    plugin_development
+    _index
 
 
 Indices and tables

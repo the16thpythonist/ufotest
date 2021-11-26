@@ -11,5 +11,7 @@ there is no need to read all these in order, although the understanding may prov
     :maxdepth: 1
 
     concepts/hardware_interaction
+    concepts/plugin_system
+    concepts/hook_system
 
 
