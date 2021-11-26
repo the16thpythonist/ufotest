@@ -9,7 +9,7 @@ there is no need to read all these in order, although the understanding may prov
 
 .. toctree::
     :maxdepth: 1
+
     concepts/hardware_interaction
-    ci
 
 
