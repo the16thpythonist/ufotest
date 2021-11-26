@@ -3,8 +3,8 @@ Welcome to ufotest's documentation!
 
 :code:`ufotest` is a framework for continuous automated hardware testing.
 
-.. image :: ../images/screenshot_home.png
-  :alt: Screenshot homepage web interface
+.. image:: ../images/screenshot_home.png
+   :alt: Screenshot homepage web interface
 
 Section Overview
 ----------------
@@ -26,14 +26,16 @@ Explanations for the top level sections of this documentation
     Listing of all available hooks for plugin development
 *Troubleshooting*
     Common errors and how to solve them
+*Advanced Topics*
+    Advanced topics not common enough for the getting started guide
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    readme
-   getting_started
    quickstart
+   getting_started
    _index
 
 

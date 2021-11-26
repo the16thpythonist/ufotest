@@ -97,3 +97,12 @@ start the Flask web server which will serve the interface:
     ufotest --mock ci serve
 
 On default, the server will bind to localhost and can be accessed as http://localhost:8030/
+
+Further Reading
+---------------
+
+- :doc:`Getting Started <../getting_started>` For more advanced configuration and setup options
+- :doc:`Command Line Reference <../cli_reference>` To explore more of ufotests functions
+- :doc:`Plugin Development Guide <../plugin_development>` For how to get started with a custom plugin implementation
+
+
