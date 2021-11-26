@@ -15,7 +15,7 @@ Configuration
 
 .. toctree::
    :maxdepth: 1
-   guides/config_public_hostname.rst
+   guides/config_public_hostname
 
 Working with Plugins
 --------------------
@@ -25,7 +25,9 @@ Custom Test cases
 -----------------
 
 
-
 Automated Builds
 ----------------
 
+.. toctree::
+    :maxdepth: 1
+    guides/automated_github_webhook

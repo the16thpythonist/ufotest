@@ -3,7 +3,7 @@ Welcome to ufotest's documentation!
 
 :code:`ufotest` is a framework for continuous automated hardware testing.
 
-.. image:: ../images/screenshot_home.png
+.. image:: ./images/screenshot_home.png
    :alt: Screenshot homepage web interface
 
 Section Overview

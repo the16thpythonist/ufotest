@@ -21,10 +21,10 @@ use the command to edit the config file:
 In the :code:`[ci]` section change the following line:
 
 .. code-block:: toml
+    :caption: config.toml
 
     [ci]
-
-        hostname = ufotest.example.com
+        hostname = 'ufotest.example.com'
 
 Changing the port
 -----------------
@@ -35,8 +35,8 @@ as http://ufotest.example.com:8030/ . It is encouraged to stay with this configu
 If this is not possible due to a firewall etc, change the port like this in the config file:
 
 .. code-block:: toml
+    :caption: config.toml
 
     [ci]
-
-        hostname = ufotest.example.com
+        hostname = 'ufotest.example.com'
         port = 80
