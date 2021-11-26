@@ -18,6 +18,7 @@ Some text
 .. toctree::
     :maxdepth: 1
     :caption: Content
+    index
     guides/config_public_hostname
 
 Working with Plugins
@@ -35,5 +36,6 @@ some text
 
 .. toctree::
     :maxdepth: 1
+    current
     guides/automated_github_webhook
     guides/automated_gitlab_webhook

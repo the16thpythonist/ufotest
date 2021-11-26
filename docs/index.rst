@@ -36,6 +36,8 @@ Explanations for the top level sections of this documentation
    readme
    quickstart
    getting_started
+   cli_reference
+   concepts
    _index
 
 
