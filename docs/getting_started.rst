@@ -14,8 +14,9 @@ Configuration
 -------------
 
 .. toctree::
-   :maxdepth: 1
-   guides/config_public_hostname
+    :maxdepth: 1
+    :caption: Content
+    ../guides/config_public_hostname
 
 Working with Plugins
 --------------------
@@ -30,4 +31,4 @@ Automated Builds
 
 .. toctree::
     :maxdepth: 1
-    guides/automated_github_webhook
+    ./guides/automated_github_webhook

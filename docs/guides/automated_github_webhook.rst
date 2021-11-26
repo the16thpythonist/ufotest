@@ -25,7 +25,7 @@ This repository will be cloned every time to create the new software version to 
 Go to Github and register a Webhook
 -----------------------------------
 
-.. image:: ./images/screenshot_github_webhook.png
+.. image:: ../images/screenshot_github_webhook.png
     :alt: Github Screenshot
 
 
