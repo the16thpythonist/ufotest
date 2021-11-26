@@ -25,7 +25,7 @@ An example folder structure may look like this
 
 .. code-block:: text
 
-    my_example_plugin
+    + my_example_plugin
         + lib
             - util.py
             - functions.py
@@ -63,6 +63,6 @@ induces the desired plugin functionality.
 Further reading
 ---------------
 
-- :doc:`../hook_system.rst`: An explanation of the hook system, which allows the plugins to inject
+- :doc:`../../concepts/hook_system.rst`: An explanation of the hook system, which allows the plugins to inject
   custom code into the main runtime.
 

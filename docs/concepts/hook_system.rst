@@ -32,6 +32,7 @@ Action Hooks
 The principle is most easily explained for action hooks. Consider the following example:
 
 .. code-block:: python
+    :caption: Mock example of an action hook
 
     # Somewhere in plugin "main.py" during startup sequence
     plugin_manager.register_action("custom_action", lambda: print('Hello World'))
@@ -39,6 +40,7 @@ The principle is most easily explained for action hooks. Consider the following 
     # ...
     # Later in main runtime
     plugin_manager.do_action("custom_action")
+    # prints "Hello World"
 
 
 Within the plugin main file, a callback (a function / callable object) is registered with the
@@ -60,6 +62,7 @@ The difference with *filter* hooks is that their purpose is to modify a data str
 this data structure as a parameter and have to return it again.
 
 .. code-block:: python
+    :caption: Mock example of a filter hook
 
     # Somewhere in plugin "main.py" during startup sequence
     def append_one(l):
@@ -88,7 +91,7 @@ The possibility of multiple callbacks is especially important for the filter hoo
 create a processing pipeline for the subject data structure.
 
 .. code-block:: python
-    :caption: Example multiple filter hooks
+    :caption: Mock example of multiple filter hooks
 
     # Somewhere in plugin "main.py" during startup sequence
     def append_one(l):
