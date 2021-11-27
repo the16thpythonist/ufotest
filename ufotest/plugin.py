@@ -207,7 +207,8 @@ class PluginManager:
             raise FileNotFoundError((
                 f'Cannot import folder "{plugin_name}" as an ufotest plugin, because the folder does not contain a '
                 f'main.py python module. All ufotest plugins need to have a main.py file! This is the top level file '
-                f'which is imported to import the plugins functionality into the ufotest system.'
+                f'which is imported to import the plugins functionality into the ufotest system.\n '
+                f'Path being checked: {plugin_main_module_path}'
             ))
 
         spec = importlib.util.spec_from_file_location(plugin_name, plugin_main_module_path)

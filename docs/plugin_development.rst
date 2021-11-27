@@ -2,9 +2,10 @@ Plugin Development Guide
 ========================
 
 **Prerequisites:**
-- :doc:`../../concepts/plugin_system` It would be beneficial to know how the plugin
+
+- :doc:`../../concepts/plugin_system`. It would be beneficial to know how the plugin
   system was designed from a theoretical perspective.
-- :doc:`../../concepts/hook_system` Same goes for the design choices regarding the
+- :doc:`../../concepts/hook_system`. Same goes for the design choices regarding the
   hook system.
 
 This document references the resources to get started with developing a custom
@@ -27,5 +28,6 @@ which may act as a starting point for your own plugin.
     :maxdepth: 1
 
     plugins/setup_cookiecutter
+
 
 
