@@ -213,7 +213,6 @@ class PluginManager:
                 f'Path being checked: {plugin_main_module_path}'
             ))
 
-        """
         # 29.11.2021
         # This will add the parent folder in which the actual plugin folder resides to the plugin path. This is due to
         # a problem with the plugins: Prior imports of another plugin module from the plugins main.py module did not
@@ -221,18 +220,8 @@ class PluginManager:
         plugin_folder = os.path.dirname(path)
         if plugin_folder not in sys.path:
             sys.path.append(plugin_folder)
-        """
 
-        """
-        # 1. Try to import the package
-        spec = importlib.util.spec_from_file_location(plugin_name, path)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        sys.modules[plugin_name] = module
-        """
-
-        # spec = importlib.util.spec_from_file_location(plugin_name, plugin_main_module_path)
-        spec = importlib.util.spec_from_file_location(plugin_name, path)
+        spec = importlib.util.spec_from_file_location(plugin_name, plugin_main_module_path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         sys.modules[plugin_name] = module
