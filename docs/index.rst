@@ -39,7 +39,7 @@ Explanations for the top level sections of this documentation
     cli_reference
     concepts
     plugin_development
-    _index
+    hook_reference
 
 
 Indices and tables

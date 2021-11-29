@@ -343,8 +343,8 @@ class TestRunner(object):
                             f'valid test folder!'))
 
         # 29.11.2021 - 2.0.0
-        self.config.pm.do_action('pre_test', self, test_name)
-        self.config.pm.do_action(f'pre_test_{test_name}', self, test_name)
+        self.config.pm.do_action('pre_test', test_runner=self, name=test_name)
+        self.config.pm.do_action(f'pre_test_{test_name}', test_runner=self, name=test_name)
 
         self.context.start(test_name)
         # A AbstractTest subclass can be instantiated by passing a single argument to the constructor and that is the
@@ -363,8 +363,8 @@ class TestRunner(object):
         :return: void
         """
         # 29.11.2021 - 2.0.0
-        self.config.pm.do_action('pre_test_suite', self, suite_name)
-        self.config.pm.do_action(f'pre_test_suite_{suite_name}', self, suite_name)
+        self.config.pm.do_action('pre_test_suite', test_runner=self, name=suite_name)
+        self.config.pm.do_action(f'pre_test_suite_{suite_name}', test_runner=self, name=suite_name)
 
         # Opposed to the "run_test" method we do not run a check for existence here directly because this check is
         # performed within the "get_test_suite" method.
