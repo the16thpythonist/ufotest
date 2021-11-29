@@ -173,14 +173,18 @@ class PluginManager:
                 # this is that the plugins folder will almost certainly contain a __pycache__ folder which obviously
                 # is not a ufotest plugin and thus cause an error. But this behaviour is also nice to disable certain
                 # plugins without removing them completely: simply rename them to start with an underscore
-                # 29.11.2021: We also need to ignore folders which start with a dot, as these are the linux hidden
-                # folders. There were issues with runaway .idea and .git folders being attempted for import.
+                # 2.0.0 - 29.11.2021: We also need to ignore folders which start with a dot, as these are the linux
+                # hiddenfolders. There were issues with runaway .idea and .git folders being attempted for import.
                 if folder_name[0] in ['_', '.']:
                     continue
 
                 plugin_path = os.path.join(root, folder_name)
                 plugin_name, module = self.import_plugin_by_path(plugin_path)
                 self.plugins[plugin_name] = module
+
+            # 2.0.0 - 29.11.2021: So as to not accidentally attempt to import all plugin subfolders as plugins as well.
+            # This was previously a bug
+            break
 
     def reset(self):
         """
