@@ -28,6 +28,7 @@ which may act as a starting point for your own plugin.
     :maxdepth: 1
 
     plugins/setup_cookiecutter
+    plugins/example1
 
 
 
