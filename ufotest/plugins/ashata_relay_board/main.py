@@ -129,3 +129,7 @@ def register_relay_board_device(config, device_manager: DeviceManager):
     device_manager.register_device(device)
 
 
+# -- Create a new CLI command
+
+
+

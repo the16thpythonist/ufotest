@@ -44,8 +44,26 @@ from ufotest.ci.server import server, BuildWorker
 
 CONFIG = Config()
 
-# == UTILITY FUNCTIONS ==
 
+class PluginCommands(click.Group):
+
+    def __init__(self, name=None, commands=None, **attrs):
+        click.Group.__init__(self, name, commands, **attrs)
+        self.config = Config()
+
+    def get_command(self, ctx, cmd_name):
+        commands = self.config.pm.apply_filter('plugin_commands',
+                                               value=self.commands,
+                                               config=self.config,
+                                               context=ctx)
+        return commands[cmd_name]
+
+    def list_commands(self, ctx):
+        commands = self.config.pm.apply_filter('plugin_commands',
+                                               value=self.commands,
+                                               config=self.config,
+                                               context=ctx)
+        return sorted(commands)
 
 # == COMMANDS ==
 
@@ -907,6 +925,11 @@ cli.add_command(test)
 cli.add_command(ci)
 cli.add_command(scripts)
 
+# 2.0.0 - 29.11.2021
+# "MiscCommands" is a special click command group which uses a filter hook from the
+# plugin manager to dynamically load commands after the startup sequence!
+plugin_commands = PluginCommands(name='plugin', help='Commands added by plugins')
+cli.add_command(plugin_commands)
 
 if __name__ == "__main__":
     sys.exit(cli())  # pragma: no cover

@@ -326,6 +326,8 @@ class ScriptManager(object):
         the script from the latest cloned version of the remote repository (ci repo) and overwrite the self.script
         entries with those.
 
+        :raises LookupError: If no build folder exists yet with a valid script substitutions
+
         :returns: None
         """
         # First of we load the fallback scripts. These are the scripts which are the hardcoded stable versions which

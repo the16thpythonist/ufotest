@@ -259,6 +259,9 @@ class TestRunner(object):
         for module_name, module in self.modules.items():
             self.load_tests_from_module(module)
 
+        # 2.0.0 - 29.11.2021
+        self.tests = self.config.pm.apply_filter('load_tests', value=self.tests, test_runner=self)
+
         self.context.tests = self.tests
 
     def load_tests_from_module(self, module: Any) -> None:
