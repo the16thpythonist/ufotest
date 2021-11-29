@@ -173,7 +173,9 @@ class PluginManager:
                 # this is that the plugins folder will almost certainly contain a __pycache__ folder which obviously
                 # is not a ufotest plugin and thus cause an error. But this behaviour is also nice to disable certain
                 # plugins without removing them completely: simply rename them to start with an underscore
-                if folder_name[0] == '_':
+                # 29.11.2021: We also need to ignore folders which start with a dot, as these are the linux hidden
+                # folders. There were issues with runaway .idea and .git folders being attempted for import.
+                if folder_name[0] in ['_', '.']:
                     continue
 
                 plugin_path = os.path.join(root, folder_name)
@@ -211,6 +213,7 @@ class PluginManager:
                 f'Path being checked: {plugin_main_module_path}'
             ))
 
+        """
         # 29.11.2021
         # This will add the parent folder in which the actual plugin folder resides to the plugin path. This is due to
         # a problem with the plugins: Prior imports of another plugin module from the plugins main.py module did not
@@ -218,8 +221,18 @@ class PluginManager:
         plugin_folder = os.path.dirname(path)
         if plugin_folder not in sys.path:
             sys.path.append(plugin_folder)
+        """
 
-        spec = importlib.util.spec_from_file_location(plugin_name, plugin_main_module_path)
+        """
+        # 1. Try to import the package
+        spec = importlib.util.spec_from_file_location(plugin_name, path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        sys.modules[plugin_name] = module
+        """
+
+        # spec = importlib.util.spec_from_file_location(plugin_name, plugin_main_module_path)
+        spec = importlib.util.spec_from_file_location(plugin_name, path)
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         sys.modules[plugin_name] = module
